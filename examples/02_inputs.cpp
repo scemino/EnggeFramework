@@ -1,7 +1,130 @@
 #include <ngf/Application.h>
-#include <ngf/Graphics/ImGuiExtensions.h>
 #include <imgui.h>
 #include <imgui_stdlib.h>
+#include <iostream>
+#include <sstream>
+
+namespace {
+SDL_GameControllerButton getSdlButton(ngf::GamepadButton button) {
+  switch (button) {
+  case ngf::GamepadButton::A:return SDL_CONTROLLER_BUTTON_A;
+  case ngf::GamepadButton::B:return SDL_CONTROLLER_BUTTON_B;
+  case ngf::GamepadButton::X:return SDL_CONTROLLER_BUTTON_X;
+  case ngf::GamepadButton::Y:return SDL_CONTROLLER_BUTTON_Y;
+  case ngf::GamepadButton::Back:return SDL_CONTROLLER_BUTTON_BACK;
+  case ngf::GamepadButton::Guide:return SDL_CONTROLLER_BUTTON_GUIDE;
+  case ngf::GamepadButton::Start:return SDL_CONTROLLER_BUTTON_START;
+  case ngf::GamepadButton::LeftStick:return SDL_CONTROLLER_BUTTON_LEFTSTICK;
+  case ngf::GamepadButton::RightStick:return SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+  case ngf::GamepadButton::LeftBumper:return SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+  case ngf::GamepadButton::RightBumper:return SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+  case ngf::GamepadButton::DPadUp:return SDL_CONTROLLER_BUTTON_DPAD_UP;
+  case ngf::GamepadButton::DPadDown:return SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+  case ngf::GamepadButton::DPadLeft:return SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+  case ngf::GamepadButton::DPadRight:return SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+  }
+
+  assert(false);
+}
+
+SDL_GameControllerAxis getSdlAxis(ngf::GamepadAxis axis) {
+  switch (axis) {
+  case ngf::GamepadAxis::LeftX:return SDL_CONTROLLER_AXIS_LEFTX;
+  case ngf::GamepadAxis::LeftY:return SDL_CONTROLLER_AXIS_LEFTY;
+  case ngf::GamepadAxis::RightX:return SDL_CONTROLLER_AXIS_RIGHTX;
+  case ngf::GamepadAxis::RightY:return SDL_CONTROLLER_AXIS_RIGHTY;
+  case ngf::GamepadAxis::TriggerLeft:return SDL_CONTROLLER_AXIS_TRIGGERLEFT;
+  case ngf::GamepadAxis::TriggerRight:return SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+    assert(false);
+  }
+}
+
+const char *getButtonName(ngf::GamepadButton button) {
+  return SDL_GameControllerGetStringForButton(getSdlButton(button));
+}
+
+const char *getAxisName(ngf::GamepadAxis axis) {
+  return SDL_GameControllerGetStringForAxis(getSdlAxis(axis));
+}
+
+std::ostream &operator<<(std::ostream &o, const ngf::KeyEvent &event) {
+  o << "keycode: " << event.keycode << '\n';
+  o << "scancode: " << static_cast<int32_t>(event.scancode) << '\n';
+  o << "modifiers: " << event.modifiers << '\n';
+  o << "repeat: " << (event.repeat ? "yes" : "no");
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const glm::ivec2 &pos) {
+  o << "x=" << pos.x << ',' << pos.y;
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const ngf::MouseButtonEvent &event) {
+  o << "windowId: " << event.windowId << '\n';
+  o << "id: " << event.id << '\n';
+  o << "button: " << static_cast<int32_t>(event.button) << '\n';
+  o << "pos: " << event.position << '\n';
+  o << "clicks: " << static_cast<int32_t>(event.clicks);
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const ngf::MouseMovedEvent &event) {
+  o << "windowId: " << event.windowId << '\n';
+  o << "pos: " << event.position << '\n';
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const ngf::GamepadButtonEvent &event) {
+  o << "id: " << static_cast<int32_t>(event.id) << '\n';
+  o << "button: " << getButtonName(event.button);
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const ngf::GamepadAxisEvent &event) {
+  o << "id: " << static_cast<int32_t>(event.id) << '\n';
+  o << "axis: " << getAxisName(event.axis) << '\n';
+  o << "value: " << event.value;
+  return o;
+}
+
+std::ostream &operator<<(std::ostream &o, const ngf::Event &event) {
+  o << "timespan: " << event.timestamp.getTotalMilliseconds() << '\n';
+  switch (event.type) {
+  case ngf::EventType::Quit:o << "type: Quit";
+    break;
+  case ngf::EventType::WindowResized:o << "type: WindowResized";
+    break;
+  case ngf::EventType::WindowClosed: o << "type: WindowClosed";
+    break;
+  case ngf::EventType::MouseMoved:o << "type: MouseMoved" << '\n' << event.mouseMoved;
+    break;
+  case ngf::EventType::MouseButtonPressed:o << "type: MouseButtonPressed" << '\n' << event.mouseButton;
+    break;
+  case ngf::EventType::MouseButtonReleased:o << "type: MouseButtonReleased" << '\n' << event.mouseButton;
+    break;
+  case ngf::EventType::MouseWheelScrolled:o << "type: MouseWheelScrolled";
+    break;
+  case ngf::EventType::KeyPressed:o << "type: KeyPressed " << '\n' << event.key;
+    break;
+  case ngf::EventType::KeyReleased:o << "type: KeyReleased " << '\n' << event.key;
+    break;
+  case ngf::EventType::GamepadConnected:o << "type: GamepadConnected" << '\n' << event.gamepadConnection.id;
+    break;
+  case ngf::EventType::GamepadDisconnected:o << "type: GamepadDisconnected" << '\n' << event.gamepadDisconnection.id;
+    break;
+  case ngf::EventType::GamepadButtonPressed:o << "type: GamepadButtonPressed" << '\n' << event.gamepadButton;
+    break;
+  case ngf::EventType::GamepadButtonReleased:o << "type: GamepadButtonReleased" << '\n' << event.gamepadButton;
+    break;
+  case ngf::EventType::GamepadAxisMoved:o << "type: GamepadAxisMoved " << '\n' << event.gamepadAxis;
+    break;
+  case ngf::EventType::GamepadMappingUpdated:o << "type: GamepadMappingUpdated";
+    break;
+  }
+  return o;
+}
+}
 
 class DemoApplication final : public ngf::Application {
 private:
@@ -15,41 +138,14 @@ private:
   }
 
   void onEvent(ngf::Event &event) override {
-    m_lastInput.clear();
-    m_lastInput.append(std::to_string(event.timestamp.getTotalMilliseconds())).append(": ");
-    switch (event.type) {
-    case ngf::EventType::Quit:m_lastInput.append("Quit");
-      break;
-    case ngf::EventType::WindowResized:m_lastInput.append("WindowResized");
-      break;
-    case ngf::EventType::WindowClosed:m_lastInput.append("WindowClosed");
-      break;
-    case ngf::EventType::MouseMoved:
-      m_lastInput.append("MouseMoved (x=")
-          .append(std::to_string(event.mouseMoved.position.x))
-          .append(" y=").append(std::to_string(event.mouseMoved.position.y))
-          .append(")");
-      break;
-    case ngf::EventType::MouseButtonPressed:m_lastInput.append("MouseButtonPressed ").append(std::to_string(event.mouseButton.button));
-      break;
-    case ngf::EventType::MouseButtonReleased:m_lastInput.append("MouseButtonReleased ").append(std::to_string(event.mouseButton.button));
-      break;
-    case ngf::EventType::MouseWheelScrolled:m_lastInput.append("MouseWheelScrolled");
-      break;
-    case ngf::EventType::KeyPressed:
-      m_lastInput.append("KeyPressed ").append(std::to_string(event.key.keycode)).append("[").append(std::to_string(
-          event.key.repeat)).append("]");
-      break;
-    case ngf::EventType::KeyReleased:
-      m_lastInput.append("KeyReleased ").append(std::to_string(event.key.keycode)).append("[").append(std::to_string(
-          event.key.repeat)).append("]");
-      break;
-    }
+    std::ostringstream o;
+    o << event;
+    m_lastInput = o.str();
   }
 
   void onImGuiRender() override {
     ImGui::Begin("Tools");
-    ImGui::LabelText("Last input", "%s", m_lastInput.data());
+    ImGui::InputTextMultiline("Last input", &m_lastInput, ImVec2(), ImGuiInputTextFlags_ReadOnly);
     ImGui::End();
   }
 

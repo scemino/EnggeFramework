@@ -8,6 +8,43 @@
 #include <sstream>
 
 namespace ngf {
+
+namespace {
+GamepadButton getGamepadButton(Uint8 button) {
+  switch (button) {
+  case SDL_CONTROLLER_BUTTON_A:return GamepadButton::A;
+  case SDL_CONTROLLER_BUTTON_B:return GamepadButton::B;
+  case SDL_CONTROLLER_BUTTON_X:return GamepadButton::X;
+  case SDL_CONTROLLER_BUTTON_Y:return GamepadButton::Y;
+  case SDL_CONTROLLER_BUTTON_BACK:return GamepadButton::Back;
+  case SDL_CONTROLLER_BUTTON_GUIDE:return GamepadButton::Guide;
+  case SDL_CONTROLLER_BUTTON_START:return GamepadButton::Start;
+  case SDL_CONTROLLER_BUTTON_LEFTSTICK:return GamepadButton::LeftStick;
+  case SDL_CONTROLLER_BUTTON_RIGHTSTICK:return GamepadButton::RightStick;
+  case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:return GamepadButton::LeftBumper;
+  case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:return GamepadButton::RightBumper;
+  case SDL_CONTROLLER_BUTTON_DPAD_UP:return GamepadButton::DPadUp;
+  case SDL_CONTROLLER_BUTTON_DPAD_DOWN:return GamepadButton::DPadDown;
+  case SDL_CONTROLLER_BUTTON_DPAD_LEFT:return GamepadButton::DPadLeft;
+  case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:return GamepadButton::DPadRight;
+  }
+  assert(false);
+}
+
+GamepadAxis getGamepadAxis(Uint8 axis) {
+  switch (axis) {
+  case SDL_CONTROLLER_AXIS_LEFTX:return GamepadAxis::LeftX;
+  case SDL_CONTROLLER_AXIS_LEFTY:return GamepadAxis::LeftY;
+  case SDL_CONTROLLER_AXIS_RIGHTX:return GamepadAxis::RightX;
+  case SDL_CONTROLLER_AXIS_RIGHTY:return GamepadAxis::RightY;
+  case SDL_CONTROLLER_AXIS_TRIGGERLEFT:return GamepadAxis::TriggerLeft;
+  case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:return GamepadAxis::TriggerRight;
+  }
+
+  assert(false);
+}
+}
+
 Window::Window() = default;
 
 Window::~Window() {
@@ -147,7 +184,7 @@ bool Window::pollEvent(Event &event) {
     event.type = sdlEvent.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonPressed
                                                       : EventType::MouseButtonReleased;
     event.mouseButton.windowId = sdlEvent.button.windowID;
-    event.mouseButton.which = sdlEvent.button.which;
+    event.mouseButton.id = sdlEvent.button.which;
     event.mouseButton.button = static_cast<std::int32_t>(sdlEvent.button.button);
     event.mouseButton.position = glm::ivec2{sdlEvent.button.x, sdlEvent.button.y};
     event.mouseButton.clicks = sdlEvent.button.clicks;
@@ -159,6 +196,36 @@ bool Window::pollEvent(Event &event) {
   case SDL_MOUSEMOTION:event.type = EventType::MouseMoved;
     event.mouseMoved.windowId = sdlEvent.motion.windowID;
     event.mouseMoved.position = glm::ivec2{sdlEvent.motion.x, sdlEvent.motion.y};
+    break;
+  case SDL_CONTROLLERBUTTONDOWN:
+  case SDL_CONTROLLERBUTTONUP:
+    event.type = sdlEvent.type == SDL_CONTROLLERBUTTONDOWN ? EventType::GamepadButtonPressed
+                                                           : EventType::GamepadButtonReleased;
+    event.gamepadButton.id = static_cast<std::int32_t>(sdlEvent.cbutton.which);
+    event.gamepadButton.button = getGamepadButton(sdlEvent.cbutton.button);
+    break;
+  case SDL_CONTROLLERDEVICEADDED: {
+    event.type = EventType::GamepadConnected;
+    event.gamepadConnection.id = static_cast<std::int32_t>(sdlEvent.cdevice.which);
+    auto *controller = SDL_GameControllerOpen(event.gamepadConnection.id);
+    if (!controller) {
+      std::cerr << "Could not open gamepad " << event.gamepadConnection.id << ": " << SDL_GetError() << "\n";
+    }
+  }
+    break;
+  case SDL_CONTROLLERDEVICEREMOVED: {
+    event.type = EventType::GamepadDisconnected;
+    auto controllerId = SDL_GameControllerFromInstanceID(sdlEvent.cdevice.which);
+    event.gamepadDisconnection.id = static_cast<std::int32_t>(sdlEvent.cdevice.which);
+    if (controllerId) {
+      SDL_GameControllerClose(controllerId);
+    }
+  }
+    break;
+  case SDL_CONTROLLERAXISMOTION:event.type = EventType::GamepadAxisMoved;
+    event.gamepadAxis.id = static_cast<std::int32_t>(sdlEvent.caxis.which);
+    event.gamepadAxis.axis = getGamepadAxis(sdlEvent.caxis.axis);
+    event.gamepadAxis.value = sdlEvent.caxis.value;
     break;
   default: return false;
   }
