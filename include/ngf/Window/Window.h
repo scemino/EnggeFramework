@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
 #include <SDL.h>
-#include <Color.h>
-#include <Colors.h>
 #include <glm/ext/vector_int2.hpp>
+#include <ngf/Graphics/Color.h>
+#include <ngf/Graphics/Colors.h>
+#include <ngf/Window/Event.h>
 
 namespace ngf {
 struct WindowConfig {
@@ -22,7 +23,7 @@ public:
   void init(const WindowConfig &config);
   void clear(const Color &color = Colors::Black);
   void display();
-  bool pollEvent(SDL_Event &event);
+  bool pollEvent(Event &event);
 
   void setVerticalSyncEnabled(bool enabled);
   [[nodiscard]] bool isVerticalSyncEnabled() const;

@@ -4,3 +4,4 @@ macro(add_ngf_example NAME)
 endmacro()
 
 add_ngf_example(01_window)
+add_ngf_example(02_inputs)

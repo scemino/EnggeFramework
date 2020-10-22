@@ -107,8 +107,62 @@ void Window::display() {
   SDL_GL_SwapWindow(m_window);
 }
 
-bool Window::pollEvent(SDL_Event &event) {
-  return SDL_PollEvent(&event);
+bool Window::pollEvent(Event &event) {
+  SDL_Event sdlEvent;
+  if (!SDL_PollEvent(&sdlEvent))
+    return false;
+
+  ImGui_ImplSDL2_ProcessEvent(&sdlEvent);
+  if (ImGui::GetIO().WantTextInput || ImGui::GetIO().WantCaptureMouse) {
+    return false;
+  }
+
+  event.timestamp = TimeSpan::milliseconds(sdlEvent.common.timestamp);
+
+  switch (sdlEvent.type) {
+  case SDL_QUIT:event.type = EventType::Quit;
+    break;
+  case SDL_WINDOWEVENT:
+    switch (sdlEvent.window.event) {
+    case SDL_WINDOWEVENT_RESIZED:
+    case SDL_WINDOWEVENT_SIZE_CHANGED:event.type = EventType::WindowResized;
+      event.resize.windowId = sdlEvent.window.windowID;
+      event.resize.size = glm::ivec2{sdlEvent.window.data1, sdlEvent.window.data2};
+      break;
+    case SDL_WINDOWEVENT_CLOSE:event.type = EventType::WindowClosed;
+      event.window.windowId = sdlEvent.window.windowID;
+      break;
+    default: return false;
+    }
+  case SDL_KEYDOWN:
+  case SDL_KEYUP:event.type = sdlEvent.type == SDL_KEYDOWN ? EventType::KeyPressed : EventType::KeyReleased;
+    event.key.windowId = sdlEvent.key.windowID;
+    event.key.keycode = static_cast<std::int32_t>(sdlEvent.key.keysym.sym);
+    event.key.scancode = static_cast<Scancode>(sdlEvent.key.keysym.scancode);
+    event.key.modifiers = sdlEvent.key.keysym.mod;
+    event.key.repeat = sdlEvent.key.repeat != 0;
+    break;
+  case SDL_MOUSEBUTTONDOWN:
+  case SDL_MOUSEBUTTONUP:
+    event.type = sdlEvent.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonPressed
+                                                      : EventType::MouseButtonReleased;
+    event.mouseButton.windowId = sdlEvent.button.windowID;
+    event.mouseButton.which = sdlEvent.button.which;
+    event.mouseButton.button = static_cast<std::int32_t>(sdlEvent.button.button);
+    event.mouseButton.position = glm::ivec2{sdlEvent.button.x, sdlEvent.button.y};
+    event.mouseButton.clicks = sdlEvent.button.clicks;
+    break;
+  case SDL_MOUSEWHEEL:event.type = EventType::MouseWheelScrolled;
+    event.mouseWheelEvent.windowId = sdlEvent.wheel.windowID;
+    event.mouseWheelEvent.offset = glm::ivec2{sdlEvent.wheel.x, sdlEvent.wheel.x};
+    break;
+  case SDL_MOUSEMOTION:event.type = EventType::MouseMoved;
+    event.mouseMoved.windowId = sdlEvent.motion.windowID;
+    event.mouseMoved.position = glm::ivec2{sdlEvent.motion.x, sdlEvent.motion.y};
+    break;
+  default: return false;
+  }
+  return true;
 }
 
 void Window::setVerticalSyncEnabled(bool enabled) {

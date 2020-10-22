@@ -47,15 +47,12 @@ void Application::run() {
 }
 
 void Application::processEvents() {
-  SDL_Event event;
+  Event event;
   while (m_window.pollEvent(event)) {
-    ImGui_ImplSDL2_ProcessEvent(&event);
-    if (event.type == SDL_QUIT) {
+    if (event.type == EventType::Quit) {
       m_done = true;
     } else {
-      if (!ImGui::GetIO().WantTextInput && !ImGui::GetIO().WantCaptureMouse) {
-        onEvent(event);
-      }
+      onEvent(event);
     }
   }
 }
@@ -88,6 +85,6 @@ void Application::onRender() {
 void Application::onImGuiRender() {
 }
 
-void Application::onEvent(SDL_Event &) {
+void Application::onEvent(Event &) {
 }
 }

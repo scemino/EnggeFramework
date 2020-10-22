@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
-#include "System/TimeSpan.h"
-#include "Window/Window.h"
+#include <ngf/System/TimeSpan.h>
+#include <ngf/Window/Window.h>
 
 namespace ngf {
 class Application {
@@ -17,7 +17,7 @@ protected:
   virtual void onUpdate(const TimeSpan &elapsed);
   virtual void onRender();
   virtual void onImGuiRender();
-  virtual void onEvent(SDL_Event &event);
+  virtual void onEvent(Event &event);
 
 private:
   void processEvents();
