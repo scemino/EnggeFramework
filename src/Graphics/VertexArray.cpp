@@ -10,11 +10,11 @@ VertexArray::~VertexArray() {
   glDeleteBuffers(1, &m_vao);
 }
 
-void VertexArray::bind() const {
-  glBindVertexArray(m_vao);
-}
-
-void VertexArray::unbind() {
-  glBindVertexArray(0);
+void VertexArray::bind(const VertexArray *pVertexArray) {
+  if (pVertexArray) {
+    glBindVertexArray(pVertexArray->m_vao);
+  } else {
+    glBindVertexArray(0);
+  }
 }
 }

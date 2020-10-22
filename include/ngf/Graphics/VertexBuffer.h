@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <GL/glew.h>
 
 namespace ngf {
@@ -10,20 +11,18 @@ public:
   };
 
   /// Creates a new data store for a buffer object.
-  /// \param type: Specifies the target to which the buffer object is bound.
-  explicit VertexBuffer(Type type);
+  VertexBuffer();
   ~VertexBuffer();
 
   /// Sets new data to a buffer object.
+  /// \param type: Specifies the target to which the buffer object is bound.
   /// \param size: Specifies the size in bytes of the buffer object's new data store.
   /// \param data: Specifies a pointer to data that will be copied into the data store for initialization, or nullptr if no data is to be copied.
-  void buffer(size_t size, const void *data) const;
+  void buffer(Type type, size_t size, const void *data);
 
-  void bind() const;
-  static void unbind(Type type);
+  static void bind(const VertexBuffer* pVertexBuffer);
 
 private:
-  Type m_type;
-  unsigned int m_vbo{0};
+  std::array<unsigned int,2> m_buffers{};
 };
 }

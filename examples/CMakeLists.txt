@@ -5,3 +5,4 @@ endmacro()
 
 add_ngf_example(01_window)
 add_ngf_example(02_inputs)
+add_ngf_example(03_basic_drawing)

@@ -20,10 +20,7 @@ GLenum getEnum(PrimitiveType type) {
 
 void RenderTarget::draw(const PrimitiveType primitiveType,
                         const ElementType elementType,
-                        size_t size,
-                        const Shader *pShader) {
-  if (pShader)
-    Shader::bind(pShader);
+                        size_t size) {
   GL_CHECK(glDrawElements(getEnum(primitiveType), size, static_cast<GLenum>(elementType), nullptr));
 }
 }

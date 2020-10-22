@@ -6,8 +6,7 @@ public:
   VertexArray();
   ~VertexArray();
 
-  void bind() const;
-  static void unbind();
+  static void bind(const VertexArray* pVertexArray);
 
 private:
   unsigned int m_vao{0};

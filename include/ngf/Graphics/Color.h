@@ -16,8 +16,8 @@ public:
   /// \param green Green component between [0,255]
   /// \param blue Blue component between [0,255]
   /// \param alpha Alpha component between [0,255]
-  Color(std::uint8_t red, std::uint8_t green, std::uint8_t blue,
-        std::uint8_t alpha = 255) noexcept;
+  Color(int red, int green, int blue, int alpha = 255) noexcept;
+  Color(float red, float green, float blue, float alpha = 1.0f) noexcept;
 
   /// Creates a color from a text with an hexadecimal value "#RRGGBB"
   /// \param text Text containing an hexadecimal value
@@ -30,11 +30,13 @@ public:
   static Color fromRgb(std::uint32_t color);
 
 public:
-  std::uint8_t r{0};
-  std::uint8_t g{0};
-  std::uint8_t b{0};
-  std::uint8_t a{255};
+  float r{0.0f};
+  float g{0.0f};
+  float b{0.0f};
+  float a{1.0f};
 };
+
+float *value_ptr(Color& color);
 
 /// Compares 2 colors
 /// \param left Left color operand

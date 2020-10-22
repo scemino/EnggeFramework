@@ -3,7 +3,14 @@
 
 namespace ngf {
 Color::Color(
-    std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t alpha) noexcept
+    int red, int green, int blue, int alpha) noexcept
+    : r(static_cast<float>(red) / 255.f),
+      g(static_cast<float>(green) / 255.f),
+      b(static_cast<float>(blue) / 255.f),
+      a(static_cast<float>(alpha) / 255.f) {
+}
+
+Color::Color(float red, float green, float blue, float alpha) noexcept
     : r(red), g(green), b(blue), a(alpha) {
 }
 
@@ -17,24 +24,24 @@ bool operator!=(const Color &left, const Color &right) {
 }
 
 Color operator+(const Color &left, const Color &right) {
-  return Color(std::uint8_t(std::min(int(left.r) + right.r, 255)),
-               std::uint8_t(std::min(int(left.g) + right.g, 255)),
-               std::uint8_t(std::min(int(left.b) + right.b, 255)),
-               std::uint8_t(std::min(int(left.a) + right.a, 255)));
+  return Color(std::min(left.r + right.r, 1.f),
+               std::min(left.g + right.g, 1.f),
+               std::min(left.b + right.b, 1.f),
+               std::min(left.a + right.a, 1.f));
 }
 
 Color operator-(const Color &left, const Color &right) {
-  return Color(std::uint8_t(std::max(int(left.r) - right.r, 0)),
-               std::uint8_t(std::max(int(left.g) - right.g, 0)),
-               std::uint8_t(std::max(int(left.b) - right.b, 0)),
-               std::uint8_t(std::max(int(left.a) - right.a, 0)));
+  return Color(std::max(left.r - right.r, 0.0f),
+               std::max(left.g - right.g, 0.0f),
+               std::max(left.b - right.b, 0.0f),
+               std::max(left.a - right.a, 0.0f));
 }
 
 Color operator*(const Color &left, const Color &right) {
-  return Color(std::uint8_t(int(left.r) * right.r / 255),
-               std::uint8_t(int(left.g) * right.g / 255),
-               std::uint8_t(int(left.b) * right.b / 255),
-               std::uint8_t(int(left.a) * right.a / 255));
+  return Color(left.r * right.r,
+               left.g * right.g,
+               left.b * right.b,
+               left.a * right.a);
 }
 
 Color &operator+=(Color &left, const Color &right) {
@@ -56,7 +63,13 @@ Color Color::parseHex6(const char *text) {
 
 Color Color::fromRgb(unsigned int color) {
   auto col = static_cast<unsigned int>(color);
-  Color c((col >> 16u) & 255u, (col >> 8u) & 255u, col & 255u);
+  Color c(static_cast<int>((col >> 16u) & 255u),
+          static_cast<int>((col >> 8u) & 255u),
+          static_cast<int>(col & 255u));
   return c;
+}
+
+float *value_ptr(Color &color) {
+  return &(color.r);
 }
 }

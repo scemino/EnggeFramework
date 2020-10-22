@@ -135,8 +135,7 @@ void Window::init(const WindowConfig &config) {
 }
 
 void Window::clear(const Color &color) {
-  glClearColor(
-      color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
+  glClearColor(color.r, color.g, color.b, color.a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 

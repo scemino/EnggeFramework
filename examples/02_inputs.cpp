@@ -141,6 +141,7 @@ private:
     std::ostringstream o;
     o << event;
     m_lastInput = o.str();
+    Application::onEvent(event);
   }
 
   void onImGuiRender() override {

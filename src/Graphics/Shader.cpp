@@ -98,6 +98,14 @@ Shader::Shader(const char *vertexShader, const char *fragmentShader) {
   m_program = compile(vertexShader, fragmentShader);
 }
 
+void Shader::load(const char *vertexShader, const char *fragmentShader) {
+  if (vertexShader == nullptr && fragmentShader == nullptr) {
+    return;
+  }
+
+  m_program = compile(vertexShader, fragmentShader);
+}
+
 Shader::~Shader() {
   if (m_program != 0) {
     GL_CHECK(glDeleteProgram(m_program));

@@ -24,6 +24,6 @@ enum class ElementType {
 
 class RenderTarget {
 public:
-  void draw(const PrimitiveType primitiveType, const ElementType elementType, size_t size, const Shader *pShader);
+  void draw(PrimitiveType primitiveType, ElementType elementType, size_t size);
 };
 }

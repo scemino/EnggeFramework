@@ -17,8 +17,11 @@ public:
     Fragment,
   };
 
+  Shader() = default;
   Shader(const char *vertexShader, const char *fragmentShader);
   ~Shader();
+
+  void load(const char *vertexShader, const char *fragmentShader);
 
   [[nodiscard]] unsigned int getHandle() const {
     return m_program;
@@ -38,6 +41,6 @@ private:
 
 private:
   unsigned m_program{0};
-  std::map<int, const Texture *> m_textures;
+  std::map<int, const Texture *> m_textures{};
 };
 }

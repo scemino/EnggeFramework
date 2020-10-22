@@ -1,4 +1,5 @@
 #include <ngf/Graphics/VertexBuffer.h>
+#include "GlDebug.h"
 
 namespace ngf {
 
@@ -8,27 +9,30 @@ GLenum getTarget(VertexBuffer::Type type) {
 }
 }
 
-VertexBuffer::VertexBuffer(Type type) : m_type(type) {
-  glGenBuffers(1, &m_vbo);
+VertexBuffer::VertexBuffer() {
+  GL_CHECK(glGenBuffers(2, m_buffers.data()));
 }
 
 VertexBuffer::~VertexBuffer() {
-  glDeleteBuffers(1, &m_vbo);
+  GL_CHECK(glDeleteBuffers(2, m_buffers.data()));
 }
 
-void VertexBuffer::buffer(size_t size, const void *data) const {
-  auto target = getTarget(m_type);
-  glBindBuffer(target, m_vbo);
-  glBufferData(target, size, data, GL_STATIC_DRAW);
-}
-
-void VertexBuffer::bind() const {
-  auto target = getTarget(m_type);
-  glBindBuffer(target, m_vbo);
-}
-
-void VertexBuffer::unbind(Type type) {
+void VertexBuffer::buffer(Type type, size_t size, const void *data) {
   auto target = getTarget(type);
-  glBindBuffer(target, 0);
+  auto index = type == VertexBuffer::Type::Array ? 0 : 1;
+  GL_CHECK(glBindBuffer(target, m_buffers[index]));
+  GL_CHECK(glBufferData(target, size, nullptr, GL_STATIC_DRAW));
+  GL_CHECK(glBufferSubData(target, 0, size, data));
+  GL_CHECK(glBindBuffer(target, 0));
+}
+
+void VertexBuffer::bind(const VertexBuffer *pVertexBuffer) {
+  if (pVertexBuffer) {
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, pVertexBuffer->m_buffers[0]));
+    GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pVertexBuffer->m_buffers[1]));
+  } else {
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+  }
 }
 }
