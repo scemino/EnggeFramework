@@ -6,5 +6,6 @@ namespace ngf {
 struct Vertex {
   glm::vec2 pos;
   ngf::Color color;
+  glm::vec2 texCoords;
 };
 }

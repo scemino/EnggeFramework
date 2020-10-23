@@ -11,7 +11,9 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="03 - Basic Drawing", .size={640, 480}});
+    m_window.init({.title="04 - Texture", .size={640, 480}});
+    m_texture = std::make_unique<ngf::Texture>();
+    m_texture->load("./assets/background.jpg");
   }
 
   void onRender(ngf::RenderTarget &target) override {
@@ -20,7 +22,8 @@ private:
                 m_vertices.data(),
                 m_vertices.size(),
                 Indices.data(),
-                Indices.size());
+                Indices.size(),
+                m_texture.get());
     Application::onRender(target);
   }
 
@@ -37,6 +40,7 @@ private:
       o << "Vertex #" << (i + 1);
       if (ImGui::TreeNode(o.str().c_str())) {
         ImGui::DragFloat2("Position", glm::value_ptr(m_vertices[i].pos), 0.01f, -1.0f, 1.0f);
+        ImGui::DragFloat2("Texture coordinates", glm::value_ptr(m_vertices[i].texCoords), 0.01f, 0.0f, 1.0f);
         ngf::ImGui::ColorEdit4("Color", &m_vertices[i].color);
         ImGui::TreePop();
       }
@@ -45,11 +49,12 @@ private:
   }
 
 private:
+  std::unique_ptr<ngf::Texture> m_texture;
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-1.0f, -1.0f}, .color=ngf::Colors::Red},
-                                         {.pos={1.0f, -1.0f}, .color=ngf::Colors::Green},
-                                         {.pos={1.0f, 1.0f}, .color=ngf::Colors::Blue},
-                                         {.pos={-1.0f, 1.0f}, .color=ngf::Colors::White}
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-1.0f, -1.0f}, .color=ngf::Colors::Red, .texCoords={0.0f, 0.0f}},
+                                         {.pos={1.0f, -1.0f}, .color=ngf::Colors::Green, .texCoords={1.0f, 0.0f}},
+                                         {.pos={1.0f, 1.0f}, .color=ngf::Colors::Blue, .texCoords={1.0f, 1.0f}},
+                                         {.pos={-1.0f, 1.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}}
                                         }};
   constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
 };

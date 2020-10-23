@@ -147,7 +147,7 @@ void Shader::bind(const Shader *shader) {
     for (auto &item : shader->m_textures) {
       GL_CHECK(glActiveTexture(GL_TEXTURE0 + index));
       GL_CHECK(glUniform1i(item.first, index));
-      item.second->bind();
+      Texture::bind(item.second);
       index++;
     }
 

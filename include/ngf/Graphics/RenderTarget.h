@@ -24,10 +24,12 @@ public:
             const Vertex *vertices,
             size_t sizeVertices,
             const std::uint16_t *indices,
-            size_t sizeIndices);
+            size_t sizeIndices,
+            const Texture* pTexture = nullptr);
 
 private:
   ngf::VertexArray m_vao;
   ngf::Shader m_defaultShader{};
+  ngf::Texture m_emptyTexture{};
 };
 }

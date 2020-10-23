@@ -12,6 +12,7 @@ endif ()
 
 # include
 set(NGLIB_HEADERS_DIR ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS}
+        ${PROJECT_SOURCE_DIR}/extlibs/stb
         ${PROJECT_SOURCE_DIR}/include/ngf
         ${PROJECT_SOURCE_DIR}/include/ngf/Graphics
         ${PROJECT_SOURCE_DIR}/include/ngf/Window
@@ -29,6 +30,7 @@ set(WIN_SOURCE_FILES src/Window/Window.cpp)
 set(GFX_SOURCE_FILES
         src/Graphics/Color.cpp
         src/Graphics/GlDebug.cpp
+        src/Graphics/Image.cpp
         src/Graphics/RenderTarget.cpp
         src/Graphics/Shader.cpp
         src/Graphics/Texture.cpp

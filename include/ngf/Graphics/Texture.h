@@ -1,6 +1,9 @@
 #pragma once
 #include <cassert>
 #include <GL/glew.h>
+#include <glm/vec2.hpp>
+#include <filesystem>
+#include "Image.h"
 
 namespace ngf {
 class Texture {
@@ -17,15 +20,17 @@ public:
   };
 
   explicit Texture(Type type = Type::Texture2D, Format format = Format::Rgba);
-  Texture(Format format, int width, int height, const void *data);
+  explicit Texture(const Image& image);
+  Texture(Format format, glm::uvec2 size, const void *data);
   Texture(Format format, int width, const void *data);
   ~Texture();
 
   void setSmooth(bool smooth = true);
   [[nodiscard]] bool isSmooth() const noexcept;
 
-  void setData(int width, int height, const void *data) const;
-  void bind() const;
+  void load(std::filesystem::path path);
+  void setData(glm::uvec2 size, const void *data) const;
+  static void bind(const Texture* pTexture);
 
 private:
   void updateFilters();

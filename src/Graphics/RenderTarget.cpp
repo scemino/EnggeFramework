@@ -1,10 +1,16 @@
 #include <ngf/Graphics/RenderTarget.h>
 #include <Graphics/VertexArray.h>
+#include <Graphics/Image.h>
 #include "GlDebug.h"
 
 namespace ngf {
 
 namespace {
+Image createWhitePixel() {
+  uint8_t pixel[] = {0xFF, 0xFF, 0xFF, 0xFF};
+  return Image({1, 1}, pixel);
+}
+
 enum class VertexAttributeType {
   Byte = GL_BYTE,
   Short = GL_SHORT,
@@ -32,39 +38,52 @@ GLenum getEnum(PrimitiveType type) {
   assert(false);
 }
 
-constexpr std::array<VertexAttribute, 2> attributes{{
-                                                        {"a_position", 2, VertexAttributeType::Float, false,
-                                                         offsetof(Vertex, pos)},
-                                                        {"a_color", 4, VertexAttributeType::Float, false,
-                                                         offsetof(Vertex, color)}
-                                                    }};
+constexpr size_t countPos = sizeof(glm::vec2) / sizeof(float);
+constexpr size_t countColor = sizeof(Color) / sizeof(float);
+
+constexpr std::array<VertexAttribute, 3> attributes
+    {{
+         {"a_position", countPos, VertexAttributeType::Float, false, offsetof(Vertex, pos)},
+         {"a_color", countColor, VertexAttributeType::Float, false, offsetof(Vertex, color)},
+         {"a_texCoords", countPos, VertexAttributeType::Float, false, offsetof(Vertex, texCoords)}
+     }};
 
 const char *vertexShaderSource =
-    R"(#version 100
+    R"(#version 330 core
 precision mediump float;
-attribute vec2 a_position;
-attribute vec4 a_color;
-varying vec4 v_color;
+layout (location = 0) in vec2 a_position;
+layout (location = 1) in vec4 a_color;
+layout (location = 2) in vec2 a_texCoords;
+
+out vec4 v_color;
+out vec2 v_texCoords;
 
 void main(void) {
   v_color = a_color;
+  v_texCoords = a_texCoords;
   gl_Position = vec4(a_position.xy, 0, 1);
 })";
 
 const char *fragmentShaderSource =
-    R"(#version 100
+    R"(#version 330 core
 precision mediump float;
-varying vec4 v_color;
+out vec4 FragColor;
+in vec4 v_color;
+in vec2 v_texCoords;
+
+uniform sampler2D u_texture;
 
 void main(void) {
-  gl_FragColor = v_color;
+  vec4 texColor = texture(u_texture, v_texCoords);
+  FragColor = v_color * texColor;
 }
 )";
 
 void setBuffer(const Vertex *vertices, size_t sizeVertices, const std::uint16_t *indices, size_t sizeIndices) {
   ngf::VertexBuffer buf;
-  buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * sizeof(Vertex), vertices);
-  buf.buffer(ngf::VertexBuffer::Type::Element, sizeIndices * sizeof(Vertex), indices);
+  constexpr size_t VertexSize = sizeof(Vertex);
+  buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
+  buf.buffer(ngf::VertexBuffer::Type::Element, sizeIndices * sizeof(std::uint16_t), indices);
 
   auto loc = 0;
   for (auto info : attributes) {
@@ -82,7 +101,7 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices, const std::uint16_t 
 }
 }
 
-RenderTarget::RenderTarget() {
+RenderTarget::RenderTarget() : m_emptyTexture(createWhitePixel()) {
   m_defaultShader.load(vertexShaderSource, fragmentShaderSource);
 }
 
@@ -95,9 +114,13 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const Vertex *vertices,
                         size_t sizeVertices,
                         const std::uint16_t *indices,
-                        size_t sizeIndices) {
-
+                        size_t sizeIndices,
+                        const Texture *pTexture) {
   ngf::VertexArray::bind(&m_vao);
+  if (!pTexture) {
+    pTexture = &m_emptyTexture;
+  }
+  m_defaultShader.setUniform("u_texture", *pTexture);
   setBuffer(vertices, sizeVertices, indices, sizeIndices);
 
   ngf::Shader::bind(&m_defaultShader);
