@@ -55,13 +55,17 @@ layout (location = 0) in vec2 a_position;
 layout (location = 1) in vec4 a_color;
 layout (location = 2) in vec2 a_texCoords;
 
+uniform mat3 u_transform;
+
 out vec4 v_color;
 out vec2 v_texCoords;
 
 void main(void) {
   v_color = a_color;
   v_texCoords = a_texCoords;
-  gl_Position = vec4(a_position.xy, 0, 1);
+  vec3 worldPosition = vec3(a_position, 1);
+  vec3 normalizedPosition = worldPosition * u_transform;
+  gl_Position = vec4(normalizedPosition.xy, 0, 1);
 })";
 
 const char *fragmentShaderSource =
@@ -115,12 +119,14 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         size_t sizeVertices,
                         const std::uint16_t *indices,
                         size_t sizeIndices,
-                        const Texture *pTexture) {
+                        const RenderStates &states) {
   ngf::VertexArray::bind(&m_vao);
+  const Texture *pTexture = states.texture;
   if (!pTexture) {
     pTexture = &m_emptyTexture;
   }
   m_defaultShader.setUniform("u_texture", *pTexture);
+  m_defaultShader.setUniform("u_transform", states.transform);
   setBuffer(vertices, sizeVertices, indices, sizeIndices);
 
   ngf::Shader::bind(&m_defaultShader);

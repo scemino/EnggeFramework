@@ -67,7 +67,7 @@ void Application::onExit() {
 void Application::onUpdate(const TimeSpan &) {
 }
 
-void Application::onRender(ngf::RenderTarget&) {
+void Application::onRender(ngf::RenderTarget&, const RenderStates&) {
   // Render dear imgui
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window.getNativeHandle());

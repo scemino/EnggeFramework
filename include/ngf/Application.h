@@ -2,7 +2,8 @@
 #include <string_view>
 #include <ngf/System/TimeSpan.h>
 #include <ngf/Window/Window.h>
-#include <Graphics/RenderTarget.h>
+#include <ngf/Graphics/RenderTarget.h>
+#include <ngf/Graphics/RenderStates.h>
 
 namespace ngf {
 class Application {
@@ -16,7 +17,7 @@ protected:
   virtual void onInit();
   virtual void onExit();
   virtual void onUpdate(const TimeSpan &elapsed);
-  virtual void onRender(ngf::RenderTarget& target);
+  virtual void onRender(ngf::RenderTarget& target, const RenderStates& states = {});
   virtual void onImGuiRender();
   virtual void onEvent(Event &event);
 

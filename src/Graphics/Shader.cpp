@@ -130,6 +130,12 @@ void Shader::setUniform(std::string_view name, const glm::mat4 &value) const {
   GL_CHECK(glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value)));
 }
 
+void Shader::setUniform(std::string_view name, const glm::mat3 &value) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(value)));
+}
+
 void Shader::setUniform(std::string_view name, const Texture &tex) {
   Guard guard(*this);
   int loc = getUniformLocation(name);

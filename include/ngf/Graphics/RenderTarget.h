@@ -3,6 +3,7 @@
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/Vertex.h>
 #include <ngf/Graphics/VertexArray.h>
+#include "RenderStates.h"
 
 namespace ngf {
 enum class PrimitiveType {
@@ -25,7 +26,7 @@ public:
             size_t sizeVertices,
             const std::uint16_t *indices,
             size_t sizeIndices,
-            const Texture* pTexture = nullptr);
+            const RenderStates& = {});
 
 private:
   ngf::VertexArray m_vao;

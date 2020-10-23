@@ -3,6 +3,7 @@
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Graphics/Vertex.h>
+#include <ngf/Graphics/Transform.h>
 #include <imgui.h>
 #include <memory>
 #include <array>
@@ -16,14 +17,17 @@ private:
     m_texture->load("./assets/background.jpg");
   }
 
-  void onRender(ngf::RenderTarget &target) override {
+  void onRender(ngf::RenderTarget &target, const ngf::RenderStates& states) override {
     target.clear(ngf::Colors::Lightblue);
+    ngf::RenderStates s;
+    s.transform *= m_transform.getTransform();
+    s.texture = m_texture.get();
     target.draw(m_primitiveType,
                 m_vertices.data(),
                 m_vertices.size(),
                 Indices.data(),
                 Indices.size(),
-                m_texture.get());
+                s);
     Application::onRender(target);
   }
 
@@ -34,6 +38,23 @@ private:
     auto primitiveIndex = static_cast<int>(m_primitiveType);
     if (ImGui::Combo("Primitive type", &primitiveIndex, items)) {
       m_primitiveType = static_cast<ngf::PrimitiveType>(primitiveIndex);
+    }
+
+    auto origin = m_transform.getOrigin();
+    if (ImGui::DragFloat2("Origin", glm::value_ptr(origin), 0.1f)) {
+      m_transform.setOrigin(origin);
+    }
+    auto pos = m_transform.getPosition();
+    if (ImGui::DragFloat2("Position", glm::value_ptr(pos), 0.1f)) {
+      m_transform.setPosition(pos);
+    }
+    auto rotation = m_transform.getRotation();
+    if (ImGui::DragFloat("Rotation", &rotation, 1.f, 0, 360.0f)) {
+      m_transform.setRotation(rotation);
+    }
+    auto scale = m_transform.getScale();
+    if (ImGui::DragFloat2("Scale", glm::value_ptr(scale), 0.1f, 0.1f, 10.f)) {
+      m_transform.setScale(scale);
     }
     for (size_t i = 0; i < m_vertices.size(); ++i) {
       std::ostringstream o;
@@ -49,6 +70,7 @@ private:
   }
 
 private:
+  ngf::Transform m_transform{};
   std::unique_ptr<ngf::Texture> m_texture;
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
   std::array<ngf::Vertex, 4> m_vertices{{{.pos={-1.0f, -1.0f}, .color=ngf::Colors::Red, .texCoords={0.0f, 0.0f}},

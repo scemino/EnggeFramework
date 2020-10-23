@@ -132,7 +132,7 @@ private:
     m_window.init({.title="02_Inputs", .size={640, 480}});
   }
 
-  void onRender(ngf::RenderTarget& target) override {
+  void onRender(ngf::RenderTarget& target, const ngf::RenderStates&) override {
     target.clear(ngf::Colors::Lightblue);
     Application::onRender(target);
   }

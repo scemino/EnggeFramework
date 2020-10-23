@@ -30,6 +30,7 @@ public:
 public:
   void setUniform(std::string_view name, int value) const;
   void setAttribute(std::string_view name, const glm::vec2 &value) const;
+  void setUniform(std::string_view name, const glm::mat3 &value) const;
   void setUniform(std::string_view name, const glm::mat4 &value) const;
   void setUniform(std::string_view name, const Texture &tex);
   static void bind(const Shader *shader);
