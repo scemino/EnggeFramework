@@ -1,6 +1,8 @@
 #pragma once
-#include "VertexBuffer.h"
-#include "Shader.h"
+#include <ngf/Graphics/VertexBuffer.h>
+#include <ngf/Graphics/Shader.h>
+#include <ngf/Graphics/Vertex.h>
+#include <ngf/Graphics/VertexArray.h>
 
 namespace ngf {
 enum class PrimitiveType {
@@ -13,17 +15,19 @@ enum class PrimitiveType {
   Triangles,
 };
 
-enum class ElementType {
-  Byte = GL_BYTE,
-  UnsignedByte = GL_UNSIGNED_BYTE,
-  Short = GL_SHORT,
-  UnsignedShort = GL_UNSIGNED_SHORT,
-  Int = GL_INT,
-  UnsignedInt = GL_UNSIGNED_INT,
-};
-
 class RenderTarget {
 public:
-  void draw(PrimitiveType primitiveType, ElementType elementType, size_t size);
+  RenderTarget();
+
+  void clear(const Color &color);
+  void draw(PrimitiveType primitiveType,
+            const Vertex *vertices,
+            size_t sizeVertices,
+            const std::uint16_t *indices,
+            size_t sizeIndices);
+
+private:
+  ngf::VertexArray m_vao;
+  ngf::Shader m_defaultShader{};
 };
 }

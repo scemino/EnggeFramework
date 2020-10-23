@@ -11,8 +11,10 @@ public:
   };
 
   /// Creates a new data store for a buffer object.
-  VertexBuffer();
-  ~VertexBuffer();
+  VertexBuffer() noexcept;
+  ~VertexBuffer() noexcept;
+  VertexBuffer(const VertexBuffer&) = delete;
+  VertexBuffer& operator=(const VertexBuffer&) = delete;
 
   /// Sets new data to a buffer object.
   /// \param type: Specifies the target to which the buffer object is bound.

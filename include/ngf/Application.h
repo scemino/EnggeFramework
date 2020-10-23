@@ -2,6 +2,7 @@
 #include <string_view>
 #include <ngf/System/TimeSpan.h>
 #include <ngf/Window/Window.h>
+#include <Graphics/RenderTarget.h>
 
 namespace ngf {
 class Application {
@@ -15,7 +16,7 @@ protected:
   virtual void onInit();
   virtual void onExit();
   virtual void onUpdate(const TimeSpan &elapsed);
-  virtual void onRender();
+  virtual void onRender(ngf::RenderTarget& target);
   virtual void onImGuiRender();
   virtual void onEvent(Event &event);
 
@@ -23,10 +24,13 @@ private:
   void processEvents();
 
 protected:
-  std::string m_title;
   Window m_window;
+
+private:
+  std::string m_title;
   bool m_done{false};
   float m_fps{0};
   int m_frames{0};
+  std::unique_ptr<RenderTarget> m_renderTarget;
 };
 }

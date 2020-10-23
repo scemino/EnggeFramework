@@ -9,11 +9,11 @@ GLenum getTarget(VertexBuffer::Type type) {
 }
 }
 
-VertexBuffer::VertexBuffer() {
+VertexBuffer::VertexBuffer() noexcept {
   GL_CHECK(glGenBuffers(2, m_buffers.data()));
 }
 
-VertexBuffer::~VertexBuffer() {
+VertexBuffer::~VertexBuffer() noexcept {
   GL_CHECK(glDeleteBuffers(2, m_buffers.data()));
 }
 
@@ -23,7 +23,6 @@ void VertexBuffer::buffer(Type type, size_t size, const void *data) {
   GL_CHECK(glBindBuffer(target, m_buffers[index]));
   GL_CHECK(glBufferData(target, size, nullptr, GL_STATIC_DRAW));
   GL_CHECK(glBufferSubData(target, 0, size, data));
-  GL_CHECK(glBindBuffer(target, 0));
 }
 
 void VertexBuffer::bind(const VertexBuffer *pVertexBuffer) {

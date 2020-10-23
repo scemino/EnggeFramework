@@ -9,9 +9,9 @@ private:
     m_window.init({.title="01_Window", .size={640, 480}});
   }
 
-  void onRender() override {
-    m_window.clear(m_color);
-    Application::onRender();
+  void onRender(ngf::RenderTarget& target) override {
+    target.clear(m_color);
+    Application::onRender(target);
   }
 
   void onImGuiRender() override {

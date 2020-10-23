@@ -16,6 +16,7 @@ Application::~Application() = default;
 
 void Application::run() {
   onInit();
+  m_renderTarget = std::make_unique<ngf::RenderTarget>();
   processEvents();
 
   int frames = 0;
@@ -38,9 +39,8 @@ void Application::run() {
       frames = 0;
     }
 
-    onRender();
+    onRender(*m_renderTarget);
     frames++;
-    m_window.display();
   }
 
   onExit();
@@ -67,7 +67,7 @@ void Application::onExit() {
 void Application::onUpdate(const TimeSpan &) {
 }
 
-void Application::onRender() {
+void Application::onRender(ngf::RenderTarget&) {
   // Render dear imgui
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window.getNativeHandle());
@@ -80,6 +80,7 @@ void Application::onRender() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   m_frames++;
+  m_window.display();
 }
 
 void Application::onImGuiRender() {

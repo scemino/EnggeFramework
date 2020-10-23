@@ -21,7 +21,6 @@ public:
   ~Window();
 
   void init(const WindowConfig &config);
-  void clear(const Color &color = Colors::Black);
   void display();
   bool pollEvent(Event &event);
 
