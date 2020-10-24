@@ -14,11 +14,6 @@ void Sprite::draw(RenderTarget &target, const RenderStates &states) {
 }
 
 void Sprite::updateGeometry() {
-  m_vertices[0].texCoords = {m_textureRect.min.x, m_textureRect.max.y};
-  m_vertices[1].texCoords = m_textureRect.max;
-  m_vertices[2].texCoords = {m_textureRect.max.x, m_textureRect.min.y};
-  m_vertices[3].texCoords = m_textureRect.min;
-
   if (!m_texture)
     return;
 
@@ -29,7 +24,19 @@ void Sprite::updateGeometry() {
   m_vertices[1].pos = {spriteSize.x, 0.0f};
   m_vertices[2].pos = {spriteSize.x, spriteSize.y};
   m_vertices[3].pos = {0.f, spriteSize.y};
+  m_vertices[0].texCoords = {m_textureRect.min.x, m_textureRect.max.y};
+  m_vertices[1].texCoords = m_textureRect.max;
+  m_vertices[2].texCoords = {m_textureRect.max.x, m_textureRect.min.y};
+  m_vertices[3].texCoords = m_textureRect.min;
 
   m_bounds = frect::fromPositionSize({0.0f, 0.0f}, spriteSize);
+}
+
+void Sprite::setColor(const Color &color) {
+  std::for_each(m_vertices.begin(), m_vertices.end(), [color](auto &vertex) { vertex.color = color; });
+}
+
+Color Sprite::getColor() const {
+  return m_vertices[0].color;
 }
 }

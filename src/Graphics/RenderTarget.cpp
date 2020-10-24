@@ -39,6 +39,31 @@ GLenum getEnum(PrimitiveType type) {
   assert(false);
 }
 
+GLenum getEnum(BlendEquation equation) {
+  switch (equation) {
+  case BlendEquation::Add:return GL_FUNC_ADD;
+  case BlendEquation::Subtract:return GL_FUNC_SUBTRACT;
+  case BlendEquation::ReverseSubtract:return GL_FUNC_REVERSE_SUBTRACT;
+  }
+  assert(false);
+}
+
+GLenum getEnum(BlendFactor func) {
+  switch (func) {
+  case BlendFactor::Zero:return GL_ZERO;
+  case BlendFactor::One:return GL_ONE;
+  case BlendFactor::SrcColor:return GL_SRC_COLOR;
+  case BlendFactor::OneMinusSrcColor:return GL_ONE_MINUS_SRC_COLOR;
+  case BlendFactor::DstColor:return GL_DST_COLOR;
+  case BlendFactor::OneMinusDstColor:return GL_ONE_MINUS_DST_COLOR;
+  case BlendFactor::SrcAlpha:return GL_SRC_ALPHA;
+  case BlendFactor::OneMinusSrcAlpha:return GL_ONE_MINUS_SRC_ALPHA;
+  case BlendFactor::DstAlpha:return GL_DST_ALPHA;
+  case BlendFactor::OneMinusDstAlpha:return GL_ONE_MINUS_DST_ALPHA;
+  }
+  assert(false);
+}
+
 constexpr size_t countPos = sizeof(glm::vec2) / sizeof(float);
 constexpr size_t countColor = sizeof(Color) / sizeof(float);
 
@@ -122,13 +147,17 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const std::uint16_t *indices,
                         size_t sizeIndices,
                         const RenderStates &states) {
+
   ngf::VertexArray::bind(&m_vao);
+
+  // set texture
   const Texture *pTexture = states.texture;
   if (!pTexture) {
     pTexture = &m_emptyTexture;
   }
   m_defaultShader.setUniform("u_texture", *pTexture);
 
+  // set transform
   Transform viewTrsf;
   glm::vec2 size = m_size;
   glm::vec2 factors = 2.0f / size;
@@ -136,13 +165,25 @@ void RenderTarget::draw(PrimitiveType primitiveType,
 
   auto transform = viewTrsf.getTransform() * states.transform;
   m_defaultShader.setUniform("u_transform", transform);
+
+  // set blending
+  GL_CHECK(glEnable(GL_BLEND));
+  GL_CHECK(glBlendEquationSeparate(getEnum(states.mode.colorEquation), getEnum(states.mode.alphaEquation)));
+  GL_CHECK(glBlendFuncSeparate(
+      getEnum(states.mode.colorSrcFactor), getEnum(states.mode.colorDstFactor),
+      getEnum(states.mode.alphaSrcFactor), getEnum(states.mode.alphaDstFactor)
+  ));
+
+  // set vertices and indices
   setBuffer(vertices, sizeVertices, indices, sizeIndices);
 
   ngf::Shader::bind(&m_defaultShader);
   ngf::VertexArray::bind(&m_vao);
 
+  // draw
   GL_CHECK(glDrawElements(getEnum(primitiveType), sizeIndices, GL_UNSIGNED_SHORT, nullptr));
 
+  GL_CHECK(glDisable(GL_BLEND));
   ngf::VertexArray::bind(nullptr);
   ngf::Shader::bind(nullptr);
 }

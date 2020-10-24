@@ -38,6 +38,9 @@ public:
     updateGeometry();
   }
 
+  void setColor(const Color &color);
+  Color getColor() const;
+
   Transform &getTransform() { return m_transform; }
 
   void draw(RenderTarget &target, const RenderStates &states);

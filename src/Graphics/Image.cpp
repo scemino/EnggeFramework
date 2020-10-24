@@ -31,17 +31,17 @@ bool Image::loadFromMemory(const void *data, std::size_t dataSize) {
   int height = 0;
   int channels = 0;
   const auto *buffer = static_cast<const unsigned char *>(data);
-  auto *ptr = stbi_load_from_memory(buffer, static_cast<int>(dataSize), &width, &height, &channels, STBI_default);
+  auto *ptr = stbi_load_from_memory(buffer, static_cast<int>(dataSize), &width, &height, &channels, STBI_rgb_alpha);
 
   if (ptr) {
     // Assign the image properties
     m_size.x = width;
     m_size.y = height;
-    m_bpp = channels;
+    m_bpp = 4;
 
     if (width && height) {
       // Copy the loaded pixels to the pixel buffer
-      m_pixels.resize(width * height * channels);
+      m_pixels.resize(width * height * 4);
       std::copy_n(ptr, m_pixels.size(), m_pixels.data());
     }
 
