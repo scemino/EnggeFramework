@@ -17,7 +17,7 @@ private:
     m_texture->load("./assets/background.jpg");
   }
 
-  void onRender(ngf::RenderTarget &target, const ngf::RenderStates &states) override {
+  void onRender(ngf::RenderTarget &target) override {
     target.clear(ngf::Colors::Lightblue);
     ngf::RenderStates s;
     s.transform *= m_transform.getTransform();
@@ -73,10 +73,10 @@ private:
   ngf::Transform m_transform{};
   std::unique_ptr<ngf::Texture> m_texture;
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red, .texCoords={0.0f, 1.0f}},
-                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Green, .texCoords={1.0f, 1.0f}},
-                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Blue, .texCoords={1.0f, 0.0f}},
-                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}}
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red, .texCoords={0.0f, 0.0f}},
+                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Green, .texCoords={1.0f, 0.0f}},
+                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Blue, .texCoords={1.0f, 1.0f}},
+                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}}
                                         }};
   constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
 };

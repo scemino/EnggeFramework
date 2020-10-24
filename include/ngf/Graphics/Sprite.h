@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <ngf/Graphics/Anchor.h>
 #include <ngf/Graphics/Rect.h>
 #include <ngf/Graphics/RenderStates.h>
 #include <ngf/Graphics/RenderTarget.h>
@@ -41,9 +42,13 @@ public:
   void setColor(const Color &color);
   Color getColor() const;
 
+  frect getLocalBounds() const {
+    return m_bounds;
+  }
   Transform &getTransform() { return m_transform; }
+  void setAnchor(Anchor anchor);
 
-  void draw(RenderTarget &target, const RenderStates &states);
+  void draw(RenderTarget &target, const RenderStates &states = {});
 
 private:
   void updateGeometry();

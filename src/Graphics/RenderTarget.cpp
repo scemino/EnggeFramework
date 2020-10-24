@@ -161,9 +161,9 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   Transform viewTrsf;
   glm::vec2 size = m_size;
   glm::vec2 factors = 2.0f / size;
-  viewTrsf.setScale(factors);
+  viewTrsf.setScale({factors.x, -factors.y});
 
-  auto transform = viewTrsf.getTransform() * states.transform;
+  auto transform = states.transform * viewTrsf.getTransform();
   m_defaultShader.setUniform("u_transform", transform);
 
   // set blending
