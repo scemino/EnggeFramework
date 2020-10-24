@@ -33,6 +33,7 @@ set(GFX_SOURCE_FILES
         src/Graphics/Image.cpp
         src/Graphics/RenderTarget.cpp
         src/Graphics/Shader.cpp
+        src/Graphics/Sprite.cpp
         src/Graphics/Texture.cpp
         src/Graphics/Transform.cpp
         src/Graphics/VertexArray.cpp

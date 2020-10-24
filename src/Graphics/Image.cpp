@@ -24,49 +24,38 @@ bool Image::load(std::istream &is) {
 }
 
 bool Image::loadFromMemory(const void *data, std::size_t dataSize) {
-  // Check input parameters
-  if (data && dataSize) {
-    // Clear the array (just in case)
-    m_pixels.clear();
+  m_pixels.clear();
 
-    // Load the image and get a pointer to the pixels in memory
-    int width = 0;
-    int height = 0;
-    int channels = 0;
-    const auto *buffer = static_cast<const unsigned char *>(data);
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *ptr =
-        stbi_load_from_memory(buffer, static_cast<int>(dataSize), &width,
-                              &height, &channels, STBI_default);
+  // Load the image and get a pointer to the pixels in memory
+  int width = 0;
+  int height = 0;
+  int channels = 0;
+  const auto *buffer = static_cast<const unsigned char *>(data);
+  auto *ptr = stbi_load_from_memory(buffer, static_cast<int>(dataSize), &width, &height, &channels, STBI_default);
 
-    if (ptr) {
-      // Assign the image properties
-      m_size.x = width;
-      m_size.y = height;
-      m_bpp = channels;
+  if (ptr) {
+    // Assign the image properties
+    m_size.x = width;
+    m_size.y = height;
+    m_bpp = channels;
 
-      if (width && height) {
-        // Copy the loaded pixels to the pixel buffer
-        m_pixels.resize(width * height * channels);
-        memcpy(&m_pixels[0], ptr, m_pixels.size());
-      }
-
-      // Free the loaded pixels (they are now in our own pixel buffer)
-      stbi_image_free(ptr);
-
-      return true;
-    } else {
-      // Error, failed to load the image
-      std::cerr << "Failed to load image from memory. Reason: "
-                << stbi_failure_reason() << std::endl;
-
-      return false;
+    if (width && height) {
+      // Copy the loaded pixels to the pixel buffer
+      m_pixels.resize(width * height * channels);
+      std::copy_n(ptr, m_pixels.size(), m_pixels.data());
     }
-  } else {
-    std::cerr << "Failed to load image from memory, no data provided"
-              << std::endl;
-    return false;
+
+    // Free the loaded pixels (they are now in our own pixel buffer)
+    stbi_image_free(ptr);
+
+    return true;
   }
+
+  // Error, failed to load the image
+  std::cerr << "Failed to load image from memory. Reason: "
+            << stbi_failure_reason() << std::endl;
+
+  return false;
 }
 
 glm::uvec2 Image::getSize() const {

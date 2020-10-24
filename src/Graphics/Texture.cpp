@@ -29,18 +29,27 @@ Texture::Texture(Type type, Format format)
   GL_CHECK(glGenTextures(1, &m_img_tex));
 }
 
-Texture::Texture(const Image& image){
+Texture::Texture(const Image &image) {
   m_type = Type::Texture2D;
-  m_format = image.getBpp() != 4 ? ngf::Texture::Format::Rgb:ngf::Texture::Format::Rgba;
+  m_format = image.getBpp() != 4 ? ngf::Texture::Format::Rgb : ngf::Texture::Format::Rgba;
   auto type = getGlType(m_type);
   GL_CHECK(glBindTexture(type, m_img_tex));
   auto glFormat = getGlFormat(m_format);
-  glTexImage2D(GL_TEXTURE_2D, 0, glFormat, image.getSize().x, image.getSize().y, 0, glFormat, GL_UNSIGNED_BYTE, nullptr);
+  m_size = image.getSize();
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               glFormat,
+               image.getSize().x,
+               image.getSize().y,
+               0,
+               glFormat,
+               GL_UNSIGNED_BYTE,
+               nullptr);
   setData(image.getSize(), image.getPixelsPtr());
 }
 
 Texture::Texture(Format format, glm::uvec2 size, const void *data)
-    : m_type(Type::Texture2D), m_format{format} {
+    : m_type(Type::Texture2D), m_format{format}, m_size{size} {
   GL_CHECK(glGenTextures(1, &m_img_tex));
   bind(this);
   auto glFormat = getGlFormat(format);
@@ -49,7 +58,7 @@ Texture::Texture(Format format, glm::uvec2 size, const void *data)
 }
 
 Texture::Texture(Format format, const int width, const void *data)
-    : m_type(Type::Texture1D), m_format{format} {
+    : m_type(Type::Texture1D), m_format{format}, m_size{width, 1} {
   GL_CHECK(glGenTextures(1, &m_img_tex));
   bind(this);
   auto glFormat = getGlFormat(format);
@@ -57,11 +66,16 @@ Texture::Texture(Format format, const int width, const void *data)
   updateFilters();
 }
 
+Texture::Texture(const std::filesystem::path& path){
+  GL_CHECK(glGenTextures(1, &m_img_tex));
+  load(path);
+}
+
 Texture::~Texture() {
   GL_CHECK(glDeleteTextures(1, &m_img_tex));
 }
 
-void Texture::load(std::filesystem::path path) {
+void Texture::load(const std::filesystem::path& path) {
   ngf::Image img;
   std::ifstream is(path, std::ios::binary);
   img.load(is);
@@ -91,8 +105,9 @@ bool Texture::isSmooth() const noexcept {
   return m_smooth;
 }
 
-void Texture::setData(glm::uvec2 size, const void *data) const {
+void Texture::setData(glm::uvec2 size, const void *data) {
   auto type = getGlType(m_type);
+  m_size = size;
   GL_CHECK(glBindTexture(type, m_img_tex));
   if (m_type == Type::Texture2D) {
     GL_CHECK(glTexSubImage2D(type, 0, 0, 0, size.x, size.y, getGlFormat(m_format), GL_UNSIGNED_BYTE, data));

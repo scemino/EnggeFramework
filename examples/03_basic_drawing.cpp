@@ -36,7 +36,7 @@ private:
       std::ostringstream o;
       o << "Vertex #" << (i + 1);
       if (ImGui::TreeNode(o.str().c_str())) {
-        ImGui::DragFloat2("Position", glm::value_ptr(m_vertices[i].pos), 0.01f, -1.0f, 1.0f);
+        ImGui::DragFloat2("Position", glm::value_ptr(m_vertices[i].pos), 1.f, -320.0f, 320.0f);
         ngf::ImGui::ColorEdit4("Color", &m_vertices[i].color);
         ImGui::TreePop();
       }
@@ -46,10 +46,10 @@ private:
 
 private:
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-1.0f, -1.0f}, .color=ngf::Colors::Red},
-                                         {.pos={1.0f, -1.0f}, .color=ngf::Colors::Green},
-                                         {.pos={1.0f, 1.0f}, .color=ngf::Colors::Blue},
-                                         {.pos={-1.0f, 1.0f}, .color=ngf::Colors::White}
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red},
+                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Green},
+                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Blue},
+                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White}
                                         }};
   constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
 };

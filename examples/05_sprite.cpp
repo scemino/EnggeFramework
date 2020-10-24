@@ -1,9 +1,9 @@
 #include <ngf/Application.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Shader.h>
+#include <ngf/Graphics/Sprite.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Graphics/Vertex.h>
-#include <ngf/Graphics/Transform.h>
 #include <imgui.h>
 #include <memory>
 #include <array>
@@ -12,15 +12,18 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="04 - Texture", .size={640, 480}});
-    m_texture = std::make_unique<ngf::Texture>();
-    m_texture->load("./assets/background.jpg");
+    m_window.init({.title="05 - Sprite", .size={640, 480}});
+
+    m_texture = std::make_unique<ngf::Texture>("./assets/background.jpg");
+    m_textureCharacter = std::make_unique<ngf::Texture>("./assets/characters.png");
+
+    auto rect = ngf::irect::fromMinMax({6, 73}, {23, 95});
+    m_sprite = std::make_unique<ngf::Sprite>(*m_textureCharacter, rect);
   }
 
   void onRender(ngf::RenderTarget &target, const ngf::RenderStates &states) override {
     target.clear(ngf::Colors::Lightblue);
     ngf::RenderStates s;
-    s.transform *= m_transform.getTransform();
     s.texture = m_texture.get();
     target.draw(m_primitiveType,
                 m_vertices.data(),
@@ -28,6 +31,7 @@ private:
                 Indices.data(),
                 Indices.size(),
                 s);
+    m_sprite->draw(target, states);
     Application::onRender(target);
   }
 
@@ -40,27 +44,28 @@ private:
       m_primitiveType = static_cast<ngf::PrimitiveType>(primitiveIndex);
     }
 
-    auto origin = m_transform.getOrigin();
+    auto &trsf = m_sprite->getTransform();
+    auto origin = trsf.getOrigin();
     if (ImGui::DragFloat2("Origin", glm::value_ptr(origin), 0.1f)) {
-      m_transform.setOrigin(origin);
+      trsf.setOrigin(origin);
     }
-    auto pos = m_transform.getPosition();
+    auto pos = trsf.getPosition();
     if (ImGui::DragFloat2("Position", glm::value_ptr(pos), 0.1f)) {
-      m_transform.setPosition(pos);
+      trsf.setPosition(pos);
     }
-    auto rotation = m_transform.getRotation();
-    if (ImGui::DragFloat("Rotation", &rotation, 1.f, 0, 360.0f)) {
-      m_transform.setRotation(rotation);
+    auto rotation = trsf.getRotation();
+    if (ImGui::DragFloat("Rotation", &rotation, 1.f, -360, 360.0f)) {
+      trsf.setRotation(rotation);
     }
-    auto scale = m_transform.getScale();
+    auto scale = trsf.getScale();
     if (ImGui::DragFloat2("Scale", glm::value_ptr(scale), 0.1f, 0.1f, 10.f)) {
-      m_transform.setScale(scale);
+      trsf.setScale(scale);
     }
     for (size_t i = 0; i < m_vertices.size(); ++i) {
       std::ostringstream o;
       o << "Vertex #" << (i + 1);
       if (ImGui::TreeNode(o.str().c_str())) {
-        ImGui::DragFloat2("Position", glm::value_ptr(m_vertices[i].pos), 1.f, -320.0f, 320.0f);
+        ImGui::DragFloat2("Position", glm::value_ptr(m_vertices[i].pos), 0.01f, -320.0f, 320.0f);
         ImGui::DragFloat2("Texture coordinates", glm::value_ptr(m_vertices[i].texCoords), 0.01f, 0.0f, 1.0f);
         ngf::ImGui::ColorEdit4("Color", &m_vertices[i].color);
         ImGui::TreePop();
@@ -70,8 +75,9 @@ private:
   }
 
 private:
-  ngf::Transform m_transform{};
   std::unique_ptr<ngf::Texture> m_texture;
+  std::unique_ptr<ngf::Texture> m_textureCharacter;
+  std::unique_ptr<ngf::Sprite> m_sprite;
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
   std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red, .texCoords={0.0f, 1.0f}},
                                          {.pos={320.0f, -240.0f}, .color=ngf::Colors::Green, .texCoords={1.0f, 1.0f}},

@@ -1,6 +1,7 @@
 #include <ngf/Graphics/RenderTarget.h>
 #include <Graphics/VertexArray.h>
 #include <Graphics/Image.h>
+#include <Graphics/Transform.h>
 #include "GlDebug.h"
 
 namespace ngf {
@@ -105,7 +106,8 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices, const std::uint16_t 
 }
 }
 
-RenderTarget::RenderTarget() : m_emptyTexture(createWhitePixel()) {
+RenderTarget::RenderTarget(glm::uvec2 size)
+    : m_size(size), m_emptyTexture(createWhitePixel()) {
   m_defaultShader.load(vertexShaderSource, fragmentShaderSource);
 }
 
@@ -126,7 +128,14 @@ void RenderTarget::draw(PrimitiveType primitiveType,
     pTexture = &m_emptyTexture;
   }
   m_defaultShader.setUniform("u_texture", *pTexture);
-  m_defaultShader.setUniform("u_transform", states.transform);
+
+  Transform viewTrsf;
+  glm::vec2 size = m_size;
+  glm::vec2 factors = 2.0f / size;
+  viewTrsf.setScale(factors);
+
+  auto transform = viewTrsf.getTransform() * states.transform;
+  m_defaultShader.setUniform("u_transform", transform);
   setBuffer(vertices, sizeVertices, indices, sizeIndices);
 
   ngf::Shader::bind(&m_defaultShader);

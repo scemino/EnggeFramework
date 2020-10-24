@@ -18,7 +18,7 @@ enum class PrimitiveType {
 
 class RenderTarget {
 public:
-  RenderTarget();
+  explicit RenderTarget(glm::uvec2 size);
 
   void clear(const Color &color);
   void draw(PrimitiveType primitiveType,
@@ -29,6 +29,7 @@ public:
             const RenderStates& = {});
 
 private:
+  glm::uvec2 m_size;
   ngf::VertexArray m_vao;
   ngf::Shader m_defaultShader{};
   ngf::Texture m_emptyTexture{};

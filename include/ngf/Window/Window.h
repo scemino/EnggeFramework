@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <SDL.h>
-#include <glm/ext/vector_int2.hpp>
+#include <glm/vec2.hpp>
 #include <ngf/Graphics/Color.h>
 #include <ngf/Graphics/Colors.h>
 #include <ngf/Window/Event.h>
@@ -35,6 +35,8 @@ public:
 
   void setWindowResizable(bool resizable);
   [[nodiscard]] bool isWindowResizable() const;
+
+  glm::uvec2 getSize() const;
 
   SDL_Window *getNativeHandle() {
     return m_window;

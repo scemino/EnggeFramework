@@ -260,4 +260,11 @@ bool Window::isWindowResizable() const {
   return (flags & SDL_WINDOW_RESIZABLE) != 0;
 }
 
+glm::uvec2 Window::getSize() const {
+  int width;
+  int height;
+  SDL_GetWindowSize(m_window, &width, &height);
+  return glm::uvec2(width, height);
+}
+
 }
