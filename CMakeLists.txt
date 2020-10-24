@@ -28,6 +28,8 @@ set(SYS_SOURCE_FILES
         src/System/Util.cpp)
 set(WIN_SOURCE_FILES src/Window/Window.cpp)
 set(GFX_SOURCE_FILES
+        src/Graphics/AnimatedSprite.cpp
+        src/Graphics/Animation.cpp
         src/Graphics/Color.cpp
         src/Graphics/GlDebug.cpp
         src/Graphics/Image.cpp

@@ -39,12 +39,28 @@ public:
     updateGeometry();
   }
 
+  void setTexture(const Texture &texture, bool resetRect = false) {
+    m_texture = &texture;
+    if (resetRect) {
+      m_textureRect = frect::fromPositionSize({0.0f, 0.0f}, {1.0f, 1.0f});
+    }
+    updateGeometry();
+  }
+
+  void setTextureRect(irect rect) {
+    if (!m_texture)
+      return;
+    m_textureRect = normalize(*m_texture, rect);
+    updateGeometry();
+  }
+
   void setColor(const Color &color);
   Color getColor() const;
 
   frect getLocalBounds() const {
     return m_bounds;
   }
+
   Transform &getTransform() { return m_transform; }
   void setAnchor(Anchor anchor);
 
