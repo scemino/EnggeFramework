@@ -15,7 +15,7 @@ public:
     return Rect<T>(min, max);
   }
 
-  static constexpr Rect<T> fromPositionSize(vec position, vec size) noexcept {
+    static constexpr Rect<T> fromPositionSize(vec position, vec size) noexcept {
     return Rect<T>(position, position + size);
   }
 
@@ -53,6 +53,14 @@ public:
 
   constexpr vec getCenter() const noexcept {
     return min + (max - min) / static_cast<T>(2);
+  }
+
+  constexpr T getWidth() const noexcept {
+    return this->max.x - this->min.x;
+  }
+
+  constexpr T getHeight() const noexcept {
+    return this->max.y - this->min.y;
   }
 
 private:

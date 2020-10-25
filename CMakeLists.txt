@@ -31,11 +31,13 @@ set(GFX_SOURCE_FILES
         src/Graphics/AnimatedSprite.cpp
         src/Graphics/Animation.cpp
         src/Graphics/Color.cpp
+        src/Graphics/FntFont.cpp
         src/Graphics/GlDebug.cpp
         src/Graphics/Image.cpp
         src/Graphics/RenderTarget.cpp
         src/Graphics/Shader.cpp
         src/Graphics/Sprite.cpp
+        src/Graphics/Text.cpp
         src/Graphics/Texture.cpp
         src/Graphics/Transform.cpp
         src/Graphics/VertexArray.cpp

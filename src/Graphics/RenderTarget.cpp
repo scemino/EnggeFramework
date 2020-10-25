@@ -129,6 +129,26 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices, const std::uint16_t 
   }
   VertexArray::bind(nullptr);
 }
+
+void setBuffer(const Vertex *vertices, size_t sizeVertices) {
+  ngf::VertexBuffer buf;
+  constexpr size_t VertexSize = sizeof(Vertex);
+  buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
+
+  auto loc = 0;
+  for (auto info : attributes) {
+    glEnableVertexAttribArray(loc);
+    const void *pointer = reinterpret_cast<const void *>(info.offset);
+    glVertexAttribPointer(loc,
+                          info.size,
+                          static_cast<GLenum>(info.type),
+                          info.normalized ? GL_TRUE : GL_FALSE,
+                          sizeof(Vertex),
+                          pointer);
+    loc++;
+  }
+  VertexArray::bind(nullptr);
+}
 }
 
 RenderTarget::RenderTarget(glm::uvec2 size)
@@ -182,6 +202,51 @@ void RenderTarget::draw(PrimitiveType primitiveType,
 
   // draw
   GL_CHECK(glDrawElements(getEnum(primitiveType), sizeIndices, GL_UNSIGNED_SHORT, nullptr));
+
+  GL_CHECK(glDisable(GL_BLEND));
+  ngf::VertexArray::bind(nullptr);
+  ngf::Shader::bind(nullptr);
+}
+
+void RenderTarget::draw(PrimitiveType primitiveType,
+                        const Vertex *vertices,
+                        size_t sizeVertices,
+                        const RenderStates &states) {
+
+  ngf::VertexArray::bind(&m_vao);
+
+  // set texture
+  const Texture *pTexture = states.texture;
+  if (!pTexture) {
+    pTexture = &m_emptyTexture;
+  }
+  m_defaultShader.setUniform("u_texture", *pTexture);
+
+  // set transform
+  Transform viewTrsf;
+  glm::vec2 size = m_size;
+  glm::vec2 factors = 2.0f / size;
+  viewTrsf.setScale({factors.x, -factors.y});
+
+  auto transform = states.transform * viewTrsf.getTransform();
+  m_defaultShader.setUniform("u_transform", transform);
+
+  // set blending
+  GL_CHECK(glEnable(GL_BLEND));
+  GL_CHECK(glBlendEquationSeparate(getEnum(states.mode.colorEquation), getEnum(states.mode.alphaEquation)));
+  GL_CHECK(glBlendFuncSeparate(
+      getEnum(states.mode.colorSrcFactor), getEnum(states.mode.colorDstFactor),
+      getEnum(states.mode.alphaSrcFactor), getEnum(states.mode.alphaDstFactor)
+  ));
+
+  // set vertices and indices
+  setBuffer(vertices, sizeVertices);
+
+  ngf::Shader::bind(&m_defaultShader);
+  ngf::VertexArray::bind(&m_vao);
+
+  // draw
+  GL_CHECK(glDrawArrays(getEnum(primitiveType), 0, sizeVertices));
 
   GL_CHECK(glDisable(GL_BLEND));
   ngf::VertexArray::bind(nullptr);

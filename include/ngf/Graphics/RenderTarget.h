@@ -27,6 +27,10 @@ public:
             const std::uint16_t *indices,
             size_t sizeIndices,
             const RenderStates& = {});
+  void draw(PrimitiveType primitiveType,
+            const Vertex *vertices,
+            size_t sizeVertices,
+            const RenderStates& = {});
 
 private:
   glm::uvec2 m_size;
