@@ -3,8 +3,7 @@
 #include <ngf/Graphics/Texture.h>
 
 namespace ngf {
-class Glyph {
-public:
+struct Glyph {
   float advance{0};
   frect bounds;
   irect textureRect;

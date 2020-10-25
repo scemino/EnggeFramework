@@ -5,7 +5,7 @@
 #include <ngf/Graphics/FntFont.hpp>
 
 namespace ngf {
-constexpr char PlaceholderCharacter='?';
+constexpr char PlaceholderCharacter = '?';
 
 void CharSet::addKerning(Kerning k) {
   m_kernings.push_back(k);
@@ -35,7 +35,7 @@ const Glyph &CharSet::getChar(int id) const {
 
 FntFont::~FntFont() = default;
 
-void FntFont::load(const std::string &path, std::istream &input) {
+void FntFont::load(const std::filesystem::path &path, std::istream &input) {
   // Parse .fnt file
   // trace("FntFont: parsing \"{}\"...", path);
 
@@ -55,7 +55,7 @@ void FntFont::load(const std::string &path, std::istream &input) {
   }
 }
 
-void FntFont::loadFromFile(const std::string &path) {
+void FntFont::loadFromFile(const std::filesystem::path &path) {
   // Parse .fnt file
   // trace("FntFont: parsing \"{}\"...", path);
   std::ifstream is(path, std::ios::binary);
@@ -77,7 +77,7 @@ const Texture &FntFont::getTexture(unsigned int) const {
   return m_textures[0];
 }
 
-bool FntFont::parse(const std::string &path, std::istream &input) {
+bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
   // Note : the '>>' operator is formatting, so we use short typed values
   // to be sure that they will be read as integers
 
@@ -145,8 +145,8 @@ bool FntFont::parse(const std::string &path, std::istream &input) {
           // this should be the code below but due to a bug in
           // UIFontSmallBold.fnt (it points to UIFontSmall.png instead
           // of UIFontSmallBold.png) I replaced it to:
-          m_chars.pages[id] =
-              path.substr(0, path.length() - 4) + ".png";
+          auto pagePath = path;
+          m_chars.pages[id] = pagePath.replace_extension(".png");
         }
       }
     } else if (tag == "char") {

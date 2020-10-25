@@ -1,9 +1,8 @@
-#include <utility>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Text.hpp>
 #include <ngf/Graphics/Vertex.h>
-#include <codecvt>
-#include <locale>
+#include <ngf/System/StringHelper.h>
+#include <utility>
 
 namespace ngf {
 namespace {
@@ -11,16 +10,6 @@ glm::vec2 normalize(const Texture &texture, const glm::ivec2 &v) {
   auto textureSize = glm::vec(texture.getSize());
   return glm::vec2(static_cast<float>(v.x) / textureSize.x,
                    static_cast<float>(v.y) / textureSize.y);
-}
-
-std::wstring towstring(const std::string &text) {
-  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-  return converter.from_bytes(text.data(), text.data() + text.size());
-}
-
-std::string tostring(const std::wstring &text) {
-  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-  return converter.to_bytes(text);
 }
 
 // Add a glyph quad to the vertex array
@@ -68,11 +57,11 @@ void Text::setWideString(const std::wstring &string) {
 }
 
 void Text::setString(const std::string &string) {
-  setWideString(towstring(string));
+  setWideString(StringHelper::towstring(string));
 }
 
 std::string Text::getString() const {
-  return tostring(m_string);
+  return StringHelper::tostring(m_string);
 }
 
 void Text::setFont(const Font &font) {
@@ -207,7 +196,7 @@ void Text::ensureGeometryUpdate() const {
         // maxLineY = 0;
         break;
       case L'#':auto strColor = m_string.substr(i + 1, 6);
-        auto str = tostring(strColor);
+        auto str = StringHelper::tostring(strColor);
         color = Color::parseHex6(str.c_str());
         i += 6;
         break;
@@ -238,7 +227,7 @@ void Text::ensureGeometryUpdate() const {
     if ((info.chr == L' ') || (info.chr == L'\n') || (info.chr == L'\t') ||
         (info.chr == L'#')) {
       switch (info.chr) {
-      case L' ': break;
+      case L' ':
       case L'\t': break;
       case L'\n': maxLineY = 0.f;
         break;

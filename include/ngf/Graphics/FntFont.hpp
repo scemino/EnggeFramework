@@ -111,8 +111,8 @@ private:
 
 public:
   ~FntFont() override;
-  void load(const std::string &name, std::istream &input);
-  void loadFromFile(const std::string &path);
+  void load(const std::filesystem::path &name, std::istream &input);
+  void loadFromFile(const std::filesystem::path &path);
 
   [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint) const override;
   [[nodiscard]] float getKerning(unsigned int first, unsigned int second,
@@ -121,6 +121,6 @@ public:
       unsigned int characterSize) const override;
 
 private:
-  bool parse(const std::string &path, std::istream &input);
+  bool parse(const std::filesystem::path &path, std::istream &input);
 };
 }
