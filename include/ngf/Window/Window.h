@@ -27,7 +27,7 @@ public:
   void setVerticalSyncEnabled(bool enabled);
   [[nodiscard]] bool isVerticalSyncEnabled() const;
 
-  void setTitle(const std::string& title);
+  void setTitle(const std::string &title);
   [[nodiscard]] std::string getTitle() const;
 
   void setWindowFullscreen(bool fullscreen);
@@ -36,13 +36,15 @@ public:
   void setWindowResizable(bool resizable);
   [[nodiscard]] bool isWindowResizable() const;
 
-  glm::uvec2 getSize() const;
+  [[nodiscard]] glm::uvec2 getSize() const;
+  [[nodiscard]] static float getSizeFactor() { return sizeFactor; }
 
   SDL_Window *getNativeHandle() {
     return m_window;
   }
 
 private:
+  inline static float sizeFactor{1.0f};
   SDL_Window *m_window{nullptr};
   SDL_GLContext m_glContext{nullptr};
 };

@@ -42,7 +42,9 @@ set(GFX_SOURCE_FILES
         src/Graphics/Texture.cpp
         src/Graphics/Transform.cpp
         src/Graphics/VertexArray.cpp
-        src/Graphics/VertexBuffer.cpp)
+        src/Graphics/VertexBuffer.cpp
+        src/Graphics/View.cpp
+        )
 set(APP_SOURCE_FILES src/Application.cpp)
 set(SOURCE_FILES ${APP_SOURCE_FILES} ${AUDIO_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES}
         # SDL2+OpenGL-specific files

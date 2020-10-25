@@ -19,6 +19,10 @@ public:
     return Rect<T>(position, position + size);
   }
 
+  static constexpr Rect<T> fromCenterSize(vec center, vec size) noexcept {
+    return Rect<T>(center - size / T(2), center + size / T(2));
+  }
+
   constexpr vec getPosition() const noexcept {
     return min;
   }

@@ -1,7 +1,8 @@
 #include <ngf/Graphics/RenderTarget.h>
-#include <Graphics/VertexArray.h>
-#include <Graphics/Image.h>
-#include <Graphics/Transform.h>
+#include <ngf/Graphics/VertexArray.h>
+#include <ngf/Graphics/Image.h>
+#include <ngf/Graphics/Transform.h>
+#include <ngf/Window/Window.h>
 #include "GlDebug.h"
 
 namespace ngf {
@@ -151,8 +152,10 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices) {
 }
 }
 
-RenderTarget::RenderTarget(glm::uvec2 size)
-    : m_size(size), m_emptyTexture(createWhitePixel()) {
+RenderTarget::RenderTarget(Window &window)
+    : m_window(window), m_size(window.getSize()),
+      m_view(frect::fromPositionSize({0.0f, 0.0f}, {static_cast<float>(m_size.x), static_cast<float>(m_size.y)})),
+      m_emptyTexture(createWhitePixel()) {
   m_defaultShader.load(vertexShaderSource, fragmentShaderSource);
 }
 
@@ -171,19 +174,14 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   ngf::VertexArray::bind(&m_vao);
 
   // set texture
-  const Texture *pTexture = states.texture;
+  auto pTexture = states.texture;
   if (!pTexture) {
     pTexture = &m_emptyTexture;
   }
   m_defaultShader.setUniform("u_texture", *pTexture);
 
   // set transform
-  Transform viewTrsf;
-  glm::vec2 size = m_size;
-  glm::vec2 factors = 2.0f / size;
-  viewTrsf.setScale({factors.x, -factors.y});
-
-  auto transform = states.transform * viewTrsf.getTransform();
+  auto transform = states.transform * getView().getTransform();
   m_defaultShader.setUniform("u_transform", transform);
 
   // set blending
@@ -212,7 +210,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const Vertex *vertices,
                         size_t sizeVertices,
                         const RenderStates &states) {
-
+  // TODO: share this code
   ngf::VertexArray::bind(&m_vao);
 
   // set texture
@@ -223,12 +221,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   m_defaultShader.setUniform("u_texture", *pTexture);
 
   // set transform
-  Transform viewTrsf;
-  glm::vec2 size = m_size;
-  glm::vec2 factors = 2.0f / size;
-  viewTrsf.setScale({factors.x, -factors.y});
-
-  auto transform = states.transform * viewTrsf.getTransform();
+  auto transform = states.transform * getView().getTransform();
   m_defaultShader.setUniform("u_transform", transform);
 
   // set blending
@@ -253,4 +246,25 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   ngf::Shader::bind(nullptr);
 }
 
+void RenderTarget::setView(const View &view) {
+  m_view = view;
+
+  // set the GL viewport everytime a new view is defined
+  auto viewport = getCanonicalViewport(getView());
+  GL_CHECK(glViewport(viewport.min.x, viewport.min.y, viewport.getWidth(), viewport.getHeight()));
+}
+
+irect RenderTarget::getCanonicalViewport(const View &view) const {
+  auto size = getSize();
+  const frect &viewport = view.getViewport();
+  glm::ivec2 rectPos =
+      {static_cast<int>(viewport.min.x * size.x + 0.5f), static_cast<int>((1.0f - viewport.max.y) * size.y + 0.5f)};
+  glm::ivec2 rectSize =
+      {static_cast<int>(viewport.getWidth() * size.x + 0.5f), static_cast<int>(viewport.getHeight() * size.y + 0.5f)};
+  return irect::fromPositionSize(rectPos, rectSize);
+}
+
+glm::ivec2 RenderTarget::getSize() const {
+  return m_window.getSize();
+}
 }

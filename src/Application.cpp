@@ -16,7 +16,7 @@ Application::~Application() = default;
 
 void Application::run() {
   onInit();
-  m_renderTarget = std::make_unique<ngf::RenderTarget>(m_window.getSize());
+  m_renderTarget = std::make_unique<ngf::RenderTarget>(m_window);
   processEvents();
 
   int frames = 0;

@@ -3,7 +3,10 @@
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/Vertex.h>
 #include <ngf/Graphics/VertexArray.h>
-#include "RenderStates.h"
+#include <ngf/Graphics/RenderStates.h>
+#include <ngf/Graphics/View.h>
+#include <ngf/Window/Window.h>
+#include <glm/vec2.hpp>
 
 namespace ngf {
 enum class PrimitiveType {
@@ -18,7 +21,7 @@ enum class PrimitiveType {
 
 class RenderTarget {
 public:
-  explicit RenderTarget(glm::uvec2 size);
+  explicit RenderTarget(Window& window);
 
   void clear(const Color &color);
   void draw(PrimitiveType primitiveType,
@@ -32,8 +35,16 @@ public:
             size_t sizeVertices,
             const RenderStates& = {});
 
+  void setView(const View& view);
+  [[nodiscard]] const View& getView() const { return m_view; }
+
+  [[nodiscard]] irect getCanonicalViewport(const View& view) const;
+  [[nodiscard]] glm::ivec2 getSize() const;
+
 private:
+  Window& m_window;
   glm::uvec2 m_size;
+  View m_view;
   ngf::VertexArray m_vao;
   ngf::Shader m_defaultShader{};
   ngf::Texture m_emptyTexture{};

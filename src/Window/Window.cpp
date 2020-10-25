@@ -106,6 +106,11 @@ void Window::init(const WindowConfig &config) {
   SDL_GL_MakeCurrent(m_window, m_glContext);
   setVerticalSyncEnabled(config.vSyncEnabled);
 
+  int w, h;
+  SDL_GetWindowSize(m_window, &w, &h);
+  auto size = getSize();
+  sizeFactor = static_cast<float>(size.x) / static_cast<float>(w);
+
   auto err = glGetError();
   if (err != GL_NO_ERROR) {
     std::ostringstream ss;
@@ -263,7 +268,7 @@ bool Window::isWindowResizable() const {
 glm::uvec2 Window::getSize() const {
   int width;
   int height;
-  SDL_GetWindowSize(m_window, &width, &height);
+  SDL_GL_GetDrawableSize(m_window, &width, &height);
   return glm::uvec2(width, height);
 }
 
