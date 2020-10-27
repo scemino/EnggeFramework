@@ -45,8 +45,12 @@ set(GFX_SOURCE_FILES
         src/Graphics/VertexBuffer.cpp
         src/Graphics/View.cpp
         )
+set(IO_SOURCE_FILES
+        src/IO/GGPackBufferStream.cpp
+        src/IO/Json/JsonTokenReader.cpp
+        src/IO/Json/JsonParser.cpp)
 set(APP_SOURCE_FILES src/Application.cpp)
-set(SOURCE_FILES ${APP_SOURCE_FILES} ${AUDIO_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES}
+set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES}
         # SDL2+OpenGL-specific files
         extlibs/imgui/examples/imgui_impl_sdl.cpp
         extlibs/imgui/examples/imgui_impl_opengl3.cpp)

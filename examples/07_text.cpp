@@ -1,7 +1,7 @@
 #include <ngf/Application.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Graphics/RenderTarget.h>
-#include <ngf/Graphics/Text.hpp>
+#include <ngf/Graphics/Text.h>
 #include <ngf/Graphics/Vertex.h>
 #include <ngf/System/Util.h>
 #include <imgui.h>

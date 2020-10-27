@@ -1,5 +1,5 @@
 #include <ngf/Graphics/RenderTarget.h>
-#include <ngf/Graphics/Text.hpp>
+#include <ngf/Graphics/Text.h>
 #include <ngf/Graphics/Vertex.h>
 #include <ngf/System/StringHelper.h>
 #include <utility>
