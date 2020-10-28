@@ -76,9 +76,13 @@ Texture::~Texture() {
 }
 
 void Texture::load(const std::filesystem::path& path) {
-  ngf::Image img;
   std::ifstream is(path, std::ios::binary);
-  img.load(is);
+  loadFromStream(is);
+}
+
+void Texture::loadFromStream(std::istream& input){
+  ngf::Image img;
+  img.load(input);
   m_format = img.getBpp() == 4 ? ngf::Texture::Format::Rgba : ngf::Texture::Format::Rgb;
   auto type = getGlType(m_type);
   GL_CHECK(glBindTexture(type, m_img_tex));

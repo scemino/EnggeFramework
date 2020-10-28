@@ -166,18 +166,34 @@ private:
   }
 
 public:
-  bool operator==(const GGPackValueIterator &rhs) const { return m_value == rhs.m_value; }
-  bool operator!=(const GGPackValueIterator &rhs) const { return m_value != rhs.m_value; }
+  bool operator==(const GGPackValueIterator &rhs) const {
+    switch (m_value->type()) {
+    case GGPackValueType::Array: {
+      return m_arrayIt == rhs.m_arrayIt;
+    }
+    case GGPackValueType::Hash: {
+      return m_hashIt == rhs.m_hashIt;
+    }
+    default: {
+      assert(false);
+    }
+    }
+  }
+
+  bool operator!=(const GGPackValueIterator &rhs) const {
+    return !(*this == rhs);
+  }
+
   reference operator*() {
     assert(m_value != nullptr);
 
     switch (m_value->type()) {
     case GGPackValueType::Array: {
-      assert(m_arrayIt != m_value->array_value->end());
+      assert(m_arrayIt != m_value->m_value.array_value->end());
       return *m_arrayIt;
     }
     case GGPackValueType::Hash: {
-      assert(m_hashIt != m_value->hash_value.end());
+      assert(m_hashIt != m_value->m_value.hash_value->end());
       return m_hashIt->second;
     }
     default: {
@@ -191,11 +207,11 @@ public:
 
     switch (m_value->type()) {
     case GGPackValueType::Array: {
-      assert(m_arrayIt != m_value->array_value->end());
+      assert(m_arrayIt != m_value->m_value.array_value->end());
       return &*m_arrayIt;
     }
     case GGPackValueType::Hash: {
-      assert(m_hashIt != m_value->hash_value.end());
+      assert(m_hashIt != m_value->m_value.hash_value->end());
       return &*m_hashIt->second;
     }
     default: {

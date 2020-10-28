@@ -27,6 +27,7 @@ public:
   ~Texture();
 
   void load(const std::filesystem::path& path);
+  void loadFromStream(std::istream& input);
   void setData(glm::uvec2 size, const void *data);
 
   void setSmooth(bool smooth = true);

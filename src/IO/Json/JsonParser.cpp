@@ -74,9 +74,15 @@ GGPackValue load(const std::filesystem::path &path) {
   return parse(reader);
 }
 
-GGPackValue parse(const std::vector<char> &content) {
+GGPackValue parse(std::istream &input) {
   ngf::Json::TokenReader reader;
-  reader.parse(content);
+  input.seekg(0,std::ios::end);
+  auto size = input.tellg();
+  input.seekg(0,std::ios::beg);
+  std::vector<char> buf(size);
+  input.read(buf.data(), size);
+
+  reader.parse(buf);
   return parse(reader);
 }
 }

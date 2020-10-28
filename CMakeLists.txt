@@ -46,7 +46,10 @@ set(GFX_SOURCE_FILES
         src/Graphics/View.cpp
         )
 set(IO_SOURCE_FILES
+        src/IO/GGPackHashReader.cpp
+        src/IO/GGPack.cpp
         src/IO/GGPackBufferStream.cpp
+        src/IO/MemoryStream.cpp
         src/IO/Json/JsonTokenReader.cpp
         src/IO/Json/JsonParser.cpp)
 set(APP_SOURCE_FILES src/Application.cpp)
