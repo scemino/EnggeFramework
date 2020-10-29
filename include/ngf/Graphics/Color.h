@@ -47,6 +47,8 @@ bool operator!=(const Color &left, const Color &right);
 Color operator+(const Color &left, const Color &right);
 Color operator-(const Color &left, const Color &right);
 Color operator*(const Color &left, const Color &right);
+Color operator*(const Color &left, float value);
+Color operator*(float left, const Color& right);
 Color &operator+=(Color &left, const Color &right);
 Color &operator-=(Color &left, const Color &right);
 Color &operator*=(Color &left, const Color &right);

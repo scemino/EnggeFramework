@@ -44,6 +44,20 @@ Color operator*(const Color &left, const Color &right) {
                left.a * right.a);
 }
 
+Color operator*(const Color &left, float right) {
+  return Color(std::clamp(left.r * right, 0.f, 1.f),
+               std::clamp(left.g * right, 0.f, 1.f),
+               std::clamp(left.b * right, 0.f, 1.f),
+               std::clamp(left.a * right, 0.f, 1.f));
+}
+
+Color operator*(float left, const Color& right) {
+  return Color(std::clamp(right.r * left, 0.f, 1.f),
+               std::clamp(right.g * left, 0.f, 1.f),
+               std::clamp(right.b * left, 0.f, 1.f),
+               std::clamp(right.a * left, 0.f, 1.f));
+}
+
 Color &operator+=(Color &left, const Color &right) {
   return left = left + right;
 }

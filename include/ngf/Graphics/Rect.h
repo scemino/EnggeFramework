@@ -15,7 +15,7 @@ public:
     return Rect<T>(min, max);
   }
 
-    static constexpr Rect<T> fromPositionSize(vec position, vec size) noexcept {
+  static constexpr Rect<T> fromPositionSize(vec position, vec size) noexcept {
     return Rect<T>(position, position + size);
   }
 
@@ -29,24 +29,15 @@ public:
 
   constexpr vec getPositionFromAnchor(Anchor anchor) const noexcept {
     switch (anchor) {
-    case Anchor::TopLeft:
-      return min;
-    case Anchor::TopCenter:
-      return { (min.x + max.x) / T(2), min.y };
-    case Anchor::TopRight:
-      return { max.x, min.y };
-    case Anchor::CenterLeft:
-      return { min.x, (min.y + max.y) / T(2) };
-    case Anchor::Center:
-      return getCenter();
-    case Anchor::CenterRight:
-      return { max.x, (min.y + max.y) / T(2) };
-    case Anchor::BottomLeft:
-      return { min.x, max.y };
-    case Anchor::BottomCenter:
-      return { (min.x + max.x) / T(2), max.y };
-    case Anchor::BottomRight:
-      return max;
+    case Anchor::TopLeft:return min;
+    case Anchor::TopCenter:return {(min.x + max.x) / T(2), min.y};
+    case Anchor::TopRight:return {max.x, min.y};
+    case Anchor::CenterLeft:return {min.x, (min.y + max.y) / T(2)};
+    case Anchor::Center:return getCenter();
+    case Anchor::CenterRight:return {max.x, (min.y + max.y) / T(2)};
+    case Anchor::BottomLeft:return {min.x, max.y};
+    case Anchor::BottomCenter:return {(min.x + max.x) / T(2), max.y};
+    case Anchor::BottomRight:return max;
     }
     return min;
   }
@@ -81,12 +72,12 @@ using frect = Rect<float>;
 using irect = Rect<int>;
 
 template<typename T>
-inline bool operator==(const Rect<T>& lhs, const Rect<T>& rhs) {
+inline bool operator==(const Rect<T> &lhs, const Rect<T> &rhs) {
   return lhs.min == rhs.min && lhs.max == rhs.max;
 }
 
 template<typename T>
-inline bool operator!=(const Rect<T>& lhs, const Rect<T>& rhs) {
+inline bool operator!=(const Rect<T> &lhs, const Rect<T> &rhs) {
   return !(lhs == rhs);
 }
 

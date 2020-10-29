@@ -25,6 +25,7 @@ include_directories(${NGLIB_HEADERS_DIR})
 set(SYS_SOURCE_FILES
         src/System/StopWatch.cpp
         src/System/StringHelper.cpp
+        src/System/Times.cpp
         src/System/TimeSpan.cpp
         src/System/Util.cpp)
 set(WIN_SOURCE_FILES src/Window/Window.cpp)
