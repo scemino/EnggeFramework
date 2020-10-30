@@ -150,6 +150,10 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices) {
   }
   VertexArray::bind(nullptr);
 }
+
+constexpr glm::vec2 transform(const glm::mat3 &mat, glm::vec2 point) {
+  return {mat[0][0] * point.x + mat[0][1] * point.y + mat[0][2], mat[1][0] * point.x + mat[1][1] * point.y + mat[1][2]};
+}
 }
 
 RenderTarget::RenderTarget(Window &window)
@@ -266,5 +270,69 @@ irect RenderTarget::getCanonicalViewport(const View &view) const {
 
 glm::ivec2 RenderTarget::getSize() const {
   return m_window.getSize();
+}
+
+irect RenderTarget::getViewport(const View &view) const {
+  auto region = getCanonicalViewport(view);
+  auto size = getSize();
+  auto sizeScale = Window::getSizeFactor();
+  return irect::fromPositionSize({region.min.x, size.y - (region.min.y + region.getHeight())},
+                                 {region.getWidth() / sizeScale, region.getHeight() / sizeScale});
+}
+
+glm::vec2 RenderTarget::mapPixelToCoords(glm::ivec2 point, const View &view) const {
+  auto viewport = getViewport(view);
+
+  /* simulate inverse projection transform
+   * i.e. compute normalized device coordinates from screen coordinates
+   *
+   * 0 +---------+      1 +---------+
+   *   |         |        |         |
+   *   |         | ===>   |         |
+   *   |         |        |         |
+   * h +---------+     -1 +---------+
+   *   0         w       -1         1
+   */
+  glm::vec2 normalized;
+  normalized.x = 2.0f * (point.x - viewport.min.x) / viewport.getWidth() - 1;
+  normalized.y = 1 - 2.0f * (point.y - viewport.min.y) / viewport.getHeight();
+
+  /* apply inverse view transform
+   * i.e. compute world coordinates from normalized device coordinates
+   */
+  return transform(view.getInverseTransform(), normalized);
+}
+
+glm::vec2 RenderTarget::mapPixelToCoords(glm::ivec2 point) const {
+  return mapPixelToCoords(point, getView());
+}
+
+glm::ivec2 RenderTarget::mapCoordsToPixel(glm::vec2 point, const View &view) const {
+  irect viewport = getViewport(view);
+
+  /* apply view transform
+   * i.e. compute normalized device coordinates from world coordinates
+   */
+  auto normalized = transform(view.getTransform(), point);
+
+  /* simulate projection transform
+   * i.e. compute screen coordinates from normalized device coordinates
+   *
+   *  1 +---------+     0 +---------+
+   *    |         |       |         |
+   *    |         | ===>  |         |
+   *    |         |       |         |
+   * -1 +---------+     h +---------+
+   *   -1         1       0         w
+   */
+  glm::ivec2 pixel;
+  pixel.x = static_cast<int>((1 + normalized.x) / 2 * viewport.getWidth() + viewport.min.x);
+  pixel.y = static_cast<int>((1 - normalized.y) / 2 * viewport.getHeight() + viewport.min.y);
+
+  return pixel;
+}
+
+glm::ivec2 RenderTarget::mapCoordsToPixel(glm::vec2 point) const {
+  return mapCoordsToPixel(point, getView());
 }
 }

@@ -41,6 +41,14 @@ public:
   [[nodiscard]] irect getCanonicalViewport(const View& view) const;
   [[nodiscard]] glm::ivec2 getSize() const;
 
+  [[nodiscard]] irect getViewport(const View &view) const;
+
+  [[nodiscard]] glm::vec2 mapPixelToCoords(glm::ivec2 point, const View& view) const;
+  [[nodiscard]] glm::vec2 mapPixelToCoords(glm::ivec2 point) const;
+
+  [[nodiscard]] glm::ivec2 mapCoordsToPixel(glm::vec2 point, const View& view) const;
+  [[nodiscard]] glm::ivec2 mapCoordsToPixel(glm::vec2 point) const;
+
 private:
   Window& m_window;
   glm::uvec2 m_size;

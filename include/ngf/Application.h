@@ -17,9 +17,10 @@ protected:
   virtual void onInit();
   virtual void onExit();
   virtual void onUpdate(const TimeSpan &elapsed);
-  virtual void onRender(ngf::RenderTarget& target);
+  virtual void onRender(ngf::RenderTarget &target);
   virtual void onImGuiRender();
   virtual void onEvent(Event &event);
+  RenderTarget *getRenderTarget() { return m_renderTarget.get(); }
 
 private:
   void processEvents();

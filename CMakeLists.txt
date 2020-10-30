@@ -53,8 +53,16 @@ set(IO_SOURCE_FILES
         src/IO/MemoryStream.cpp
         src/IO/Json/JsonTokenReader.cpp
         src/IO/Json/JsonParser.cpp)
+set(MATH_SOURCE_FILES
+        src/Math/Segment.cpp
+        src/Math/PathFinding/AStarAlgorithm.cpp
+        src/Math/PathFinding/IndexedPriorityQueue.cpp
+        src/Math/PathFinding/Graph.cpp
+        src/Math/PathFinding/GraphEdge.cpp
+        src/Math/PathFinding/PathFinder.cpp
+        src/Math/PathFinding/Walkbox.cpp)
 set(APP_SOURCE_FILES src/Application.cpp)
-set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES}
+set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES} ${MATH_SOURCE_FILES}
         # SDL2+OpenGL-specific files
         extlibs/imgui/examples/imgui_impl_sdl.cpp
         extlibs/imgui/examples/imgui_impl_opengl3.cpp)
