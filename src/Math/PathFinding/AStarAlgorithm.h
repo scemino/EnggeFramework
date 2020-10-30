@@ -7,14 +7,13 @@ namespace ngf {
 class Graph;
 struct GraphEdge;
 
-class AStarAlgorithm {
+class AStarAlgorithm final {
 public:
-  AStarAlgorithm(const Graph &graph, int source, int target);
-
-  [[nodiscard]] std::vector<int> getPath() const;
+  [[nodiscard]] static std::vector<int> getPath(const Graph &graph, int source, int target);
 
 private:
-  void search();
+  explicit AStarAlgorithm(const Graph &graph);
+  void search(int source, int target);
 
 private:
   const Graph &m_graph;
@@ -22,8 +21,6 @@ private:
   std::vector<float> m_gCost; //This array will store the G cost of each node
   std::vector<float> m_fCost; //This array will store the F cost of each node
   std::vector<std::shared_ptr<GraphEdge>> m_SF; // The Search Frontier
-  int m_source;
-  int m_target;
 };
 }
 

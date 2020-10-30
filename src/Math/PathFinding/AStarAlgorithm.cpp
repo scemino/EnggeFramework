@@ -5,40 +5,42 @@
 
 namespace ngf {
 
-AStarAlgorithm::AStarAlgorithm(const Graph &graph, int source, int target)
-    : m_graph(graph), m_source(source), m_target(target) {
+AStarAlgorithm::AStarAlgorithm(const Graph &graph)
+    : m_graph(graph) {
   m_gCost.resize(m_graph.nodes.size(), 0);
   m_fCost.resize(m_graph.nodes.size(), 0);
   m_SPT.resize(m_graph.nodes.size(), nullptr);
   m_SF.resize(m_graph.nodes.size(), nullptr);
-  search();
 }
 
-std::vector<int> AStarAlgorithm::getPath() const {
-  if (m_target < 0)
+std::vector<int> AStarAlgorithm::getPath(const Graph &graph, int source, int target) {
+  AStarAlgorithm astar(graph);
+  if (target < 0)
     return {};
-  int nd = m_target;
+  astar.search(source, target);
+
+  int nd = target;
   std::vector<int> path;
   path.push_back(nd);
-  while ((nd != m_source) && (m_SPT[nd] != nullptr)) {
-    nd = m_SPT[nd]->from;
+  while ((nd != source) && (astar.m_SPT[nd] != nullptr)) {
+    nd = astar.m_SPT[nd]->from;
     path.push_back(nd);
   }
   std::reverse(path.begin(), path.end());
   return path;
 }
 
-void AStarAlgorithm::search() {
+void AStarAlgorithm::search(int source, int target) {
   IndexedPriorityQueue pq(m_fCost);
-  pq.insert(m_source);
+  pq.insert(source);
   while (!pq.isEmpty()) {
     int NCN = pq.pop();
     m_SPT[NCN] = m_SF[NCN];
-    if (NCN == m_target)
+    if (NCN == target)
       return;
     auto &edges = m_graph.edges[NCN];
     for (auto &edge : edges) {
-      float Hcost = length(m_graph.nodes[edge->to] - m_graph.nodes[m_target]);
+      float Hcost = length(m_graph.nodes[edge->to] - m_graph.nodes[target]);
       float Gcost = m_gCost[NCN] + edge->cost;
       if (m_SF[edge->to] == nullptr) {
         m_fCost[edge->to] = Gcost + Hcost;

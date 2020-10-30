@@ -28,7 +28,7 @@ public:
 
 private:
   void onInit() override {
-    m_window.init({.title="09 - Tween", .size={1027, 780}});
+    m_window.init({.title="10 - Path finding", .size={1024, 780}});
   }
 
   void onEvent(ngf::Event &event) override {

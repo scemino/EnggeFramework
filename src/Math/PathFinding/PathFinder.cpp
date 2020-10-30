@@ -35,23 +35,26 @@ constexpr bool less(const glm::vec2 &p1, const glm::vec2 &p2) {
 constexpr bool intersect(glm::vec2 a, glm::vec2 b, glm::vec2 c, glm::vec2 d) {
   if (!intersect_1d(a.x, b.x, c.x, d.x) || !intersect_1d(a.y, b.y, c.y, d.y))
     return false;
+
   Segment m(a, b);
   Segment n(c, d);
   double zn = det(m.a, m.b, n.a, n.b);
+
   if (abs(zn) < Epsilon) {
     if (abs(m.distance(c)) > Epsilon || abs(n.distance(a)) > Epsilon)
       return false;
+
     if (less(b, a))
       std::swap(a, b);
     if (less(d, c))
       std::swap(c, d);
     return true;
-  } else {
-    auto lx = -det(m.c, m.b, n.c, n.b) / zn;
-    auto ly = -det(m.a, m.c, n.a, n.c) / zn;
-    return betw(a.x, b.x, lx) && betw(a.y, b.y, ly) &&
-        betw(c.x, d.x, lx) && betw(c.y, d.y, ly);
   }
+
+  auto lx = -det(m.c, m.b, n.c, n.b) / zn;
+  auto ly = -det(m.a, m.c, n.a, n.c) / zn;
+  return betw(a.x, b.x, lx) && betw(a.y, b.y, ly) &&
+      betw(c.x, d.x, lx) && betw(c.y, d.y, ly);
 }
 
 constexpr bool lineSegmentsCross(const glm::vec2 &a,
@@ -144,8 +147,7 @@ std::vector<glm::vec2> PathFinder::calculatePath(glm::vec2 from, glm::vec2 to) {
     walkgraph.addEdge(edge);
   }
 
-  AStarAlgorithm astar(walkgraph, startNodeIndex, endNodeIndex);
-  auto indices = astar.getPath();
+  auto indices = AStarAlgorithm::getPath(walkgraph, startNodeIndex, endNodeIndex);
   std::vector<glm::vec2> path;
   path.reserve(walkgraph.nodes.size());
   std::transform(indices.begin(), indices.end(), std::back_inserter(path), [&walkgraph](auto i) {
