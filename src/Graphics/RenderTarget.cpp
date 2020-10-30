@@ -1,7 +1,7 @@
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/VertexArray.h>
 #include <ngf/Graphics/Image.h>
-#include <ngf/Graphics/Transform.h>
+#include <Math/Transform.h>
 #include <ngf/Window/Window.h>
 #include "GlDebug.h"
 
@@ -149,10 +149,6 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices) {
     loc++;
   }
   VertexArray::bind(nullptr);
-}
-
-constexpr glm::vec2 transform(const glm::mat3 &mat, glm::vec2 point) {
-  return {mat[0][0] * point.x + mat[0][1] * point.y + mat[0][2], mat[1][0] * point.x + mat[1][1] * point.y + mat[1][2]};
 }
 }
 

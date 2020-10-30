@@ -58,6 +58,26 @@ public:
     return this->max.y - this->min.y;
   }
 
+  constexpr vec getTopLeft() const noexcept {
+    return getPositionFromAnchor(Anchor::TopLeft);
+  }
+
+  constexpr vec getTopRight() const noexcept {
+    return getPositionFromAnchor(Anchor::TopRight);
+  }
+
+  constexpr vec getBottomLeft() const noexcept {
+    return getPositionFromAnchor(Anchor::BottomLeft);
+  }
+
+  constexpr vec getBottomRight() const noexcept {
+    return getPositionFromAnchor(Anchor::BottomRight);
+  }
+
+  constexpr bool contains(vec point) const noexcept {
+    return min.x <= point.x && point.x < max.x && min.y <= point.y && point.y < max.y;
+  }
+
 private:
   constexpr Rect(vec min, vec max) noexcept
       : min(min), max(max) {

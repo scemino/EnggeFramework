@@ -12,6 +12,10 @@ public:
     m_dirty = true;
   }
 
+  void rotate(float angle) noexcept {
+    setRotation(getRotation() + angle);
+  }
+
   [[nodiscard]] float getRotation() const noexcept {
     return m_angle;
   }
@@ -30,7 +34,7 @@ public:
     m_dirty = true;
   }
 
-  void setOriginFromAnchorAndBounds(Anchor anchor, const frect& bounds) {
+  void setOriginFromAnchorAndBounds(Anchor anchor, const frect &bounds) {
     setOrigin(bounds.getPositionFromAnchor(anchor));
   }
 
@@ -57,4 +61,8 @@ private:
   glm::vec2 m_scale{1, 1};
   float m_angle{0.f};
 };
+
+frect transform(const glm::mat3 &mat, const frect &rect);
+frect transform(const glm::mat3 &mat, const frect &rect);
+glm::vec2 transform(const glm::mat3 &mat, glm::vec2 point);
 }

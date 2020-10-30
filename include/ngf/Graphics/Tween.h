@@ -25,42 +25,47 @@ private:
         ValueChangedCallback onValueChanged,
         const TimeSpan &duration,
         EasingFunction easing,
-        Times times, RepeatBehavior repeatBehavior)
+        Times times, RepeatBehavior repeatBehavior) noexcept
       : m_from(from), m_to(to), m_onValueChanged(onValueChanged), m_duration(duration), m_easing(easing),
         m_times(times), m_repeatBehavior(repeatBehavior) {
+    m_done = duration == TimeSpan::seconds(0);
   }
 
 public:
-  Tween() = default;
+  Tween() noexcept = default;
 
-  Tween(T origin, T target)
+  Tween(T origin, T target) noexcept
       : m_from(origin), m_to(target) {
   }
 
-  Tween onValueChanged(ValueChangedCallback onValueChanged) {
+  Tween onValueChanged(ValueChangedCallback onValueChanged) noexcept {
     return Tween(m_from, m_to, onValueChanged, m_duration, m_easing, m_times, m_repeatBehavior);
   }
 
-  Tween setDuration(const TimeSpan &duration) {
+  Tween setDuration(const TimeSpan &duration) noexcept {
     return Tween(m_from, m_to, m_onValueChanged, duration, m_easing, m_times, m_repeatBehavior);
   }
 
-  Tween with(EasingFunction easing) {
+  Tween with(EasingFunction easing) noexcept {
     return Tween(m_from, m_to, m_onValueChanged, m_duration, easing, m_times, m_repeatBehavior);
   }
 
-  Tween repeat(Times times, RepeatBehavior behavior = RepeatBehavior::OneWay) {
+  Tween repeat(Times times, RepeatBehavior behavior = RepeatBehavior::OneWay) noexcept {
     return Tween(m_from, m_to, m_onValueChanged, m_duration, m_easing, times, behavior);
   }
 
-  T getValue() const {
+  T getValue() const noexcept {
     auto t = m_elapsed.getTotalSeconds() / m_duration.getTotalSeconds();
     if (!m_forward)
       t = 1.f - t;
     return lerp(m_from, m_to, m_easing(t));
   }
 
-  void update(const TimeSpan &elapsed) {
+  [[nodiscard]] constexpr bool isDone() const noexcept {
+    return m_done;
+  }
+
+  void update(const TimeSpan &elapsed) noexcept {
     if (m_done)
       return;
 
@@ -93,7 +98,7 @@ private:
   TimeSpan m_elapsed{};
   TimeSpan m_duration{};
   EasingFunction m_easing{Easing::linear};
-  bool m_done{false};
+  bool m_done{true};
   Times m_times;
   bool m_forward{true};
   RepeatBehavior m_repeatBehavior{RepeatBehavior::OneWay};
@@ -102,6 +107,6 @@ private:
 class Tweening {
 public:
   template<typename T>
-  static Tween<T> make(T from, T to) { return ngf::Tween(from, to); }
+  static Tween<T> make(T from, T to) noexcept { return ngf::Tween(from, to); }
 };
 }

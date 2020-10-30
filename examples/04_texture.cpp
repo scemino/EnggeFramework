@@ -3,7 +3,7 @@
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Graphics/Vertex.h>
-#include <ngf/Graphics/Transform.h>
+#include <Math/Transform.h>
 #include <imgui.h>
 #include <memory>
 #include <array>

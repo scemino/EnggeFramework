@@ -25,6 +25,7 @@ public:
   Walkbox(TIterator begin, TIterator end);
 
   void setYAxisDirection(YAxisDirection direction) { m_yAxisDirection = direction; }
+  [[nodiscard]] YAxisDirection getYAxisDirection() const { return m_yAxisDirection; }
 
   void setName(const std::string &name) { m_name = name; }
   [[nodiscard]] const std::string &getName() const { return m_name; }

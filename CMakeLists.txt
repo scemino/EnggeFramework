@@ -41,7 +41,6 @@ set(GFX_SOURCE_FILES
         src/Graphics/Sprite.cpp
         src/Graphics/Text.cpp
         src/Graphics/Texture.cpp
-        src/Graphics/Transform.cpp
         src/Graphics/VertexArray.cpp
         src/Graphics/VertexBuffer.cpp
         src/Graphics/View.cpp
@@ -55,6 +54,7 @@ set(IO_SOURCE_FILES
         src/IO/Json/JsonParser.cpp)
 set(MATH_SOURCE_FILES
         src/Math/Segment.cpp
+        src/Math/Transform.cpp
         src/Math/PathFinding/AStarAlgorithm.cpp
         src/Math/PathFinding/IndexedPriorityQueue.cpp
         src/Math/PathFinding/Graph.cpp

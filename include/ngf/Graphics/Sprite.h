@@ -5,7 +5,7 @@
 #include <ngf/Graphics/RenderStates.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Texture.h>
-#include <ngf/Graphics/Transform.h>
+#include <Math/Transform.h>
 #include <ngf/Graphics/Vertex.h>
 
 namespace ngf {
@@ -62,6 +62,7 @@ public:
   }
 
   Transform &getTransform() { return m_transform; }
+  const Transform &getTransform() const { return m_transform; }
   void setAnchor(Anchor anchor);
 
   void draw(RenderTarget &target, const RenderStates &states = {});
