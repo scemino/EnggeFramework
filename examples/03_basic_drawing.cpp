@@ -14,7 +14,7 @@ private:
     m_window.init({.title="03 - Basic Drawing", .size={640, 480}});
   }
 
-  void onRender(ngf::RenderTarget &target, const ngf::RenderStates&) override {
+  void onRender(ngf::RenderTarget &target) override {
     target.clear(ngf::Colors::Lightblue);
     target.draw(m_primitiveType,
                 m_vertices.data(),
