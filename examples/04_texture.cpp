@@ -18,7 +18,7 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
-    target.clear(ngf::Colors::Lightblue);
+    target.clear(ngf::Colors::LightBlue);
     ngf::RenderStates s;
     s.transform *= m_transform.getTransform();
     s.texture = m_texture.get();

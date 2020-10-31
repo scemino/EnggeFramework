@@ -1,4 +1,5 @@
 #pragma once
+
 namespace ngf {
 enum class Anchor {
   TopLeft,

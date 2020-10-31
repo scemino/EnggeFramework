@@ -66,7 +66,7 @@ private:
     vertices[3].pos = {rect.max.x, rect.min.y};
     vertices[3].color = ngf::Colors::Green;
 
-    target.clear(ngf::Colors::Lightblue);
+    target.clear(ngf::Colors::LightBlue);
     m_sprite->draw(target);
 
     ngf::RenderStates s;

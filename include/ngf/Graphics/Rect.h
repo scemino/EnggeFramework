@@ -3,30 +3,45 @@
 #include <glm/vec2.hpp>
 
 namespace ngf {
+/// @brief Axis-aligned rectangle.
 template<typename T>
 struct Rect {
 private:
   using vec = glm::vec<2, T, glm::defaultp>;
 
 public:
+  /// Creates an empty rectangle located at the origin.
   constexpr Rect() noexcept = default;
 
+  /// @brief Create a rectangle from a minimum point and a maximum point.
+  /// \param min The minimum point in the rectangle.
+  /// \param max The maximum point in the rectangle.
+  /// \return The rectangle created.
   static constexpr Rect<T> fromMinMax(vec min, vec max) noexcept {
     return Rect<T>(min, max);
   }
 
+  /// @brief Creates a rectangle from a position (top-left) and a size.
+  /// \param position The top-left position of the rectangle.
+  /// \param size The size of the rectangle.
+  /// \return The rectangle created.
   static constexpr Rect<T> fromPositionSize(vec position, vec size) noexcept {
     return Rect<T>(position, position + size);
   }
 
+  /// @brief Creates a rectangle from a center and a size.
+  /// \param center The center of the rectangle.
+  /// \param size The size of the rectangle.
+  /// \return The rectangle created.
   static constexpr Rect<T> fromCenterSize(vec center, vec size) noexcept {
     return Rect<T>(center - size / T(2), center + size / T(2));
   }
 
-  constexpr vec getPosition() const noexcept {
-    return min;
-  }
+  /// @brief Gets the position of the rectangle.
+  /// \return
+  constexpr vec getPosition() const noexcept { return min; }
 
+  /// @brief Gets a position from the rectangle and an anchor.
   constexpr vec getPositionFromAnchor(Anchor anchor) const noexcept {
     switch (anchor) {
     case Anchor::TopLeft:return min;
@@ -42,38 +57,55 @@ public:
     return min;
   }
 
-  constexpr vec getSize() const noexcept {
-    return max - min;
-  }
+  /// @brief Gets the size of the rectangle.
+  /// \return The size of the rectangle.
+  constexpr vec getSize() const noexcept { return max - min; }
 
+  /// @brief Gets the center of the rectangle.
+  /// \return The center of the rectangle.
   constexpr vec getCenter() const noexcept {
     return min + (max - min) / static_cast<T>(2);
   }
 
+  /// @brief Gets the width of the rectangle.
+  /// \return The width of the rectangle.
   constexpr T getWidth() const noexcept {
     return this->max.x - this->min.x;
   }
 
+  /// @brief Gets the height of the rectangle.
+  /// \return The height of the rectangle.
   constexpr T getHeight() const noexcept {
     return this->max.y - this->min.y;
   }
 
+  /// @brief Get the top left corner of the rectangle.
+  /// \return The top left corner of the rectangle.
   constexpr vec getTopLeft() const noexcept {
     return getPositionFromAnchor(Anchor::TopLeft);
   }
 
+  /// @brief Get the top right corner of the rectangle.
+  /// \return The top right corner of the rectangle.
   constexpr vec getTopRight() const noexcept {
     return getPositionFromAnchor(Anchor::TopRight);
   }
 
+  /// @brief Get the bottom left corner of the rectangle.
+  /// \return The bottom left corner of the rectangle.
   constexpr vec getBottomLeft() const noexcept {
     return getPositionFromAnchor(Anchor::BottomLeft);
   }
 
+  /// @brief Get the bottom right corner of the rectangle.
+  /// \return The bottom right corner of the rectangle.
   constexpr vec getBottomRight() const noexcept {
     return getPositionFromAnchor(Anchor::BottomRight);
   }
 
+  /// @brief Indicates whether or not a point is inside the rectangle.
+  /// \param point The point to test.
+  /// \return true if the point is inside the rectangle, false otherwise.
   constexpr bool contains(vec point) const noexcept {
     return min.x <= point.x && point.x < max.x && min.y <= point.y && point.y < max.y;
   }
@@ -91,11 +123,19 @@ public:
 using frect = Rect<float>;
 using irect = Rect<int>;
 
+/// @brief Compares 2 rectangles for equality.
+/// \param lhs The left rectangle operand.
+/// \param rhs The right rectangle operand.
+/// \return true if they are equals, false otherwise.
 template<typename T>
 inline bool operator==(const Rect<T> &lhs, const Rect<T> &rhs) {
   return lhs.min == rhs.min && lhs.max == rhs.max;
 }
 
+/// @brief Compares 2 rectangles for inequality.
+/// \param lhs The left rectangle operand.
+/// \param rhs The right rectangle operand.
+/// \return true if they are not equals, false otherwise.
 template<typename T>
 inline bool operator!=(const Rect<T> &lhs, const Rect<T> &rhs) {
   return !(lhs == rhs);

@@ -15,7 +15,7 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
-    target.clear(ngf::Colors::Lightblue);
+    target.clear(ngf::Colors::LightBlue);
     target.draw(m_primitiveType,
                 m_vertices.data(),
                 m_vertices.size(),

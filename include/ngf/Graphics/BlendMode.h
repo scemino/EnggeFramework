@@ -20,6 +20,7 @@ enum class BlendFactor {
   OneMinusDstAlpha
 };
 
+/// @brief Blending mode used for drawing.
 struct BlendMode {
   constexpr BlendMode()
       : colorSrcFactor(BlendFactor::One), colorDstFactor(BlendFactor::Zero), colorEquation(BlendEquation::Add),

@@ -5,11 +5,12 @@
 #include <ngf/Graphics/BlendMode.h>
 
 namespace ngf {
+/// @brief Define the states used for drawing to a RenderTarget.
 struct RenderStates {
-  glm::mat3 transform{1.0f};
-  const Texture *texture{nullptr};
-  Shader *shader{nullptr};
-  BlendMode mode{BlendAlpha};
+  glm::mat3 transform{1.0f};       ///< The transformation matrix.
+  const Texture *texture{nullptr}; ///< The texture.
+  Shader *shader{nullptr};         ///< The shader.
+  BlendMode mode{BlendAlpha};      ///< The blending mode.
 };
 }
 

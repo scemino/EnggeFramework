@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 namespace ngf {
+/// @brief Data in the graphics memory.
 class VertexBuffer {
 public:
   enum class Type {
@@ -10,11 +11,14 @@ public:
     Element
   };
 
-  /// Creates a new data store for a buffer object.
+  /// @brief Creates a new data store for a buffer object.
   VertexBuffer() noexcept;
-  ~VertexBuffer() noexcept;
+  /// @brief Forbids to copy a VertexBuffer.
   VertexBuffer(const VertexBuffer&) = delete;
+  /// @brief Forbids to assign a VertexBuffer.
   VertexBuffer& operator=(const VertexBuffer&) = delete;
+  /// @brief Destructor of a VertexBuffer.
+  ~VertexBuffer() noexcept;
 
   /// Sets new data to a buffer object.
   /// \param type: Specifies the target to which the buffer object is bound.
@@ -22,7 +26,9 @@ public:
   /// \param data: Specifies a pointer to data that will be copied into the data store for initialization, or nullptr if no data is to be copied.
   void buffer(Type type, size_t size, const void *data);
 
-  static void bind(const VertexBuffer* pVertexBuffer);
+  /// @brief Binds a vertex buffer.
+  /// \param vertexBuffer A pointer to a buffer or `nullptr`.
+  static void bind(const VertexBuffer* vertexBuffer);
 
 private:
   std::array<unsigned int,2> m_buffers{};

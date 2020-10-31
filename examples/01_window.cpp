@@ -37,7 +37,7 @@ private:
   }
 
 private:
-  ngf::Color m_color{ngf::Colors::Lightblue};
+  ngf::Color m_color{ngf::Colors::LightBlue};
 };
 
 int main() {

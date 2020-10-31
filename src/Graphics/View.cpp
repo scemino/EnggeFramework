@@ -5,11 +5,9 @@
 
 namespace ngf {
 namespace {
-#ifdef DEBUG
 bool isClamped(float value) {
   return 0.0f <= value && value <= 1.0f;
 }
-#endif
 }
 
 View::View()

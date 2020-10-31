@@ -37,7 +37,7 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
-    target.clear(ngf::Colors::Lightblue);
+    target.clear(ngf::Colors::LightBlue);
     ngf::RenderStates s;
     s.texture = m_texture.get();
     m_sprite->draw(target);

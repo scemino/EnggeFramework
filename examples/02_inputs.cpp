@@ -133,7 +133,7 @@ private:
   }
 
   void onRender(ngf::RenderTarget& target) override {
-    target.clear(ngf::Colors::Lightblue);
+    target.clear(ngf::Colors::LightBlue);
     Application::onRender(target);
   }
 

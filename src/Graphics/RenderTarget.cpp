@@ -169,7 +169,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         size_t sizeVertices,
                         const std::uint16_t *indices,
                         size_t sizeIndices,
-                        const RenderStates &states) {
+                        RenderStates states) {
 
   ngf::VertexArray::bind(&m_vao);
 
@@ -209,7 +209,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
 void RenderTarget::draw(PrimitiveType primitiveType,
                         const Vertex *vertices,
                         size_t sizeVertices,
-                        const RenderStates &states) {
+                        RenderStates states) {
   // TODO: share this code
   ngf::VertexArray::bind(&m_vao);
 

@@ -4,13 +4,30 @@
 
 namespace ngf {
 class Animation;
+
+/// @brief An AnimatedSprite is a sprite with an animation.
+/// @sa ngf::Sprite, ngf::Animation
 class AnimatedSprite {
 public:
+  /// @brief Sets the animation to use to animate the sprite.
+  /// \param animation Animation to use to animate the sprite.
   void setAnimation(Animation *animation);
-  void update(const TimeSpan &elapsed);
-  void draw(RenderTarget &target, const RenderStates &states = {});
 
+  /// @brief Updates the animation with the specified elapsed time.
+  /// \param elapsed This the time elapsed since last time it has been called.
+  void update(const TimeSpan &elapsed);
+
+  /// @brief Draws the sprite to the target with the specified render states.
+  /// \param target This is where the drawing is made (a window, a texture, etc.)
+  /// \param states Render states to use to draw this sprite.
+  void draw(RenderTarget &target, RenderStates states = {});
+
+  /// @brief Gets the sprite to animate.
+  /// \return The sprite to animate.
   Sprite &getSprite() { return m_sprite; }
+
+  /// @brief Gets the sprite to animate.
+  /// \return The sprite to animate.
   const Sprite &getSprite() const { return m_sprite; }
 
 private:

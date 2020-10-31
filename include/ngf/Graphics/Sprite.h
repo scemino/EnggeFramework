@@ -9,63 +9,63 @@
 #include <ngf/Graphics/Vertex.h>
 
 namespace ngf {
-
-namespace {
-frect normalize(const Texture &texture, const irect &size) {
-  auto textureSize = glm::vec(texture.getSize());
-  return frect::fromMinMax(glm::vec2(static_cast<float>(size.min.x) / textureSize.x,
-                                     static_cast<float>(size.min.y) / textureSize.y),
-                           glm::vec2(static_cast<float>(size.max.x) / textureSize.x,
-                                     static_cast<float>(size.max.y) / textureSize.y));
-}
-}
-
+/// @brief A sprite is a rectangle with a texture, a transformation and a color.
+/// @sa ngf::Texture, ngf::Transform
 class Sprite {
 public:
+  /// @brief Creates an empty sprite, with no texture.
   Sprite() = default;
 
-  explicit Sprite(const Texture &texture)
-      : m_texture(&texture) {
-    updateGeometry();
-  }
+  /// @brief Creates a sprite with a specified texture.
+  /// \param texture Texture used to fill the sprite.
+  explicit Sprite(const Texture &texture);
 
-  Sprite(const Texture &texture, const irect &textureRect)
-      : m_texture(&texture), m_textureRect(normalize(texture, textureRect)) {
-    updateGeometry();
-  }
+  /// @brief Creates a sprite with a texture, just a part of the texture will be used, specified by the 'textureRect' parameter in pixels.
+  /// \param texture Texture used to fill the sprite.
+  /// \param textureRect Rectangle to use in the texture, in pixels.
+  Sprite(const Texture &texture, const irect &textureRect);
 
-  Sprite(const Texture &texture, const frect &textureRect)
-      : m_texture(&texture), m_textureRect(textureRect) {
-    updateGeometry();
-  }
+  /// @brief Creates a sprite with a texture, just a part of the texture will be used, specified by the 'textureRect' parameter.
+  /// \param texture Texture used to fill the sprite.
+  /// \param textureRect Rectangle to use in the texture, the value is relative to the texture size [0.5,1] indicates to use only the half of the texture in width and the whole texture in height.
+  Sprite(const Texture &texture, const frect &textureRect);
 
-  void setTexture(const Texture &texture, bool resetRect = false) {
-    m_texture = &texture;
-    if (resetRect) {
-      m_textureRect = frect::fromPositionSize({0.0f, 0.0f}, {1.0f, 1.0f});
-    }
-    updateGeometry();
-  }
+  /// @brief Sets the texture to use for this sprite.
+  /// \param texture Texture used to fill the sprite.
+  /// \param resetRect Indicates whether the texture rectangle has to be be reset to the size of the new texture.
+  void setTexture(const Texture &texture, bool resetRect = false);
 
-  void setTextureRect(irect rect) {
-    if (!m_texture)
-      return;
-    m_textureRect = normalize(*m_texture, rect);
-    updateGeometry();
-  }
+  /// Sets the rectangle to use in the texture, in pixels.
+  /// \param rect Rectangle to use in the texture, in pixels.
+  void setTextureRect(irect rect);
 
+  /// @brief Sets the color of the sprite.
+  /// \param color Color to use.
   void setColor(const Color &color);
+  /// @brief Gets the color of the sprite.
+  /// \return The color of the sprite.
   Color getColor() const;
 
-  frect getLocalBounds() const {
-    return m_bounds;
-  }
+  /// @brief Gets the local bounding rectangle of the sprite.
+  /// \return The local bounding rectangle of the sprite.
+  frect getLocalBounds() const { return m_bounds; }
 
+  /// @brief Gets the transformation of the sprite.
+  /// \return The transformation of the sprite.
   Transform &getTransform() { return m_transform; }
+
+  /// @brief Gets the read-only transformation of the sprite.
+  /// \return The read-only transformation of the sprite.
   const Transform &getTransform() const { return m_transform; }
+
+  /// @brief Sets the origin of the transformation of the sprite.
+  /// \param anchor The orgin of the sprite.
   void setAnchor(Anchor anchor);
 
-  void draw(RenderTarget &target, const RenderStates &states = {});
+  /// @brief Draws the sprite to the target with the specified render states.
+  /// \param target This is where the drawing is made (a window, a texture, etc.)
+  /// \param states Render states to use to draw this sprite.
+  void draw(RenderTarget &target, RenderStates states = {});
 
 private:
   void updateGeometry();

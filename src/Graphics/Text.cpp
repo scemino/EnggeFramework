@@ -95,7 +95,7 @@ frect Text::getLocalBounds() const {
   return m_bounds;
 }
 
-void Text::draw(RenderTarget &target, const RenderStates &states) const {
+void Text::draw(RenderTarget &target, RenderStates states) const {
   if (m_font) {
     ensureGeometryUpdate();
 

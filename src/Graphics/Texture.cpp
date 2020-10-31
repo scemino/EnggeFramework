@@ -45,7 +45,7 @@ Texture::Texture(const Image &image) {
                glFormat,
                GL_UNSIGNED_BYTE,
                nullptr);
-  setData(image.getSize(), image.getPixelsPtr());
+  loadFromMemory(image.getSize(), image.getPixelsPtr());
 }
 
 Texture::Texture(Format format, glm::uvec2 size, const void *data)
@@ -88,7 +88,7 @@ void Texture::loadFromStream(std::istream& input){
   GL_CHECK(glBindTexture(type, m_img_tex));
   auto glFormat = getGlFormat(m_format);
   glTexImage2D(GL_TEXTURE_2D, 0, glFormat, img.getSize().x, img.getSize().y, 0, glFormat, GL_UNSIGNED_BYTE, nullptr);
-  setData(img.getSize(), img.getPixelsPtr());
+  loadFromMemory(img.getSize(), img.getPixelsPtr());
 }
 
 void Texture::setSmooth(bool smooth) {
@@ -109,7 +109,7 @@ bool Texture::isSmooth() const noexcept {
   return m_smooth;
 }
 
-void Texture::setData(glm::uvec2 size, const void *data) {
+void Texture::loadFromMemory(glm::uvec2 size, const void *data) {
   auto type = getGlType(m_type);
   m_size = size;
   GL_CHECK(glBindTexture(type, m_img_tex));

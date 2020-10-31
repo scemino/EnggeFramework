@@ -9,17 +9,34 @@
 namespace ngf {
 using EasingFunction = float (*)(float);
 
+/// @brief Behavior specifying how an interpolation will be repeated.
+///
+/// If the repeat behavior is OneWay, when the interpolation is done
+/// it will start again from the from value to the to value.
+/// If the repeat behavior is TwoWay, when the interpolation is done
+/// it will interpolate back to the from value.
 enum class RepeatBehavior {
-  OneWay,
-  TwoWay
+  OneWay, ///< One way behavior, when the interpolation is done, it will start again from the from value
+  TwoWay ///< Two way behavior, when the interpolation is done, it will interpolate back to the from value
 };
 
+/// @brief Interpolation between any type of value.
+/// \tparam T type of the value to interpolate
 template<typename T>
 class Tween {
 public:
+  /// @brief The type of the callback to be called when the value is changed.
   using ValueChangedCallback = std::function<void(const T &)>;
 
 private:
+  /// @brief Create an interpolation between from and to.
+  /// \param from The value to begin with.
+  /// \param to The value to end with.
+  /// \param onValueChanged The callback to call at each update.
+  /// \param duration The duration of the interpolation.
+  /// \param easing The interpolation easing function to use.
+  /// \param times The number of times the interpolation needs to be repeated.
+  /// \param repeatBehavior THe behavior to apply when repeating the interpolation.
   Tween(T from,
         T to,
         ValueChangedCallback onValueChanged,
@@ -32,28 +49,47 @@ private:
   }
 
 public:
+  /// @brief Create an empty interpolation.
   Tween() noexcept = default;
 
-  Tween(T origin, T target) noexcept
-      : m_from(origin), m_to(target) {
+  /// @brief Create an interpolation between from and to.
+  /// \param from The value to begin with.
+  /// \param to The value to end with.
+  Tween(T from, T to) noexcept
+      : m_from(from), m_to(to) {
   }
 
+  /// @brief Sets the callback to call at each update.
+  /// \param onValueChanged This callback will be called at each update.
+  /// \return the interpolation with this new callback.
   Tween onValueChanged(ValueChangedCallback onValueChanged) noexcept {
     return Tween(m_from, m_to, onValueChanged, m_duration, m_easing, m_times, m_repeatBehavior);
   }
 
+  /// @brief Sets the duration of the interpolation.
+  /// \param duration The duration of the interpolation.
+  /// \return the interpolation with this new duration.
   Tween setDuration(const TimeSpan &duration) noexcept {
     return Tween(m_from, m_to, m_onValueChanged, duration, m_easing, m_times, m_repeatBehavior);
   }
 
+  /// @brief Sets the easing function.
+  /// \param easing The easing function to use during the interpolation.
+  /// \return the interpolation with this new easing function.
   Tween with(EasingFunction easing) noexcept {
     return Tween(m_from, m_to, m_onValueChanged, m_duration, easing, m_times, m_repeatBehavior);
   }
 
+  /// @brief Sets the number of times the interpolation has to be repeated and how it is repeated.
+  /// \param times The number of times the interpolation has to be repeated.
+  /// \param behavior The behavior to use when the interpolation is repeated.
+  /// \return the interpolation which will be repated with these new parameters.
   Tween repeat(Times times, RepeatBehavior behavior = RepeatBehavior::OneWay) noexcept {
     return Tween(m_from, m_to, m_onValueChanged, m_duration, m_easing, times, behavior);
   }
 
+  /// @brief Gets the value of the current interpolation.
+  /// \return The value of the current interpolation.
   T getValue() const noexcept {
     auto t = m_elapsed.getTotalSeconds() / m_duration.getTotalSeconds();
     if (!m_forward)
@@ -61,10 +97,14 @@ public:
     return lerp(m_from, m_to, m_easing(t));
   }
 
+  /// @brief Returns a value indicating whether or not the interpolation is done.
+  /// \return true if the interpolation is done or false if still in progress.
   [[nodiscard]] constexpr bool isDone() const noexcept {
     return m_done;
   }
 
+  /// @brief Updates the interpolation with the specified elapsed time.
+  /// \param elapsed This the time elapsed since last time it has been called.
   void update(const TimeSpan &elapsed) noexcept {
     if (m_done)
       return;
@@ -106,6 +146,11 @@ private:
 
 class Tweening {
 public:
+  /// @brief Create an interpolation from the 'from' value to the 'to' value.
+  /// \tparam T Type of the value to interpolate.
+  /// \param from The interpolation will begin from this value.
+  /// \param to The interpolation will end when the value 'to' will be reached.
+  /// \return The interpolation created.
   template<typename T>
   static Tween<T> make(T from, T to) noexcept { return ngf::Tween(from, to); }
 };

@@ -1,7 +1,48 @@
 #include <ngf/Graphics/Sprite.h>
 
 namespace ngf {
-void Sprite::draw(RenderTarget &target, const RenderStates &states) {
+
+namespace {
+frect normalize(const Texture &texture, const irect &size) {
+  auto textureSize = glm::vec(texture.getSize());
+  return frect::fromMinMax(glm::vec2(static_cast<float>(size.min.x) / textureSize.x,
+                                     static_cast<float>(size.min.y) / textureSize.y),
+                           glm::vec2(static_cast<float>(size.max.x) / textureSize.x,
+                                     static_cast<float>(size.max.y) / textureSize.y));
+}
+}
+
+Sprite::Sprite(const Texture &texture)
+    : m_texture(&texture) {
+  updateGeometry();
+}
+
+Sprite::Sprite(const Texture &texture, const irect &textureRect)
+    : m_texture(&texture), m_textureRect(normalize(texture, textureRect)) {
+  updateGeometry();
+}
+
+Sprite::Sprite(const Texture &texture, const frect &textureRect)
+    : m_texture(&texture), m_textureRect(textureRect) {
+  updateGeometry();
+}
+
+void Sprite::setTexture(const Texture &texture, bool resetRect) {
+  m_texture = &texture;
+  if (resetRect) {
+    m_textureRect = frect::fromPositionSize({0.0f, 0.0f}, {1.0f, 1.0f});
+  }
+  updateGeometry();
+}
+
+void Sprite::setTextureRect(irect rect) {
+  if (!m_texture)
+    return;
+  m_textureRect = normalize(*m_texture, rect);
+  updateGeometry();
+}
+
+void Sprite::draw(RenderTarget &target, RenderStates states) {
   RenderStates localStates = states;
   localStates.transform *= getTransform().getTransform();
   localStates.texture = m_texture;
