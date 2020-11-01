@@ -1,7 +1,7 @@
 #include <ngf/Application.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <imgui.h>
-#include <imgui_stdlib.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 
 class DemoApplication final : public ngf::Application {
 private:

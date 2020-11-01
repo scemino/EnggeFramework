@@ -1,5 +1,6 @@
 #include <ngf/Math/PathFinding/Graph.h>
 #include <ngf/Math/PathFinding/GraphEdge.h>
+#include <algorithm>
 #include "AStarAlgorithm.h"
 #include "IndexedPriorityQueue.h"
 

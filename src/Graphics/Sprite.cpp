@@ -1,4 +1,5 @@
 #include <ngf/Graphics/Sprite.h>
+#include <algorithm>
 
 namespace ngf {
 

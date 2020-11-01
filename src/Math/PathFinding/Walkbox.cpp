@@ -1,7 +1,6 @@
 #include <cmath>
 #include <algorithm>
 #include <ngf/Math/PathFinding/Walkbox.h>
-#include <ngf/Math/Math.h>
 
 namespace ngf {
 
@@ -74,7 +73,9 @@ bool Walkbox::isVertexConcave(size_type vertex) const {
   auto right = glm::vec2(next.x - current.x, next.y - current.y);
 
   auto cross = (left.x * right.y) - (left.y * right.x);
-  return m_yAxisDirection == YAxisDirection::Up == cross >= 0;
+  if (m_yAxisDirection == YAxisDirection::Up)
+    return cross >= 0;
+  return cross < 0;
 }
 
 bool Walkbox::inside(const glm::vec2 &position, bool toleranceOnOutside) const {

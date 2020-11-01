@@ -1,4 +1,4 @@
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ../cmake/catch2)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}//cmake/catch2")          #
 
 Include(FetchContent)
 
@@ -9,7 +9,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests Tween.cpp)
+add_executable(tests testTween.cpp)
 target_link_libraries(tests Catch2::Catch2)
 target_link_libraries(tests ngf)
 

@@ -1,6 +1,6 @@
 #include <ngf/Application.h>
 #include <imgui.h>
-#include <imgui_stdlib.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 #include <iostream>
 #include <sstream>
 

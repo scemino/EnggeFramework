@@ -5,7 +5,7 @@
 #include <ngf/Graphics/Vertex.h>
 #include <ngf/System/Util.h>
 #include <imgui.h>
-#include <imgui_stdlib.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 #include <memory>
 #include <array>
 #include <codecvt>

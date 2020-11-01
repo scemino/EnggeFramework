@@ -22,7 +22,8 @@ set(NGLIB_HEADERS_DIR ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_
         ${PROJECT_SOURCE_DIR}/include/ngf/Graphics
         ${PROJECT_SOURCE_DIR}/include/ngf/Window
         ${PROJECT_SOURCE_DIR}/include/ngf/System
-        ${PROJECT_SOURCE_DIR}/extlibs/imgui)
+        ${PROJECT_SOURCE_DIR}/extlibs/imgui
+        ${PROJECT_SOURCE_DIR}/extlibs)
 
 include_directories(${NGLIB_HEADERS_DIR})
 
@@ -72,7 +73,7 @@ set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WI
         extlibs/imgui/examples/imgui_impl_sdl.cpp
         extlibs/imgui/examples/imgui_impl_opengl3.cpp)
 
-add_library(imgui
+add_library(imgui SHARED
         # Main Imgui files
         extlibs/imgui/imgui.cpp extlibs/imgui/imgui_draw.cpp extlibs/imgui/imgui_widgets.cpp
         extlibs/imgui/misc/cpp/imgui_stdlib.cpp)
@@ -87,6 +88,13 @@ target_include_directories(${PROJECT_NAME}
         )
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui)
+# For Linux only, to use std::filesystem
+if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+    target_link_libraries(${PROJECT_NAME} stdc++fs)
+endif()
+
+target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
+set_target_properties("${PROJECT_NAME}" PROPERTIES CXX_EXTENSIONS OFF)
 
 # add exta compilation flags
 target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra)
