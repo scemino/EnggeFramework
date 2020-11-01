@@ -13,14 +13,21 @@ jobs:
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macOS-latest]
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install dependencies
-        shell: bash
+      - name: Install macOS dependencies
+        run: brew install glew sdl2 glm
+        if: matrix.os == 'macOS-latest'
+
+      - name: Install Ubuntu dependencies
         run: sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libsdl2-dev libglm-dev
+        if: matrix.os == 'ubuntu-20.04'
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
