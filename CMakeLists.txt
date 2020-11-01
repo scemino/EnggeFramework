@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 # options
 option(NGF_BUILD_EXAMPLES "Build examples" ON)
-option(NGF_BUILD_DOCUMENTATION "Build documentation (needs Doxygen)" ON)
+option(NGF_BUILD_TESTS "Build tests" ON)
+option(NGF_BUILD_DOCUMENTATION "Build documentation (needs Doxygen)" OFF)
 
 # dependencies
 find_package(GLEW REQUIRED)
@@ -92,14 +93,15 @@ target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra)
 # if debug -> add DEBUG preprocessor
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
-if(NGF_BUILD_EXAMPLES)
+if (NGF_BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif()
+endif ()
 
+# Build documentation
 if (NGF_BUILD_DOCUMENTATION)
     find_package(Doxygen)
 
-    if(DOXYGEN_FOUND)
+    if (DOXYGEN_FOUND)
         # set input and output files
         set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile)
         set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
@@ -109,12 +111,18 @@ if (NGF_BUILD_DOCUMENTATION)
         message("Doxygen build started")
 
         # note the option ALL which allows to build the docs together with the application
-        add_custom_target( doc_doxygen ALL
+        add_custom_target(doc_doxygen ALL
                 COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating API documentation with Doxygen"
-                VERBATIM )
+                VERBATIM)
     else (DOXYGEN_FOUND)
         message("Doxygen need to be installed to generate the doxygen documentation")
-    endif(DOXYGEN_FOUND)
-endif()
+    endif (DOXYGEN_FOUND)
+endif ()
+
+# Build tests
+if (NGF_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()

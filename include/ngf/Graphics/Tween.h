@@ -28,26 +28,6 @@ public:
   /// @brief The type of the callback to be called when the value is changed.
   using ValueChangedCallback = std::function<void(const T &)>;
 
-private:
-  /// @brief Create an interpolation between from and to.
-  /// \param from The value to begin with.
-  /// \param to The value to end with.
-  /// \param onValueChanged The callback to call at each update.
-  /// \param duration The duration of the interpolation.
-  /// \param easing The interpolation easing function to use.
-  /// \param times The number of times the interpolation needs to be repeated.
-  /// \param repeatBehavior THe behavior to apply when repeating the interpolation.
-  Tween(T from,
-        T to,
-        ValueChangedCallback onValueChanged,
-        const TimeSpan &duration,
-        EasingFunction easing,
-        Times times, RepeatBehavior repeatBehavior) noexcept
-      : m_from(from), m_to(to), m_onValueChanged(onValueChanged), m_duration(duration), m_easing(easing),
-        m_times(times), m_repeatBehavior(repeatBehavior) {
-    m_done = duration == TimeSpan::seconds(0);
-  }
-
 public:
   /// @brief Create an empty interpolation.
   Tween() noexcept = default;
@@ -62,30 +42,36 @@ public:
   /// @brief Sets the callback to call at each update.
   /// \param onValueChanged This callback will be called at each update.
   /// \return the interpolation with this new callback.
-  Tween onValueChanged(ValueChangedCallback onValueChanged) noexcept {
-    return Tween(m_from, m_to, onValueChanged, m_duration, m_easing, m_times, m_repeatBehavior);
+  Tween& onValueChanged(ValueChangedCallback onValueChanged) noexcept {
+    m_onValueChanged = onValueChanged;
+    return *this;
   }
 
   /// @brief Sets the duration of the interpolation.
   /// \param duration The duration of the interpolation.
   /// \return the interpolation with this new duration.
-  Tween setDuration(const TimeSpan &duration) noexcept {
-    return Tween(m_from, m_to, m_onValueChanged, duration, m_easing, m_times, m_repeatBehavior);
+  Tween& setDuration(const TimeSpan &duration) noexcept {
+    m_done = duration == TimeSpan::seconds(0);
+    m_duration = duration;
+    return *this;
   }
 
   /// @brief Sets the easing function.
   /// \param easing The easing function to use during the interpolation.
   /// \return the interpolation with this new easing function.
-  Tween with(EasingFunction easing) noexcept {
-    return Tween(m_from, m_to, m_onValueChanged, m_duration, easing, m_times, m_repeatBehavior);
+  Tween& with(EasingFunction easing) noexcept {
+    m_easing = easing;
+    return *this;
   }
 
   /// @brief Sets the number of times the interpolation has to be repeated and how it is repeated.
   /// \param times The number of times the interpolation has to be repeated.
   /// \param behavior The behavior to use when the interpolation is repeated.
   /// \return the interpolation which will be repated with these new parameters.
-  Tween repeat(Times times, RepeatBehavior behavior = RepeatBehavior::OneWay) noexcept {
-    return Tween(m_from, m_to, m_onValueChanged, m_duration, m_easing, times, behavior);
+  Tween& repeat(Times times, RepeatBehavior behavior = RepeatBehavior::OneWay) noexcept {
+    m_times = times;
+    m_repeatBehavior = behavior;
+    return *this;
   }
 
   /// @brief Gets the value of the current interpolation.
@@ -112,13 +98,15 @@ public:
     m_elapsed += elapsed;
 
     if (m_elapsed >= m_duration) {
-      m_elapsed = m_duration;
-      m_elapsed = ngf::TimeSpan::seconds(0);
-      if (m_times <= 1) {
+      if (m_times < 1) {
+        m_elapsed = m_duration;
+        if (m_onValueChanged)
+          m_onValueChanged(getValue());
         m_done = true;
         m_times = 0;
         return;
       }
+      m_elapsed -= m_duration;
       if (m_repeatBehavior == RepeatBehavior::TwoWay) {
         m_forward = !m_forward;
       }
