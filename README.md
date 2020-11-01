@@ -1,8 +1,9 @@
 # Engge Framework (ngf)
+![CMake](https://github.com/scemino/EnggeFramework/workflows/CMake/badge.svg)
 
 **Engge Framework** is a C++ framework based on SDL.
 
-# Why
+## Why
 
 Why developping another framework, there are a ton of frameworks: SDL, SFML, Gamedev Framework, etc.
 

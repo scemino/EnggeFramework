@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ngf)
+project(ngf VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -73,11 +73,13 @@ set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WI
         extlibs/imgui/examples/imgui_impl_sdl.cpp
         extlibs/imgui/examples/imgui_impl_opengl3.cpp)
 
+# imgui library
 add_library(imgui SHARED
         # Main Imgui files
         extlibs/imgui/imgui.cpp extlibs/imgui/imgui_draw.cpp extlibs/imgui/imgui_widgets.cpp
         extlibs/imgui/misc/cpp/imgui_stdlib.cpp)
 
+# ngf library
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -101,6 +103,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra)
 # if debug -> add DEBUG preprocessor
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
+# Build examples
 if (NGF_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
@@ -134,3 +137,33 @@ if (NGF_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif ()
+
+# install ngf lib
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(TARGETS imgui DESTINATION lib)
+
+# Create a package
+## Configure CPack
+function(get_short_system_name variable)
+    if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+        set(${variable} "OSX" PARENT_SCOPE)
+    elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+        set(${variable} "Win32" PARENT_SCOPE)
+    else()
+        set(${variable} "${CMAKE_SYSTEM_NAME}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+string(REPLACE " " "-" CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+get_short_system_name(CPACK_SYSTEM_NAME)
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+string(TOLOWER "${CPACK_PACKAGE_FILE_NAME}" CPACK_PACKAGE_FILE_NAME)
+set(CPACK_GENERATOR ZIP)
+
+# Run CPack
+include(CPack)
