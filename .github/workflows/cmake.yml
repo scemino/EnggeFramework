@@ -16,22 +16,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macOS-latest, windows-latest]
+        os: [ubuntu-20.04, macOS-latest]
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install Windows dependencies
-        run: |
-          vcpkg update
-          vcpkg install glew:x64-windows sdl2:x64-windows glm:x64-windows
-        if: matrix.os == 'windows-latest'
-
-      - name: Install macOS dependencies
+      - name: Install macOS 🍎 dependencies
         run: brew install glew sdl2 glm
         if: matrix.os == 'macOS-latest'
 
-      - name: Install Ubuntu dependencies
+      - name: Install Ubuntu 🐧 dependencies
         run: sudo apt-get install build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libsdl2-dev libglm-dev
         if: matrix.os == 'ubuntu-20.04'
 

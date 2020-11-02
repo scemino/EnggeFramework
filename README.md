@@ -25,7 +25,8 @@ And the second reason is it's really easier to learn/understand our own framewor
 ## Dependencies
 I try not have too much dependencies, but also it's not necessary to code something already nice-done.
 
-Here are ngf dependencies:  
+Here are ngf dependencies:
 * [SDL2](https://www.libsdl.org): Simple DirectMedia Layer is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL and Direct3D.
+* [GLEW](http://glew.sourceforge.net): The OpenGL Extension Wrangler Library.
 * [glm](https://glm.g-truc.net/0.9.9/index.html): OpenGL Mathematics (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications.
-* [dear imgui](https://github.com/ocornut/imgui): Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies
+* [dear imgui](https://github.com/ocornut/imgui): Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
