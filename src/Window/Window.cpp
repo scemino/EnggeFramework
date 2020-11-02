@@ -109,7 +109,7 @@ void Window::init(const WindowConfig &config) {
   int w, h;
   SDL_GetWindowSize(m_window, &w, &h);
   auto size = getSize();
-  sizeFactor = static_cast<float>(size.x) / static_cast<float>(w);
+  sizeScale = static_cast<float>(size.x) / static_cast<float>(w);
 
   auto err = glGetError();
   if (err != GL_NO_ERROR) {

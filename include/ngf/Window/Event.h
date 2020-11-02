@@ -5,6 +5,7 @@
 #include <glm/vec2.hpp>
 
 namespace ngf {
+/// @brief Enumeration of the different types of events.
 enum class EventType {
   // Application events
   Quit, ///< User has requested to quit
@@ -32,15 +33,18 @@ enum class EventType {
   GamepadMappingUpdated,        ///< A gamepad controller mapping was updated
 };
 
+/// @brief Represents a window event.
 struct WindowEvent {
   std::uint32_t windowId; ///< The window id of the event
 };
 
+/// @brief Represents a window resize event.
 struct ResizeEvent {
   std::uint32_t windowId;  ///< The id of the window that has been resized
   glm::ivec2 size;         ///< The size of the window
 };
 
+/// @brief Represents a keyboard event.
 struct KeyEvent {
   std::uint32_t windowId;   ///< The window id of the event
   std::int32_t keycode;     ///< Keycode of the key
@@ -49,6 +53,7 @@ struct KeyEvent {
   bool repeat;              ///< true if the key was repeated
 };
 
+/// @brief Represents a mouse button event.
 struct MouseButtonEvent {
   std::uint32_t windowId;   ///< The window id of the event
   std::uint32_t id;         ///< The mouse id
@@ -57,16 +62,19 @@ struct MouseButtonEvent {
   std::uint8_t clicks;      ///< Number of clicks
 };
 
+/// @brief Represents a mouse motion event.
 struct MouseMovedEvent {
   std::uint32_t windowId;   ///< The window id of the event
   glm::ivec2 position;      ///< Mouse position
 };
 
+/// @brief Represents a mouse wheel event.
 struct MouseWheelEvent {
   std::uint32_t windowId;   ///< The window id of the event
   glm::ivec2 offset;        ///< Offset of the mouse wheel
 };
 
+/// @brief Represents an axis of a gamepad.
 enum class GamepadAxis {
   LeftX,        ///< The left stick X axis
   LeftY,        ///< The left stick Y axis
@@ -76,6 +84,7 @@ enum class GamepadAxis {
   TriggerRight, ///< The right trigger axis
 };
 
+/// @brief Represents a button of a gamepad.
 enum class GamepadButton {
   A,            ///< The A button
   B,            ///< The B button
@@ -94,28 +103,33 @@ enum class GamepadButton {
   DPadRight,    ///< The directional pad right button
 };
 
+/// @brief Represents an event for gamepad button
 struct GamepadButtonEvent {
   std::int32_t id;      ///< Id of the gamepad
   GamepadButton button; ///< Button of the gamepad
 };
 
+/// @brief Represents an event for gamepad axis.
 struct GamepadAxisEvent {
   std::int32_t id;    ///< Id of the gamepad
   GamepadAxis axis;   ///< Axis of the gamepad
   std::int16_t value; ///< Value of the axis
 };
 
+/// @brief Represents an event for gamepad connection.
 struct GamepadConnectionEvent {
   std::int32_t id; ///< Id of the gamepad
 };
 
+/// @brief Represents an event for gamepad disconnection.
 struct GamepadDisconnectionEvent {
   std::int32_t id; ///< Id of the gamepad
 };
 
+/// @brief Represents all sort of events.
 struct Event {
   EventType type;          ///< Event type
-  TimeSpan timestamp;
+  TimeSpan timestamp;      ///< Timestamp of the event.
   union {
     WindowEvent window;                ///< Window event data
     ResizeEvent resize;                ///< Size event data

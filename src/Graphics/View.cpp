@@ -56,7 +56,7 @@ void View::zoom(float factor) {
 }
 
 glm::mat3 View::getTransform() const {
-  glm::vec2 factors = Window::getSizeFactor() * 2.0f / m_size;
+  glm::vec2 factors = Window::getSizeScale() * 2.0f / m_size;
   return glm::translate(
       glm::rotate(
           glm::scale(glm::mat4(1),

@@ -63,6 +63,5 @@ private:
 };
 
 frect transform(const glm::mat3 &mat, const frect &rect);
-frect transform(const glm::mat3 &mat, const frect &rect);
 glm::vec2 transform(const glm::mat3 &mat, glm::vec2 point);
 }

@@ -271,7 +271,7 @@ glm::ivec2 RenderTarget::getSize() const {
 irect RenderTarget::getViewport(const View &view) const {
   auto region = getCanonicalViewport(view);
   auto size = getSize();
-  auto sizeScale = Window::getSizeFactor();
+  auto sizeScale = Window::getSizeScale();
   return irect::fromPositionSize({region.min.x, size.y - (region.min.y + region.getHeight())},
                                  {region.getWidth() / sizeScale, region.getHeight() / sizeScale});
 }

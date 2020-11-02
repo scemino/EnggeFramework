@@ -1,6 +1,10 @@
 #pragma once
 
 namespace ngf{
+/// @bried Represents a scancode
+///
+/// The values in this enumeration are based on the USB usage page standard:
+/// https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
 enum class Scancode
 {
   None = 0,
