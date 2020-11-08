@@ -1,12 +1,37 @@
 #include <cassert>
 #include <glm/gtx/transform.hpp>
 #include "View.h"
-#include <ngf/Window/Window.h>
 
 namespace ngf {
 namespace {
 bool isClamped(float value) {
   return 0.0f <= value && value <= 1.0f;
+}
+
+inline glm::mat3 rotation(float angle) {
+  float cos = std::cos(angle);
+  float sin = std::sin(angle);
+  return glm::mat3{
+      cos, -sin, 0.0f,
+      sin, cos, 0.0f,
+      0.0f, 0.0f, 1.0f
+  };
+}
+
+inline glm::mat3 translation(glm::vec2 offset) {
+  return glm::mat3{
+      1.0f, 0.0f, offset.x,
+      0.0f, 1.0f, offset.y,
+      0.0f, 0.0f, 1.0f
+  };
+}
+
+inline glm::mat3 scaling(glm::vec2 factor) {
+  return glm::mat3{
+      factor.x, 0.0f, 0.0f,
+      0.0f, factor.y, 0.0f,
+      0.0f, 0.0f, 1.0f
+  };
 }
 }
 
@@ -55,13 +80,14 @@ void View::zoom(float factor) {
   m_size *= factor;
 }
 
+void View::zoom(float factor, glm::vec2 fixed) {
+  m_center += (fixed - m_center) * (1 - factor);
+  m_size *= factor;
+}
+
 glm::mat3 View::getTransform() const {
-  glm::vec2 factors = Window::getSizeScale() * 2.0f / m_size;
-  return glm::translate(
-      glm::rotate(
-          glm::scale(glm::mat4(1),
-                     glm::vec3({factors.x, -factors.y, 1.f})), -m_rotation, glm::vec3(0.f, 0.f, 1.f)),
-      glm::vec3(-m_center, 1.f));
+  glm::vec2 factors = 2.0f / m_size;
+  return translation(-m_center) * rotation(-m_rotation) * scaling({factors.x, -factors.y});
 }
 
 glm::mat3 View::getInverseTransform() const {

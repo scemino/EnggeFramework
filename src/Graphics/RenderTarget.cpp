@@ -160,8 +160,8 @@ RenderTarget::RenderTarget(Window &window)
 }
 
 void RenderTarget::clear(const Color &color) {
-  glClearColor(color.r, color.g, color.b, color.a);
-  glClear(GL_COLOR_BUFFER_BIT);
+  GL_CHECK(glClearColor(color.r, color.g, color.b, color.a));
+  GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 void RenderTarget::draw(PrimitiveType primitiveType,
@@ -193,13 +193,21 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   ));
 
   // set vertices and indices
-  setBuffer(vertices, sizeVertices, indices, sizeIndices);
+  if(indices) {
+    setBuffer(vertices, sizeVertices, indices, sizeIndices);
+  } else {
+    setBuffer(vertices, sizeVertices);
+  }
 
   ngf::Shader::bind(&m_defaultShader);
   ngf::VertexArray::bind(&m_vao);
 
   // draw
-  GL_CHECK(glDrawElements(getEnum(primitiveType), sizeIndices, GL_UNSIGNED_SHORT, nullptr));
+  if(indices) {
+    GL_CHECK(glDrawElements(getEnum(primitiveType), sizeIndices, GL_UNSIGNED_SHORT, nullptr));
+  } else {
+    GL_CHECK(glDrawArrays(getEnum(primitiveType), 0, sizeVertices));
+  }
 
   GL_CHECK(glDisable(GL_BLEND));
   ngf::VertexArray::bind(nullptr);
@@ -210,40 +218,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const Vertex *vertices,
                         size_t sizeVertices,
                         RenderStates states) {
-  // TODO: share this code
-  ngf::VertexArray::bind(&m_vao);
-
-  // set texture
-  const Texture *pTexture = states.texture;
-  if (!pTexture) {
-    pTexture = &m_emptyTexture;
-  }
-  m_defaultShader.setUniform("u_texture", *pTexture);
-
-  // set transform
-  auto transform = states.transform * getView().getTransform();
-  m_defaultShader.setUniform("u_transform", transform);
-
-  // set blending
-  GL_CHECK(glEnable(GL_BLEND));
-  GL_CHECK(glBlendEquationSeparate(getEnum(states.mode.colorEquation), getEnum(states.mode.alphaEquation)));
-  GL_CHECK(glBlendFuncSeparate(
-      getEnum(states.mode.colorSrcFactor), getEnum(states.mode.colorDstFactor),
-      getEnum(states.mode.alphaSrcFactor), getEnum(states.mode.alphaDstFactor)
-  ));
-
-  // set vertices and indices
-  setBuffer(vertices, sizeVertices);
-
-  ngf::Shader::bind(&m_defaultShader);
-  ngf::VertexArray::bind(&m_vao);
-
-  // draw
-  GL_CHECK(glDrawArrays(getEnum(primitiveType), 0, sizeVertices));
-
-  GL_CHECK(glDisable(GL_BLEND));
-  ngf::VertexArray::bind(nullptr);
-  ngf::Shader::bind(nullptr);
+  draw(primitiveType, vertices, sizeVertices, nullptr, 0, states);
 }
 
 void RenderTarget::setView(const View &view) {
@@ -271,9 +246,8 @@ glm::ivec2 RenderTarget::getSize() const {
 irect RenderTarget::getViewport(const View &view) const {
   auto region = getCanonicalViewport(view);
   auto size = getSize();
-  auto sizeScale = Window::getSizeScale();
   return irect::fromPositionSize({region.min.x, size.y - (region.min.y + region.getHeight())},
-                                 {region.getWidth() / sizeScale, region.getHeight() / sizeScale});
+                                 {region.getWidth(), region.getHeight()});
 }
 
 glm::vec2 RenderTarget::mapPixelToCoords(glm::ivec2 point, const View &view) const {

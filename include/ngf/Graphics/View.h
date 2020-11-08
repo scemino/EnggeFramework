@@ -61,6 +61,10 @@ public:
   /// @brief  Resizes the view rectangle relatively to its current size.
   /// \param factor Zoom factor to apply.
   void zoom(float factor);
+  /// @brief  Resizes the view rectangle relatively to its current size and a fixed point
+  /// \param factor Zoom factor to apply.
+  /// \param fixed The center of the zoom.
+  void zoom(float factor, glm::vec2 fixed);
 
   /// Gets the projection transformation of the view.
   /// \return The projection transformation of the view.
