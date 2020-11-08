@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # options
 option(NGF_BUILD_EXAMPLES "Build examples" ON)
+option(NGF_BUILD_DEMOS "Build demos" ON)
 option(NGF_BUILD_TESTS "Build tests" ON)
 option(NGF_BUILD_DOCUMENTATION "Build documentation (needs Doxygen)" OFF)
 
@@ -106,6 +107,11 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 # Build examples
 if (NGF_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif ()
+
+# Build demos
+if (NGF_BUILD_DEMOS)
+    add_subdirectory(demos)
 endif ()
 
 # Build documentation
