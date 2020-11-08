@@ -49,25 +49,47 @@ private:
     ImGui::DragFloat2("Position", glm::value_ptr(m_room.getCamera().position));
     ImGui::DragFloat("Zoom", &m_zoom, 0.1f, 0.1f, 10.f);
 
-    int i = 1;
-    for (const auto &layer : m_room) {
-      auto zsort = layer->getZSort();
-      std::ostringstream s;
-      s << "Background";
-      if (zsort) {
-        s << ' ' << zsort;
-      }
-      if (ImGui::TreeNode(s.str().c_str())) {
-        auto visible = layer->isVisible();
-        if (ImGui::Checkbox("Visible", &visible)) {
-          layer->setVisible(visible);
+    if (ImGui::TreeNode("Layers")) {
+      for (const auto &layer : m_room.layers()) {
+        auto zsort = layer->getZSort();
+        std::ostringstream s;
+        s << "Background";
+        if (zsort) {
+          s << ' ' << zsort;
         }
-        auto parallax = layer->getParallax();
-        if (ImGui::DragFloat2("Parallax", glm::value_ptr(parallax))) {
-          layer->setParallax(parallax);
+        if (ImGui::TreeNode(s.str().c_str())) {
+          auto visible = layer->isVisible();
+          if (ImGui::Checkbox("Visible", &visible)) {
+            layer->setVisible(visible);
+          }
+          auto parallax = layer->getParallax();
+          if (ImGui::DragFloat2("Parallax", glm::value_ptr(parallax))) {
+            layer->setParallax(parallax);
+          }
+          ImGui::TreePop();
         }
-        ImGui::TreePop();
       }
+      ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Walkboxes")) {
+      for (auto &walkbox : m_room.walkboxes()) {
+        ImGui::PushID(&walkbox);
+        auto name = walkbox.getName();
+        std::string s = name;
+        if (name.empty()) {
+          s = "unnamed";
+        }
+        if (ImGui::TreeNode(s.c_str())) {
+          auto visible = walkbox.isVisible();
+          if (ImGui::Checkbox("Visible", &visible)) {
+            walkbox.setVisible(visible);
+          }
+          ImGui::TreePop();
+        }
+        ImGui::PopID();
+      }
+      ImGui::TreePop();
     }
     ImGui::End();
   }

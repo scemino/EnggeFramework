@@ -53,6 +53,13 @@ public:
   /// \return true if the walkbox is enabled, otherwise false.
   [[nodiscard]] bool isEnabled() const { return m_isEnabled; }
 
+  /// @brief Sets whether or not the walkbox is visible.
+  /// \param visible true if the walkbox is visible, otherwise false.
+  void setVisible(bool visible) { m_visible = visible; }
+  /// @brief Indicates whether or not the walkbox is visible.
+  /// \return true if the walkbox is visible, otherwise false.
+  [[nodiscard]] bool isVisible() const { return m_visible; }
+
   /// Gets the begin iterator of the points of the walkbox.
   /// \return the begin iterator of the points of the walkbox.
   iterator begin() { return m_polygon.begin(); }
@@ -96,6 +103,7 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const Walkbox &walkbox);
 
 private:
+  bool m_visible{true};
   std::vector<glm::ivec2> m_polygon;
   std::string m_name;
   YAxisDirection m_yAxisDirection{YAxisDirection::Up};

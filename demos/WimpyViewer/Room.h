@@ -1,16 +1,49 @@
 #pragma once
 #include <ngf/Graphics/Drawable.h>
 #include <ngf/IO/Json/JsonParser.h>
+#include <ngf/Math/PathFinding/Walkbox.h>
+#include <algorithm>
 #include <filesystem>
 #include "SpriteSheetItem.h"
 #include "Camera.h"
 #include "Layer.h"
 
-class Room final : public ngf::Drawable {
+class Layers {
 public:
   using iterator = std::vector<std::unique_ptr<Layer>>::iterator;
   using const_iterator = std::vector<std::unique_ptr<Layer>>::const_iterator;
 
+  explicit Layers(std::vector<std::unique_ptr<Layer>> &layers) : m_layers(layers) {
+  }
+
+  iterator begin() noexcept { return m_layers.begin(); }
+  iterator end() noexcept { return m_layers.end(); }
+  const_iterator cbegin() const noexcept { return m_layers.cbegin(); }
+  const_iterator cend() const noexcept { return m_layers.cend(); }
+
+private:
+  std::vector<std::unique_ptr<Layer>> &m_layers;
+};
+
+class Walkboxes {
+public:
+  using iterator = std::vector<ngf::Walkbox>::iterator;
+  using const_iterator = std::vector<ngf::Walkbox>::const_iterator;
+
+  explicit Walkboxes(std::vector<ngf::Walkbox> &walkboxes) : m_walkboxes(walkboxes) {
+  }
+
+  iterator begin() noexcept { return m_walkboxes.begin(); }
+  iterator end() noexcept { return m_walkboxes.end(); }
+  const_iterator cbegin() const noexcept { return m_walkboxes.cbegin(); }
+  const_iterator cend() const noexcept { return m_walkboxes.cend(); }
+
+private:
+  std::vector<ngf::Walkbox> &m_walkboxes;
+};
+
+class Room final : public ngf::Drawable {
+public:
   ~Room() override = default;
 
   void loadRoom(const std::filesystem::path &path) {
@@ -71,8 +104,20 @@ public:
       return l1->getZSort() > l2->getZSort();
     });
 
+    loadWalkboxes(wimpy);
+
     m_camera.position = glm::vec2(0, m_roomSize.y / 2.f);
     m_camera.size = getScreenSize(m_height);
+  }
+
+  void loadWalkboxes(const ngf::GGPackValue &wimpy) {
+    for (const auto &gWalkbox : wimpy["walkboxes"]) {
+      auto walkbox = parsePolygon(gWalkbox["polygon"].getString());
+      if (gWalkbox["name"].isString()) {
+        walkbox.setName(gWalkbox["name"].getString());
+      }
+      m_walkboxes.push_back(walkbox);
+    }
   }
 
   ngf::Transform &getTransform() { return m_transform; }
@@ -87,6 +132,22 @@ public:
       layerStates.transform *= t.getTransform();
       layer->draw(target, layerStates);
     }
+
+    for (const auto &walkbox : m_walkboxes) {
+      if (!walkbox.isVisible())
+        continue;
+
+      ngf::RenderStates localStates = states;
+      ngf::Transform t;
+      t.setPosition({-m_camera.position.x, 0});
+      localStates.transform *= t.getTransform();
+
+      std::vector<ngf::Vertex> polygon;
+      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [](const auto &p) {
+        return ngf::Vertex{(glm::vec2) p, ngf::Colors::LimeGreen};
+      });
+      target.draw(ngf::PrimitiveType::LineLoop, polygon, localStates);
+    }
   }
 
   glm::ivec2 getSize() const { return m_roomSize; }
@@ -94,10 +155,8 @@ public:
   Camera &getCamera() { return m_camera; }
   const Camera &getCamera() const { return m_camera; }
 
-  iterator begin() noexcept { return m_layers.begin(); }
-  iterator end() noexcept { return m_layers.end(); }
-  const_iterator cbegin() const noexcept { return m_layers.cbegin(); }
-  const_iterator cend() const noexcept { return m_layers.cend(); }
+  Layers layers() noexcept { return Layers(m_layers); }
+  Walkboxes walkboxes() noexcept { return Walkboxes(m_walkboxes); }
 
 private:
   static glm::ivec2 getScreenSize(int roomHeight) {
@@ -109,6 +168,20 @@ private:
       assert(false);
     }
     }
+  }
+
+  ngf::Walkbox parsePolygon(std::string_view text) const {
+    const char *p = text.data();
+    auto size = text.size();
+    char *p2;
+    std::vector<glm::ivec2> points;
+    do {
+      auto x = std::strtol(p + 1, &p2, 10);
+      auto y = std::strtol(p2 + 1, &p2, 10);
+      points.emplace_back(x, m_roomSize.y - y);
+      p = p2 + 2;
+    } while ((p - text.data()) < size);
+    return ngf::Walkbox(points);
   }
 
   static SpriteSheetItem toSpriteSheetItem(const std::string &name, const ngf::GGPackValue &value) {
@@ -142,6 +215,7 @@ private:
 private:
   std::vector<std::unique_ptr<Layer>> m_layers;
   std::shared_ptr<ngf::Texture> m_texture;
+  std::vector<ngf::Walkbox> m_walkboxes;
   ngf::Transform m_transform;
   glm::ivec2 m_roomSize{0, 0};
   int m_fullscreen{0};

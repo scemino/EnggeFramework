@@ -61,6 +61,15 @@ public:
   void draw(PrimitiveType primitiveType,
             const TContainer &vertices,
             RenderStates states = {});
+  /// @brief Draws primitives defined by vertices.
+  /// \param primitiveType The type of primitives to draw.
+  /// \param begin Begin iterator containing the vertices.
+  /// \param end End iterator containing the vertices.
+  /// \param states The render states to use for drawing.
+  template<typename TIterator>
+  void draw(PrimitiveType primitiveType,
+            TIterator begin, TIterator end,
+            RenderStates states = {});
 
   /// @brief Sets the current active view.
   /// \param view The view to use.
@@ -117,5 +126,12 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const TContainer &vertices,
                         RenderStates states) {
   draw(primitiveType, vertices.data(), vertices.size(), states);
+}
+
+template<typename TIterator>
+void RenderTarget::draw(PrimitiveType primitiveType,
+                        TIterator begin, TIterator end,
+                        RenderStates states) {
+  draw(primitiveType, begin, end - begin, states);
 }
 }
