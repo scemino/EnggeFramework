@@ -19,6 +19,11 @@ GGPackValue GGPackHashReader::read(std::istream &input) {
   return reader.readHash();
 }
 
+GGPackValue GGPackHashReader::load(const std::filesystem::path &path) {
+  std::ifstream input(path);
+  return read(input);
+}
+
 GGPackHashReader::GGPackHashReader(std::istream &input)
     : m_input(input) {
 }

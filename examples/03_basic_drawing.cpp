@@ -16,11 +16,7 @@ private:
 
   void onRender(ngf::RenderTarget &target) override {
     target.clear(ngf::Colors::LightBlue);
-    target.draw(m_primitiveType,
-                m_vertices.data(),
-                m_vertices.size(),
-                Indices.data(),
-                Indices.size());
+    target.draw(m_primitiveType, m_vertices);
     Application::onRender(target);
   }
 
@@ -45,13 +41,12 @@ private:
   }
 
 private:
-  ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red},
-                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Green},
-                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Blue},
-                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White}
+  ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::TriangleFan};
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::Red},
+                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::Green},
+                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::Blue},
+                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White}
                                         }};
-  constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
 };
 
 int main() {

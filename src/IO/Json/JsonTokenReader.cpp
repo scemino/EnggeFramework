@@ -75,6 +75,8 @@ TokenId TokenReader::readTokenId() {
   case ',':return TokenId::Comma;
   case '{':return TokenId::StartHash;
   case '}':return TokenId::EndHash;
+  case '[':return TokenId::StartArray;
+  case ']':return TokenId::EndArray;
   case '\"':return readQuotedString();
   default:
     if (c == '-' || isdigit(c)) {
@@ -179,6 +181,8 @@ std::string Token::readToken() const {
   case TokenId::Whitespace:return "Whitespace";
   case TokenId::StartHash:return "{";
   case TokenId::EndHash:return "}";
+  case TokenId::StartArray:return "[";
+  case TokenId::EndArray:return "]";
   default:return "?";
   }
 }

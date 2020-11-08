@@ -2,6 +2,7 @@
 #include "Color.h"
 
 namespace ngf {
+/// @brief Implements a set of predefined colors.
 struct Colors {
   inline static Color AliceBlue{0xf0, 0xf8, 0xff, 0xff}; // rgb(240, 248, 255)
   inline static Color AntiqueWhite{0xfa, 0xeb, 0xd7, 0xff}; // rgb(250, 235, 215)

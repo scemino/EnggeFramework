@@ -1,5 +1,6 @@
 #pragma once
 #include <ngf/System/TimeSpan.h>
+#include <ngf/Graphics/Drawable.h>
 #include <ngf/Graphics/Sprite.h>
 
 namespace ngf {
@@ -7,7 +8,7 @@ class Animation;
 
 /// @brief An AnimatedSprite is a sprite with an animation.
 /// @sa ngf::Sprite, ngf::Animation
-class AnimatedSprite {
+class AnimatedSprite : public Drawable {
 public:
   /// @brief Sets the animation to use to animate the sprite.
   /// \param animation Animation to use to animate the sprite.
@@ -20,7 +21,7 @@ public:
   /// @brief Draws the sprite to the target with the specified render states.
   /// \param target This is where the drawing is made (a window, a texture, etc.)
   /// \param states Render states to use to draw this sprite.
-  void draw(RenderTarget &target, RenderStates states = {});
+  void draw(RenderTarget &target, RenderStates states = {}) const override;
 
   /// @brief Gets the sprite to animate.
   /// \return The sprite to animate.

@@ -37,6 +37,7 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
+    target.setView(ngf::View{{0.f,0.f},{640.f,480.f}});
     target.clear(ngf::Colors::LightBlue);
     ngf::RenderStates s;
     s.texture = m_texture.get();

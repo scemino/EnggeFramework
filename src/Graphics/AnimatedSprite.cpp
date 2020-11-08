@@ -27,7 +27,7 @@ void AnimatedSprite::update(const TimeSpan &elapsed) {
   }
 }
 
-void AnimatedSprite::draw(RenderTarget &target, RenderStates states) {
+void AnimatedSprite::draw(RenderTarget &target, RenderStates states) const {
   if (!m_animation)
     return;
   m_sprite.draw(target, states);

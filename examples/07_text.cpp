@@ -38,12 +38,7 @@ private:
     target.clear(ngf::Colors::LightBlue);
     ngf::RenderStates s;
     s.texture = m_texture.get();
-    target.draw(m_primitiveType,
-                m_vertices.data(),
-                m_vertices.size(),
-                Indices.data(),
-                Indices.size(),
-                s);
+    target.draw(ngf::PrimitiveType::TriangleFan, m_vertices, s);
     m_text->draw(target);
     Application::onRender(target);
   }
@@ -71,13 +66,11 @@ private:
   std::unique_ptr<ngf::Text> m_text;
   std::unique_ptr<ngf::Texture> m_texture;
   std::unique_ptr<ngf::Texture> m_textureCharacter;
-  ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}},
-                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
-                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
-                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}}
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}},
+                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
+                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
+                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}}
                                         }};
-  constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
   int m_animIndex{0};
 };
 

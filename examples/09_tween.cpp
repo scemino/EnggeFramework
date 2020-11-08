@@ -23,7 +23,7 @@ private:
     m_sprite->setAnchor(ngf::Anchor::Center);
     m_sprite->getTransform().setScale({2.f,2.f});
 
-    m_tween = ngf::Tweening::make(glm::vec2{-100.0f, 0.f}, {100.0f, 0.f})
+    m_tween = ngf::Tweening::make(glm::vec2{220.0f, 240.f}, {420.0f, 240.f})
         .with(ngf::Easing::quarticEaseOut)
         .setDuration(ngf::TimeSpan::seconds(2))
         .repeat(10, ngf::RepeatBehavior::TwoWay)
@@ -54,12 +54,7 @@ private:
     target.clear(ngf::Colors::LightBlue);
     ngf::RenderStates s;
     s.texture = m_texture.get();
-    target.draw(m_primitiveType,
-                m_vertices.data(),
-                m_vertices.size(),
-                Indices.data(),
-                Indices.size(),
-                s);
+    target.draw(ngf::PrimitiveType::TriangleFan, m_vertices, s);
     m_sprite->draw(target);
     Application::onRender(target);
   }
@@ -67,11 +62,6 @@ private:
   void onImGuiRender() override {
     ImGui::Begin("Tools");
     ImGui::Text("%.2f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    const char *items = {"Points\0LineStrip\0LineLoop\0Lines\0TriangleStrip\0TriangleFan\0Triangles\0\0"};
-    auto primitiveIndex = static_cast<int>(m_primitiveType);
-    if (ImGui::Combo("Primitive type", &primitiveIndex, items)) {
-      m_primitiveType = static_cast<ngf::PrimitiveType>(primitiveIndex);
-    }
 
     auto &trsf = m_sprite->getTransform();
     auto origin = trsf.getOrigin();
@@ -107,13 +97,11 @@ private:
   std::unique_ptr<ngf::Texture> m_texture;
   std::unique_ptr<ngf::Texture> m_textureCharacter;
   std::unique_ptr<ngf::Sprite> m_sprite;
-  ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red, .texCoords={0.0f, 0.0f}},
-                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Green, .texCoords={1.0f, 0.0f}},
-                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Blue, .texCoords={1.0f, 1.0f}},
-                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}}
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}},
+                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
+                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
+                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}}
                                         }};
-  constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
   ngf::Tween<glm::vec2> m_tween;
   ngf::Tween<float> m_tweenRotation;
   ngf::Tween<ngf::Color> m_tweenColor;

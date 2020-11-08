@@ -58,9 +58,10 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
+    target.setView(ngf::View{{160,100},{320,200}});
     target.clear(ngf::Colors::LightBlue);
-    target.draw(ngf::PrimitiveType::LineLoop, m_vertices.data(), m_vertices.size());
-    target.draw(ngf::PrimitiveType::LineStrip, m_path.data(), m_path.size());
+    target.draw(ngf::PrimitiveType::LineLoop, m_vertices);
+    target.draw(ngf::PrimitiveType::LineStrip, m_path);
     Application::onRender(target);
   }
 

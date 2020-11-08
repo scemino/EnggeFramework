@@ -29,6 +29,7 @@ private:
     m_sprite->setAnimation(m_animWalk.get());
     m_sprite->getSprite().getTransform().setScale({4.f,4.f});
     m_sprite->getSprite().setAnchor(ngf::Anchor::Center);
+    m_sprite->getSprite().getTransform().setPosition({320.f,240.f});
   }
 
   void onUpdate(const ngf::TimeSpan &elapsed) override {
@@ -39,12 +40,7 @@ private:
     target.clear(ngf::Colors::LightBlue);
     ngf::RenderStates s;
     s.texture = m_texture.get();
-    target.draw(m_primitiveType,
-                m_vertices.data(),
-                m_vertices.size(),
-                Indices.data(),
-                Indices.size(),
-                s);
+    target.draw(m_primitiveType, m_vertices, s);
     m_sprite->draw(target);
     Application::onRender(target);
   }
@@ -87,13 +83,12 @@ private:
   std::unique_ptr<ngf::Animation> m_animJump;
   std::unique_ptr<ngf::Texture> m_texture;
   std::unique_ptr<ngf::Texture> m_textureCharacter;
-  ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::Triangles};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}},
-                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
-                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
-                                         {.pos={-320.0f, 240.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}}
+  ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::TriangleFan};
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}},
+                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
+                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
+                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}}
                                         }};
-  constexpr static std::array<std::uint16_t, 6> Indices{{0, 1, 2, 0, 2, 3}};
   int m_animIndex{0};
 };
 

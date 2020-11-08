@@ -28,6 +28,20 @@ GGPackValue readHash(TokenReader::iterator &it) {
   return hash;
 }
 
+GGPackValue readArray(TokenReader::iterator &it) {
+  GGPackValue::array_t array;
+  auto &reader = it.getReader();
+  while (it != reader.end() && it->id != TokenId::EndArray) {
+    array.push_back(parse(it));
+    // skip comma
+    if (it->id == TokenId::Comma) {
+      it++;
+    }
+  }
+  it++;
+  return array;
+}
+
 GGPackValue parse(ngf::Json::TokenReader &reader) {
   auto it = reader.begin();
   auto token = *it;
@@ -47,6 +61,9 @@ GGPackValue parse(TokenReader::iterator &it) {
   switch (token.id) {
   case TokenId::StartHash: {
     return readHash(it);
+  }
+  case TokenId::StartArray: {
+    return readArray(it);
   }
   case TokenId::Number: {
     auto text = reader.readText(token);

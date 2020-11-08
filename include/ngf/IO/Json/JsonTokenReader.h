@@ -18,6 +18,8 @@ enum class TokenId {
   Comment,
   StartHash,
   EndHash,
+  StartArray,
+  EndArray,
   End
 };
 

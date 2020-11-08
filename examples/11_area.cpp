@@ -68,6 +68,7 @@ private:
 
     target.clear(ngf::Colors::LightBlue);
     m_sprite->draw(target);
+    m_sprite->getTransform().setPosition({320.f, 240.f});
 
     ngf::RenderStates s;
     s.transform = m_sprite->getTransform().getTransform();

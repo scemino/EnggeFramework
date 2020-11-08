@@ -1,17 +1,18 @@
 #pragma once
 #include <array>
 #include <ngf/Graphics/Anchor.h>
+#include <ngf/Graphics/Drawable.h>
 #include <ngf/Graphics/Rect.h>
 #include <ngf/Graphics/RenderStates.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Texture.h>
-#include <Math/Transform.h>
+#include <ngf/Math/Transform.h>
 #include <ngf/Graphics/Vertex.h>
 
 namespace ngf {
 /// @brief A sprite is a rectangle with a texture, a transformation and a color.
 /// @sa ngf::Texture, ngf::Transform
-class Sprite {
+class Sprite : public Drawable {
 public:
   /// @brief Creates an empty sprite, with no texture.
   Sprite() = default;
@@ -30,6 +31,9 @@ public:
   /// \param textureRect Rectangle to use in the texture, the value is relative to the texture size [0.5,1] indicates to use only the half of the texture in width and the whole texture in height.
   Sprite(const Texture &texture, const frect &textureRect);
 
+  /// @brief Destructor of a Sprite.
+  ~Sprite() override = default;
+
   /// @brief Sets the texture to use for this sprite.
   /// \param texture Texture used to fill the sprite.
   /// \param resetRect Indicates whether the texture rectangle has to be be reset to the size of the new texture.
@@ -42,6 +46,7 @@ public:
   /// @brief Sets the color of the sprite.
   /// \param color Color to use.
   void setColor(const Color &color);
+
   /// @brief Gets the color of the sprite.
   /// \return The color of the sprite.
   Color getColor() const;
@@ -65,7 +70,7 @@ public:
   /// @brief Draws the sprite to the target with the specified render states.
   /// \param target This is where the drawing is made (a window, a texture, etc.)
   /// \param states Render states to use to draw this sprite.
-  void draw(RenderTarget &target, RenderStates states = {});
+  void draw(RenderTarget &target, RenderStates states = {}) const override;
 
 private:
   void updateGeometry();
@@ -75,7 +80,6 @@ private:
   frect m_textureRect{frect::fromMinMax({0.f, 0.f}, {1.f, 1.f})};
   frect m_bounds{};
   std::array<Vertex, 4> m_vertices{};
-  std::array<std::uint16_t, 6> m_indices{{0, 1, 2, 0, 2, 3}};
   Transform m_transform;
 };
 }

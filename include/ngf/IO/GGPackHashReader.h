@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include <vector>
 #include <ngf/IO/GGPackValue.h>
 #include <ngf/IO/GGPackBufferStream.h>
@@ -7,9 +8,10 @@ namespace ngf {
 class GGPackHashReader {
 public:
   static GGPackValue read(std::istream &input);
+  static GGPackValue load(const std::filesystem::path& path);
 
 private:
-  GGPackHashReader(std::istream &input);
+  explicit GGPackHashReader(std::istream &input);
 
   GGPackValue readHash();
   GGPackValue readValue();

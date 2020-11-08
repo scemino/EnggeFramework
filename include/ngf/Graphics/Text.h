@@ -2,7 +2,8 @@
 #include <string>
 #include <vector>
 #include <glm/mat4x4.hpp>
-#include <ngf/Graphics/FntFont.hpp>
+#include <ngf/Graphics/Drawable.h>
+#include <ngf/Graphics/FntFont.h>
 #include <ngf/Graphics/Vertex.h>
 #include "Math/Transform.h"
 
@@ -12,7 +13,7 @@ class RenderTarget;
 // This code has been copied from SFML Text and adapted to use FntFont.
 
 /// @brief Graphical text that can be drawn to a render target
-class Text {
+class Text : public Drawable {
 public:
   /// @brief Creates an empty text.
   Text();
@@ -55,7 +56,7 @@ public:
   /// @brief Draws the text to the target with the specified render states.
   /// \param target This is where the drawing is made (a window, a texture, etc.)
   /// \param states Render states to use to draw this text.
-  void draw(RenderTarget &target, RenderStates states = {}) const;
+  void draw(RenderTarget &target, RenderStates states = {}) const override;
 
   /// @brief Gets the local bounding rectangle of the text.
   /// \return The local bounding rectangle of the text.

@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <ngf/Graphics/FntFont.hpp>
+#include <ngf/Graphics/FntFont.h>
 
 namespace ngf {
 constexpr char PlaceholderCharacter = '?';

@@ -2,7 +2,7 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <ngf/Graphics/Font.hpp>
+#include <ngf/Graphics/Font.h>
 
 namespace ngf {
 // original code from:
