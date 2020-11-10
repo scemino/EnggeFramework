@@ -5,7 +5,7 @@
 
 struct SpriteSheetItem {
   std::string name;
-  ngf::irect frame;
-  ngf::irect spriteSourceSize;
-  glm::ivec2 sourceSize;
+  ngf::irect frame{};
+  ngf::irect spriteSourceSize{};
+  glm::ivec2 sourceSize{};
 };

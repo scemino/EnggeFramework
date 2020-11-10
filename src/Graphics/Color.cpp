@@ -86,4 +86,8 @@ Color Color::fromRgb(unsigned int color) {
 float *value_ptr(Color &color) {
   return &(color.r);
 }
+
+const float *value_ptr(const Color &color) {
+  return &(color.r);
+}
 }

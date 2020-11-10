@@ -41,6 +41,7 @@ public:
 };
 
 float *value_ptr(Color& color);
+const float *value_ptr(const Color& color);
 
 /// @brief Compares 2 colors for equality.
 /// \param left Left color operand.
