@@ -30,6 +30,7 @@ class Walkboxes final {
 public:
   using iterator = std::vector<ngf::Walkbox>::iterator;
   using const_iterator = std::vector<ngf::Walkbox>::const_iterator;
+  using const_reference = std::vector<ngf::Walkbox>::const_reference;
 
   explicit Walkboxes(std::vector<ngf::Walkbox> &walkboxes) : m_walkboxes(walkboxes) {
   }
@@ -38,6 +39,10 @@ public:
   iterator end() noexcept { return m_walkboxes.end(); }
   [[nodiscard]] const_iterator cbegin() const noexcept { return m_walkboxes.cbegin(); }
   [[nodiscard]] const_iterator cend() const noexcept { return m_walkboxes.cend(); }
+
+  void push_back(const_reference walkbox) { m_walkboxes.push_back(walkbox); }
+
+  iterator erase(const_iterator position) { return m_walkboxes.erase(position); }
 
 private:
   std::vector<ngf::Walkbox> &m_walkboxes;

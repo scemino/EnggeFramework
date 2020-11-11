@@ -12,6 +12,8 @@ public:
 
   [[nodiscard]] ngf::Color getClearColor() const { return m_clearColor; }
 
+  const Object *getSelectedObject() const { return m_selectedObject; }
+
   void draw() {
     showMainMenuBar();
     showObjects();
@@ -299,9 +301,22 @@ private:
       if (ImGui::Selectable(s.c_str(), isSelected)) {
         m_selectedWalkbox = &walkbox;
       }
+      if (ImGui::BeginPopupContextItem()) {
+        if (ImGui::Button("Rename...")) {
+        }
+        if (ImGui::Button("Delete")) {
+        }
+        ImGui::EndPopup();
+      }
       ImGui::PopID();
     }
     ImGui::Columns(1);
+
+    if (ImGui::Button("New walkbox")) {
+      std::array<glm::ivec2, 4>
+          points{glm::ivec2{200, 100}, glm::ivec2{400, 100}, glm::ivec2{400, 200}, glm::ivec2{200, 200}};
+      m_room.walkboxes().push_back(ngf::Walkbox(points));
+    }
 
     ImGui::End();
   }

@@ -46,6 +46,18 @@ public:
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The floating point value to set to the variable.
   void setUniform(std::string_view name, float value) const;
+  /// @brief Sets a uniform shader parameter with the specified vector of 2 floating point value.
+  /// \param name The name of the uniform variable in GLSL.
+  /// \param value The vector of 2 floating point value to set to the variable.
+  void setUniform(std::string_view name, glm::vec2 value) const;
+  /// @brief Sets a uniform shader parameter with the specified vector of 3 floating point value.
+  /// \param name The name of the uniform variable in GLSL.
+  /// \param value The vector of 3 floating point value to set to the variable.
+  void setUniform(std::string_view name, glm::vec3 value) const;
+  /// @brief Sets a uniform shader parameter with the specified vector of 4 floating point value.
+  /// \param name The name of the uniform variable in GLSL.
+  /// \param value The vector of 4 floating point value to set to the variable.
+  void setUniform(std::string_view name, glm::vec4 value) const;
   /// @brief Sets a uniform shader parameter with the specified matrix 3x3 value.
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The matrix 3x3 value to set to the variable.

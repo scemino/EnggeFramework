@@ -38,8 +38,14 @@ public:
   }
 
   /// @brief Gets the position of the rectangle.
-  /// \return
+  /// \return the position of the rectangle.
   constexpr vec getPosition() const noexcept { return min; }
+
+  /// @brief Gets a value indicating if the rectangle is empty.
+  /// \return true if the rectangle is empty.
+  [[nodiscard]] constexpr bool isEmpty() const noexcept {
+    return min.x >= max.x || min.y >= max.y;
+  }
 
   /// @brief Gets a position from the rectangle and an anchor.
   constexpr vec getPositionFromAnchor(Anchor anchor) const noexcept {

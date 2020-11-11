@@ -12,6 +12,7 @@
 #include "SpriteSheetItem.h"
 
 enum class Direction {
+  None,
   Front,
   Back,
   Left,
@@ -39,7 +40,7 @@ public:
   bool visible{true};
   glm::ivec2 pos{0, 0};
   glm::ivec2 usePos{0, 0};
-  Direction useDir{Direction::Front};
+  Direction useDir{Direction::None};
   ngf::irect hotspot{};
   ObjectType type{ObjectType::None};
   std::vector<ObjectAnimation> animations;

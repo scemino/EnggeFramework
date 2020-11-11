@@ -1,6 +1,7 @@
 #include <ngf/Application.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Shader.h>
+#include <ngf/Graphics/CircleShape.h>
 #include <imgui.h>
 #include <utility>
 #include "SpriteSheetItem.h"
@@ -36,7 +37,122 @@ private:
 
     ngf::RenderStates states;
     m_room.draw(target, states);
+
+    auto selectedObject = m_roomEditor.getSelectedObject();
+    if (selectedObject) {
+      drawPosition(target, *selectedObject);
+      drawZSort(target, *selectedObject);
+      drawHotspot(target, *selectedObject);
+    }
+
     Application::onRender(target);
+  }
+
+  [[nodiscard]] static ngf::Color getColor(ObjectType type) {
+    switch (type) {
+    case ObjectType::Prop:return ngf::Colors::Blue;
+    case ObjectType::Spot:return ngf::Colors::Green;
+    case ObjectType::Trigger:return ngf::Colors::Orange;
+    default:return ngf::Colors::Red;
+    }
+  }
+
+  static void drawPosition(ngf::RenderTarget &target, const Object &object) {
+    if (object.type == ObjectType::Trigger)
+      return;
+
+    auto color = getColor(object.type);
+
+    constexpr float length = 8.f;
+    constexpr float length_2 = length / 2.f;
+    constexpr float length_4 = length / 4.f;
+    std::array<ngf::Vertex, 4> posVertices = {
+        ngf::Vertex{.pos = {-length_2, 0.f}, .color = color},
+        ngf::Vertex{.pos = {length_2, 0.f}, .color = color},
+        ngf::Vertex{.pos = {0.f, -length_2}, .color = color},
+        ngf::Vertex{.pos = {0.f, length_2}, .color = color}};
+
+    ngf::RenderStates states;
+    ngf::Transform tObj;
+    tObj.setPosition({object.pos.x + object.usePos.x, object.pos.y - object.usePos.y});
+    states.transform = tObj.getTransform();
+    target.draw(ngf::PrimitiveType::Lines, posVertices, states);
+
+    if (object.useDir != Direction::None) {
+      std::array<ngf::Vertex, 2> dirVertices;
+      switch (object.useDir) {
+      case Direction::Back:dirVertices[0].pos = {-length_4, -length_4};
+        dirVertices[1].pos = {length_4, -length_4};
+        break;
+      case Direction::Front:dirVertices[0].pos = {-length_4, length_4};
+        dirVertices[1].pos = {length_4, length_4};
+        break;
+      case Direction::Left:dirVertices[0].pos = {-length_4, -length_4};
+        dirVertices[1].pos = {-length_4, length_4};
+        break;
+      case Direction::Right:dirVertices[0].pos = {length_4, -length_4};
+        dirVertices[1].pos = {length_4, length_4};
+        break;
+      default:break;
+      }
+      dirVertices[0].color = color;
+      dirVertices[1].color = color;
+      target.draw(ngf::PrimitiveType::Lines, dirVertices, states);
+
+      ngf::CircleShape circle(1.0f);
+      circle.setAnchor(ngf::Anchor::Center);
+      circle.setColor(color);
+      circle.draw(target, states);
+    }
+  }
+
+  static void drawHotspot(ngf::RenderTarget &target, const Object &object) {
+    if (object.type != ObjectType::None && object.type != ObjectType::Trigger)
+      return;
+
+    ngf::Transform tObj;
+    tObj.setPosition(object.pos);
+
+    auto color = getColor(object.type);
+    std::array<ngf::Vertex, 4> hotspotVertices = {
+        ngf::Vertex{.pos = object.hotspot.getTopLeft(), .color = color},
+        ngf::Vertex{.pos = object.hotspot.getBottomLeft(), .color = color},
+        ngf::Vertex{.pos = object.hotspot.getBottomRight(), .color = color},
+        ngf::Vertex{.pos = object.hotspot.getTopRight(), .color = color}};
+
+    // draw hotspot and position
+    ngf::RenderStates states;
+    states.transform = tObj.getTransform();
+    target.draw(ngf::PrimitiveType::LineLoop, hotspotVertices, states);
+
+    // draw circle on each vertex
+    ngf::CircleShape circle(1.0f);
+    circle.setColor(color);
+    circle.setAnchor(ngf::Anchor::Center);
+    for (auto &vertex : hotspotVertices) {
+      circle.getTransform().setPosition(vertex.pos);
+      circle.draw(target, states);
+    }
+  }
+
+  static void drawZSort(ngf::RenderTarget &target, const Object &object) {
+    const auto color = getColor(object.type);
+    const auto y = object.zsort;
+    std::array<ngf::Vertex, 2> vertices;
+    vertices[0].pos = {0, y};
+    vertices[0].color = color;
+    vertices[1].pos = {target.getSize().x, y};
+    vertices[1].color = color;
+    target.draw(ngf::PrimitiveType::Lines, vertices);
+
+    ngf::CircleShape circle(1.0f);
+    circle.getTransform().setPosition({5.f, y});
+    circle.setColor(color);
+    circle.setAnchor(ngf::Anchor::Center);
+    circle.draw(target, {});
+
+    circle.getTransform().setPosition({target.getSize().x - 5.f, y});
+    circle.draw(target, {});
   }
 
   void onImGuiRender() override {

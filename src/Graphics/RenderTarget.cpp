@@ -178,11 +178,16 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   if (!pTexture) {
     pTexture = &m_emptyTexture;
   }
-  m_defaultShader.setUniform("u_texture", *pTexture);
+  auto shader = states.shader;
+
+  if (!shader) {
+    shader = &m_defaultShader;
+  }
+  shader->setUniform("u_texture", *pTexture);
 
   // set transform
   auto transform = states.transform * getView().getTransform();
-  m_defaultShader.setUniform("u_transform", transform);
+  shader->setUniform("u_transform", transform);
 
   // set blending
   GL_CHECK(glEnable(GL_BLEND));
@@ -193,17 +198,17 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   ));
 
   // set vertices and indices
-  if(indices) {
+  if (indices) {
     setBuffer(vertices, sizeVertices, indices, sizeIndices);
   } else {
     setBuffer(vertices, sizeVertices);
   }
 
-  ngf::Shader::bind(&m_defaultShader);
+  ngf::Shader::bind(shader);
   ngf::VertexArray::bind(&m_vao);
 
   // draw
-  if(indices) {
+  if (indices) {
     GL_CHECK(glDrawElements(getEnum(primitiveType), sizeIndices, GL_UNSIGNED_SHORT, nullptr));
   } else {
     GL_CHECK(glDrawArrays(getEnum(primitiveType), 0, sizeVertices));

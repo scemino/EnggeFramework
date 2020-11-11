@@ -124,6 +124,24 @@ void Shader::setUniform(std::string_view name, float value) const {
   GL_CHECK(glUniform1f(loc, value));
 }
 
+void Shader::setUniform(std::string_view name, glm::vec2 value) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform2f(loc, value.x, value.y));
+}
+
+void Shader::setUniform(std::string_view name, glm::vec3 value) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform3f(loc, value.x, value.y, value.z));
+}
+
+void Shader::setUniform(std::string_view name, glm::vec4 value) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform4f(loc, value.x, value.y, value.z, value.w));
+}
+
 void Shader::setAttribute(std::string_view name, const glm::vec2 &value) const {
   Guard guard(*this);
   auto loc = getAttributeLocation(name);

@@ -112,7 +112,7 @@ private:
 
 template<typename TContainer>
 Walkbox::Walkbox(const TContainer &points)
-    : m_polygon(points) {
+    : Walkbox(points.begin(), points.end()) {
 }
 
 template<typename TIterator>
