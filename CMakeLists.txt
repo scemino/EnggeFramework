@@ -44,6 +44,7 @@ set(GFX_SOURCE_FILES
         src/Graphics/FntFont.cpp
         src/Graphics/GlDebug.cpp
         src/Graphics/Image.cpp
+        src/Graphics/RectangleShape.cpp
         src/Graphics/RenderTarget.cpp
         src/Graphics/Shader.cpp
         src/Graphics/Shape.cpp
