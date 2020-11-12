@@ -62,6 +62,7 @@ public:
 protected:
   void updateGeometry();
   void updateBounds(frect bounds);
+  void updateAutoBounds();
 
 private:
   void updateColors();

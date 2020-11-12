@@ -74,6 +74,21 @@ void Shape::updateBounds(frect bounds) {
   updateTexCoords();
 }
 
+void Shape::updateAutoBounds() {
+  if (m_vertices.empty()) {
+    m_bounds = frect();
+  } else {
+    auto min = m_vertices[0].pos;
+    auto max = m_vertices[0].pos;
+    for (const Vertex &vertex : m_vertices) {
+      min = ngf::min(min, vertex.pos);
+      max = ngf::max(max, vertex.pos);
+    }
+    m_bounds = frect::fromMinMax(min, max);
+  }
+  updateTexCoords();
+}
+
 void Shape::updateColors() {
   for (auto &l_vertex : m_vertices) {
     l_vertex.color = m_color;
