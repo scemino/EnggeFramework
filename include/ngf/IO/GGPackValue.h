@@ -240,7 +240,6 @@ public:
   }
 
   basic_ggpackvalue(initializer_list_t init) {
-
     // check if each element is an array with two elements whose first
     // element is a string
     bool is_a_dictionary = std::all_of(init.begin(), init.end(),
@@ -437,7 +436,6 @@ public:
   }
 
 private:
-
   /// helper for exception-safe object creation
   template<typename T, typename... Args>
   static T *create(Args &&... args) {

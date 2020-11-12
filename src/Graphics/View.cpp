@@ -47,7 +47,6 @@ View::View(const frect &rect)
 
 View::View(const glm::vec2 &center, const glm::vec2 &size)
     : m_center(center), m_size(size), m_rotation(0), m_viewport(frect::fromPositionSize({0.0f, 0.0f}, {1.0f, 1.0f})) {
-
 }
 
 frect View::getBounds() const {

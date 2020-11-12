@@ -1,5 +1,6 @@
-# Engge Framework (ngf)
+# Engge Framework
 ![CMake](https://github.com/scemino/EnggeFramework/workflows/CMake/badge.svg)
+[![CodeFactor](https://www.codefactor.io/repository/github/scemino/enggeframework/badge)](https://www.codefactor.io/repository/github/scemino/enggeframework)
 
 **Engge Framework** is a C++ framework based on SDL.
 

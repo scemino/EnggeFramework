@@ -170,7 +170,6 @@ struct is_compatible_object_type_impl<
     BasicGGPackValueType, CompatibleObjectType,
     std::enable_if_t<is_detected<mapped_type_t, CompatibleObjectType>::value &&
         is_detected<key_type_t, CompatibleObjectType>::value >> {
-
   using hash_t = typename BasicGGPackValueType::hash_t;
 
   // macOS's is_constructible does not play well with nonesuch...

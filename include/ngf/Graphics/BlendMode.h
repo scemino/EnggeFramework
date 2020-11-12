@@ -32,7 +32,6 @@ struct BlendMode {
                       BlendEquation equation = BlendEquation::Add)
       : colorSrcFactor(sourceFactor), colorDstFactor(destinationFactor), colorEquation(equation),
         alphaSrcFactor(sourceFactor), alphaDstFactor(destinationFactor), alphaEquation(equation) {
-
   }
 
   constexpr BlendMode(BlendFactor colorSourceFactor,
@@ -43,7 +42,6 @@ struct BlendMode {
                       BlendEquation alphaBlendEquation)
       : colorSrcFactor(colorSourceFactor), colorDstFactor(colorDestinationFactor), colorEquation(colorBlendEquation),
         alphaSrcFactor(alphaSourceFactor), alphaDstFactor(alphaDestinationFactor), alphaEquation(alphaBlendEquation) {
-
   }
 
   BlendFactor colorSrcFactor;

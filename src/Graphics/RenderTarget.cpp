@@ -170,7 +170,6 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const std::uint16_t *indices,
                         size_t sizeIndices,
                         RenderStates states) {
-
   ngf::VertexArray::bind(&m_vao);
 
   // set texture
