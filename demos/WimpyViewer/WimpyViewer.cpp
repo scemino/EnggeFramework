@@ -156,7 +156,6 @@ private:
   }
 
   void onImGuiRender() override {
-
     ImGui::Begin("Tools");
     ImGui::Text("%.2f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::Text("Mouse pos (%d,%d)", m_mousePos.x, m_mousePos.y);

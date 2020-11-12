@@ -27,8 +27,7 @@ private:
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Quit", "Command|Ctrl+Q")) {
-        }
+        ImGui::MenuItem("Quit", "Command|Ctrl+Q");
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
@@ -38,8 +37,7 @@ private:
         if (ImGui::MenuItem("Edit Animations...", "A", false, m_selectedObject != nullptr)) {
           m_showObjectAnimations = true;
         }
-        if (ImGui::MenuItem("Edit Walkboxes...", "W")) {
-        }
+        ImGui::MenuItem("Edit Walkboxes...", "W");
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("View")) {
@@ -95,7 +93,6 @@ private:
 
     ImGui::Begin("Animation States", &m_showObjectAnimations);
     if (m_selectedObject) {
-
       ImGui::Text("Object name : %s", m_selectedObject->name.c_str());
       ImGui::Separator();
 
@@ -302,10 +299,8 @@ private:
         m_selectedWalkbox = &walkbox;
       }
       if (ImGui::BeginPopupContextItem()) {
-        if (ImGui::Button("Rename...")) {
-        }
-        if (ImGui::Button("Delete")) {
-        }
+        ImGui::Button("Rename...");
+        ImGui::Button("Delete");
         ImGui::EndPopup();
       }
       ImGui::PopID();
@@ -379,5 +374,4 @@ private:
   bool m_showWalkboxInfo{false};
   bool m_showNewAnimPopup{false};
   std::string m_newAnimName;
-
 };
