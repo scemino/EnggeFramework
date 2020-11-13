@@ -1,4 +1,4 @@
-#include <ngf/Window/Window.h>
+#include <System/Window.h>
 #include <GL/glew.h>
 #include <SDL.h>
 #include <imgui.h>
@@ -6,6 +6,7 @@
 #include <examples/imgui_impl_sdl.h>
 #include <iostream>
 #include <sstream>
+#include "src/Graphics/GlDebug.h"
 
 namespace ngf {
 
@@ -27,6 +28,7 @@ GamepadButton getGamepadButton(Uint8 button) {
   case SDL_CONTROLLER_BUTTON_DPAD_DOWN:return GamepadButton::DPadDown;
   case SDL_CONTROLLER_BUTTON_DPAD_LEFT:return GamepadButton::DPadLeft;
   case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:return GamepadButton::DPadRight;
+  default:break;
   }
   assert(false);
 }
@@ -39,6 +41,7 @@ GamepadAxis getGamepadAxis(Uint8 axis) {
   case SDL_CONTROLLER_AXIS_RIGHTY:return GamepadAxis::RightY;
   case SDL_CONTROLLER_AXIS_TRIGGERLEFT:return GamepadAxis::TriggerLeft;
   case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:return GamepadAxis::TriggerRight;
+  default:break;
   }
 
   assert(false);
@@ -66,12 +69,10 @@ void Window::init(const WindowConfig &config) {
 
   // Decide GL+GLSL versions
 #if __APPLE__
-  // GL 3.2 Core + GLSL 150
+  // GL 3.3 Core + GLSL 150
   const char *glsl_version = "#version 150";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
-                      SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);// Always required on Mac
-  SDL_GL_SetAttribute(
-      SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);// Always required on Mac
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 #else
@@ -270,6 +271,20 @@ glm::uvec2 Window::getSize() const {
   int height;
   SDL_GL_GetDrawableSize(m_window, &width, &height);
   return glm::uvec2(width, height);
+}
+
+void Window::setActive() {
+  if (SDL_GL_GetCurrentContext() != m_glContext) {
+    SDL_GL_MakeCurrent(m_window, m_glContext);
+  }
+  GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+glm::ivec2 Window::getFramebufferSize() const {
+  assert(m_window);
+  glm::ivec2 size;
+  SDL_GL_GetDrawableSize(m_window, &size.x, &size.y);
+  return size;
 }
 
 }

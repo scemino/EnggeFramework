@@ -35,7 +35,7 @@ set(SYS_SOURCE_FILES
         src/System/Times.cpp
         src/System/TimeSpan.cpp
         src/System/Util.cpp)
-set(WIN_SOURCE_FILES src/Window/Window.cpp)
+set(WIN_SOURCE_FILES src/System/Window.cpp)
 set(GFX_SOURCE_FILES
         src/Graphics/AnimatedSprite.cpp
         src/Graphics/Animation.cpp
@@ -46,6 +46,7 @@ set(GFX_SOURCE_FILES
         src/Graphics/Image.cpp
         src/Graphics/RectangleShape.cpp
         src/Graphics/RenderTarget.cpp
+        src/Graphics/RenderTexture.cpp
         src/Graphics/Shader.cpp
         src/Graphics/Shape.cpp
         src/Graphics/Sprite.cpp

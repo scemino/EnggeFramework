@@ -23,6 +23,11 @@ public:
   /// \param alpha Alpha component between [0.f,1.f]
   Color(float red, float green, float blue, float alpha = 1.0f) noexcept;
 
+  /// Creates a color from a specified color and a new alpha component
+  /// \param color Color to copy
+  /// \param alpha Alpha component between [0,255]
+  Color(const Color& color, float alpha) noexcept;
+
   /// Creates a color from a text with an hexadecimal value "#RRGGBB"
   /// \param text Text containing an hexadecimal value
   /// \return the corresponding color

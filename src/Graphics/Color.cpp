@@ -14,6 +14,10 @@ Color::Color(float red, float green, float blue, float alpha) noexcept
     : r(red), g(green), b(blue), a(alpha) {
 }
 
+Color::Color(const Color& color, float alpha) noexcept
+: Color(color.r, color.g, color.b, alpha){
+}
+
 bool operator==(const Color &left, const Color &right) {
   return (left.r == right.r) && (left.g == right.g) && (left.b == right.b) &&
       (left.a == right.a);

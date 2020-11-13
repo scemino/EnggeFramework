@@ -2,7 +2,7 @@
 #include <functional>
 #include <glm/vec2.hpp>
 #include <ngf/Graphics/RenderTarget.h>
-#include <ngf/Window/Event.h>
+#include <System/Event.h>
 #include <ngf/Math/Math.h>
 
 namespace ngf{

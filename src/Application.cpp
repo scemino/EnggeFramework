@@ -1,5 +1,6 @@
-#include <Application.h>
-#include <System/StopWatch.h>
+#include <ngf/Application.h>
+#include <ngf/Graphics/RenderWindow.h>
+#include <ngf/System/StopWatch.h>
 #include <imgui.h>
 #include <GL/glew.h>
 #include <examples/imgui_impl_opengl3.h>
@@ -16,7 +17,7 @@ Application::~Application() = default;
 
 void Application::run() {
   onInit();
-  m_renderTarget = std::make_unique<ngf::RenderTarget>(m_window);
+  m_renderTarget = std::make_unique<ngf::RenderWindow>(m_window);
   processEvents();
 
   int frames = 0;
@@ -67,7 +68,7 @@ void Application::onExit() {
 void Application::onUpdate(const TimeSpan &) {
 }
 
-void Application::onRender(ngf::RenderTarget&) {
+void Application::onRender(ngf::RenderTarget &) {
   // Render dear imgui
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window.getNativeHandle());

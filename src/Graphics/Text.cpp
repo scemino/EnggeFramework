@@ -101,7 +101,7 @@ void Text::draw(RenderTarget &target, RenderStates states) const {
 
     RenderStates s = states;
     s.texture = m_fontTexture;
-    target.draw(PrimitiveType::Triangles, m_vertices.data(), m_vertices.size(), s);
+    target.draw(PrimitiveType::Triangles, m_vertices, s);
   }
 }
 

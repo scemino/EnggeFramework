@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <ngf/System/TimeSpan.h>
-#include <ngf/Window/Scancode.h>
+#include <System/Scancode.h>
 #include <glm/vec2.hpp>
 
 namespace ngf {

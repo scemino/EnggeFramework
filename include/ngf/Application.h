@@ -1,8 +1,9 @@
 #pragma once
 #include <string_view>
 #include <ngf/System/TimeSpan.h>
-#include <ngf/Window/Window.h>
+#include <System/Window.h>
 #include <ngf/Graphics/RenderTarget.h>
+#include <ngf/Graphics/RenderWindow.h>
 #include <ngf/Graphics/RenderStates.h>
 
 namespace ngf {
@@ -33,6 +34,6 @@ private:
   bool m_done{false};
   float m_fps{0};
   int m_frames{0};
-  std::unique_ptr<RenderTarget> m_renderTarget;
+  std::unique_ptr<RenderWindow> m_renderTarget;
 };
 }

@@ -66,7 +66,7 @@ Texture::Texture(Format format, const int width, const void *data)
   updateFilters();
 }
 
-Texture::Texture(const std::filesystem::path& path){
+Texture::Texture(const std::filesystem::path &path) {
   GL_CHECK(glGenTextures(1, &m_img_tex));
   load(path);
 }
@@ -75,12 +75,12 @@ Texture::~Texture() {
   GL_CHECK(glDeleteTextures(1, &m_img_tex));
 }
 
-void Texture::load(const std::filesystem::path& path) {
+void Texture::load(const std::filesystem::path &path) {
   std::ifstream is(path, std::ios::binary);
   loadFromStream(is);
 }
 
-void Texture::loadFromStream(std::istream& input){
+void Texture::loadFromStream(std::istream &input) {
   ngf::Image img;
   img.load(input);
   m_format = img.getBpp() == 4 ? ngf::Texture::Format::Rgba : ngf::Texture::Format::Rgb;

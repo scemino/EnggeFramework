@@ -4,7 +4,7 @@
 #include <glm/vec2.hpp>
 #include <ngf/Graphics/Color.h>
 #include <ngf/Graphics/Colors.h>
-#include <ngf/Window/Event.h>
+#include <System/Event.h>
 
 namespace ngf {
 /// @brief Represents a configuration to initialize a window.
@@ -70,6 +70,11 @@ public:
   /// Gets the scale for the size of the window.
   /// \return the scale for the size of the window.
   [[nodiscard]] static float getSizeScale() { return sizeScale; }
+
+  /// @brief Activates the target for rendering.
+  void setActive();
+
+  [[nodiscard]] glm::ivec2 getFramebufferSize() const;
 
 private:
   friend class Application;

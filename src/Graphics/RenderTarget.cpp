@@ -1,8 +1,8 @@
 #include <ngf/Graphics/RenderTarget.h>
-#include <ngf/Graphics/VertexArray.h>
 #include <ngf/Graphics/Image.h>
 #include <Math/Transform.h>
-#include <ngf/Window/Window.h>
+#include <System/Window.h>
+#include <utility>
 #include "GlDebug.h"
 
 namespace ngf {
@@ -152,9 +152,8 @@ void setBuffer(const Vertex *vertices, size_t sizeVertices) {
 }
 }
 
-RenderTarget::RenderTarget(Window &window)
-    : m_window(window), m_size(window.getSize()),
-      m_view(frect::fromPositionSize({0.0f, 0.0f}, {static_cast<float>(m_size.x), static_cast<float>(m_size.y)})),
+RenderTarget::RenderTarget(glm::ivec2 size)
+    : m_view(frect::fromPositionSize({0.0f, 0.0f}, {static_cast<float>(size.x), static_cast<float>(size.y)})),
       m_emptyTexture(createWhitePixel()) {
   m_defaultShader.load(vertexShaderSource, fragmentShaderSource);
 }
@@ -177,8 +176,9 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   if (!pTexture) {
     pTexture = &m_emptyTexture;
   }
-  auto shader = states.shader;
 
+  // set shader
+  auto shader = states.shader;
   if (!shader) {
     shader = &m_defaultShader;
   }
@@ -241,10 +241,6 @@ irect RenderTarget::getCanonicalViewport(const View &view) const {
   glm::ivec2 rectSize =
       {static_cast<int>(viewport.getWidth() * size.x + 0.5f), static_cast<int>(viewport.getHeight() * size.y + 0.5f)};
   return irect::fromPositionSize(rectPos, rectSize);
-}
-
-glm::ivec2 RenderTarget::getSize() const {
-  return m_window.getSize();
 }
 
 irect RenderTarget::getViewport(const View &view) const {
