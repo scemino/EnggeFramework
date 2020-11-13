@@ -38,6 +38,22 @@ public:
   /// \return The color of the sprite.
   Color getColor() const;
 
+  /// @brief Sets the outline color of the shape.
+  /// \param color The outline color of the shape.
+  void setOutlineColor(const Color &color);
+
+  /// @brief Gets the outline color of the shape.
+  /// \return The outline color of the shape.
+  Color getOutlineColor() const { return m_outlineColor; }
+
+  /// @brief Sets the thickness of the shape's outline.
+  /// \param thickness The thickness of the shape's outline.
+  void setOutlineThickness(float thickness);
+
+  /// @brief Gets the thickness of the shape's outline.
+  /// \return the thickness of the shape's outline.
+  float getOutlineThickness() const { return m_outlineThickness; }
+
   /// @brief Gets the local bounding rectangle of the shape.
   /// \return The local bounding rectangle of the shape.
   frect getLocalBounds() const;
@@ -49,6 +65,7 @@ public:
   /// @brief Gets the total number of points of the shape.
   /// \return The total number of points of the shape.
   virtual std::size_t getPointCount() const = 0;
+
   /// &brief Gets a point of the shape.
   /// \param index Index of the point to get.
   /// \return Point at the specified index.
@@ -67,13 +84,18 @@ protected:
 private:
   void updateColors();
   void updateTexCoords();
+  void updateOutline();
+  void updateOutlineColors();
 
 private:
   const Texture *m_texture{nullptr};
   std::vector<Vertex> m_vertices;
+  std::vector<Vertex> m_outlineVertices;
   frect m_bounds{};
   frect m_textureRect{};
   Color m_color{Colors::White};
+  Color m_outlineColor{Colors::White};
+  float m_outlineThickness{0.f};
   Transform m_transform;
 };
 

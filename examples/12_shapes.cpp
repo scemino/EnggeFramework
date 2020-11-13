@@ -34,6 +34,12 @@ private:
     if (ngf::ImGui::ColorEdit4("Color", &m_color)) {
       m_shape->setColor(m_color);
     }
+    if (ImGui::DragFloat("Outline thickness", &m_outlineThickness)) {
+      m_shape->setOutlineThickness(m_outlineThickness);
+    }
+    if (ngf::ImGui::ColorEdit4("Outline Color", &m_outlineColor)) {
+      m_shape->setOutlineColor(m_outlineColor);
+    }
 
     ImGui::End();
   }
@@ -41,25 +47,25 @@ private:
   void updateShape() {
     switch (m_primitiveIndex) {
     case 0:m_shape = std::make_unique<ngf::RectangleShape>(glm::vec2{300.f, 140.f});
-      m_shape->setAnchor(ngf::Anchor::Center);
-      m_shape->setColor(m_color);
       break;
     case 1:m_shape = std::make_unique<ngf::CircleShape>(140.f);
-      m_shape->setAnchor(ngf::Anchor::Center);
-      m_shape->setColor(m_color);
       break;
     case 2:
       std::array<glm::vec2,5> points{glm::vec2{0.f, 0.f},{150.f, 10.f},{120.f, 90.f},{30.f, 100.f},{0.f, 50.f}};
       m_shape = std::make_unique<ngf::ConvexShape>(points);
-      m_shape->setAnchor(ngf::Anchor::Center);
-      m_shape->setColor(m_color);
       break;
     }
+    m_shape->setAnchor(ngf::Anchor::Center);
+    m_shape->setColor(m_color);
+    m_shape->setOutlineColor(m_outlineColor);
+    m_shape->setOutlineThickness(m_outlineThickness);
   }
 
 private:
   std::unique_ptr<ngf::Shape> m_shape;
-  ngf::Color m_color{ngf::Colors::White};
+  ngf::Color m_color{ngf::Colors::HotPink};
+  ngf::Color m_outlineColor{ngf::Colors::DarkSlateBlue};
+  float m_outlineThickness{8.f};
   int m_primitiveIndex{0};
 };
 
