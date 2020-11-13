@@ -3,6 +3,7 @@
 #include <glm/vec2.hpp>
 
 namespace ngf {
+/// @brief Specialized shape representing a convex polygon.
 class ConvexShape : public Shape {
 public:
   /// @brief Creates a shape from iterators of points.

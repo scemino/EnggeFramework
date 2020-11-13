@@ -2,6 +2,7 @@
 #include <glm/vec2.hpp>
 
 namespace ngf {
+/// @brief Specialized shape representing a rectangle.
 class RectangleShape : public Shape {
 public:
   /// @brief Creates an empty rectangle shape.

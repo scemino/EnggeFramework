@@ -3,6 +3,7 @@
 #include <ngf/Graphics/RenderStates.h>
 
 namespace ngf {
+/// @brief Abstract base class for objects that can be drawn.
 class Drawable {
 public:
   /// @brief Destructor of a drawable object.

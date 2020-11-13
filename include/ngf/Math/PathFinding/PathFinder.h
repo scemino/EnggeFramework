@@ -7,6 +7,7 @@ class Walkbox;
 class Graph;
 
 /// @brief A PathFinder is used to find a walkable path within one or several walkboxes.
+/// @sa Graph, Walkbox.
 class PathFinder {
 public:
   /// @brief Creates a PathFinder from a container of walkboxes.

@@ -2,6 +2,7 @@
 #include <iostream>
 
 namespace ngf {
+/// @brief Stream of data in memory.
 struct MemoryStream : std::istream {
 public:
   struct membuf : std::streambuf {
@@ -14,8 +15,10 @@ public:
   };
 
 public:
+  /// @brief Creates a memory stream from a range of data.
+  /// \param begin Start of the range of data.
+  /// \param end End of the range of data.
   MemoryStream(char *begin, char *end);
-
 
 private:
   membuf m_buf;

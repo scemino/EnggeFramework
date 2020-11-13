@@ -132,6 +132,8 @@ private:
   RepeatBehavior m_repeatBehavior{RepeatBehavior::OneWay};
 };
 
+/// @brief Helper class to create an interpolation.
+/// @sa Tween.
 class Tweening {
 public:
   /// @brief Create an interpolation from the 'from' value to the 'to' value.

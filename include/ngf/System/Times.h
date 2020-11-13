@@ -2,11 +2,18 @@
 #include <cstddef>
 
 namespace ngf {
+/// @brief Represents a number of times.
+/// @sa Tween.
 class Times {
 public:
+  /// @brief Creates an empty number of time.
   constexpr Times() noexcept = default;
+  /// @brief Creates a number of times from a specified number.
+  /// \param number Bumber of times.
   constexpr Times(int number) noexcept: m_value(number) {}
 
+  /// @brief Decrements a number of times.
+  /// \return The new number of times.
   inline Times &operator--() {
     if (m_isInfinity)
       return *this;
@@ -14,12 +21,16 @@ public:
     return *this;
   }
 
+  /// @brief Decrements a number of times.
+  /// \return The new number of times.
   inline Times operator--(int) {
     Times ret = *this;
     this->operator--();
     return ret;
   }
 
+  /// @brief Increments a number of times.
+  /// \return The new number of times.
   inline Times &operator++() {
     if (m_isInfinity)
       return *this;
@@ -27,6 +38,8 @@ public:
     return *this;
   }
 
+  /// @brief Increments a number of times.
+  /// \return The new number of times.
   inline Times operator++(int) {
     Times ret = *this;
     this->operator++();

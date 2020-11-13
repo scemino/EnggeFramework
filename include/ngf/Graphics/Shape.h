@@ -6,7 +6,7 @@
 namespace ngf {
 
 /// @brief Base class for textured shapes.
-/// @sa CircleShape
+/// @sa CircleShape, ConvexShape, RectangleShape
 class Shape : public Drawable {
 public:
   Shape();
