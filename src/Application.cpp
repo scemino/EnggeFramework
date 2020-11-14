@@ -146,4 +146,8 @@ int Application::showMessageBox(const std::string &title,
   SDL_ShowMessageBox(&data, &id);
   return id;
 }
+
+VideoDisplayIterator Application::getVideoDisplays() {
+  return VideoDisplayIterator();
+}
 }

@@ -30,11 +30,14 @@ include_directories(${NGLIB_HEADERS_DIR})
 
 # source
 set(SYS_SOURCE_FILES
+        src/System/DisplayMode.cpp
         src/System/StopWatch.cpp
         src/System/StringHelper.cpp
         src/System/Times.cpp
         src/System/TimeSpan.cpp
-        src/System/Util.cpp)
+        src/System/Util.cpp
+        src/System/VideoDisplay.cpp
+        )
 set(WIN_SOURCE_FILES src/System/Window.cpp)
 set(GFX_SOURCE_FILES
         src/Graphics/AnimatedSprite.cpp
@@ -98,7 +101,7 @@ target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GL
 # For Linux only, to use std::filesystem
 if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     target_link_libraries(${PROJECT_NAME} stdc++fs)
-endif()
+endif ()
 
 target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
 set_target_properties("${PROJECT_NAME}" PROPERTIES CXX_EXTENSIONS OFF)
@@ -157,11 +160,11 @@ install(TARGETS imgui DESTINATION lib)
 function(get_short_system_name variable)
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
         set(${variable} "OSX" PARENT_SCOPE)
-    elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+    elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
         set(${variable} "Win32" PARENT_SCOPE)
-    else()
+    else ()
         set(${variable} "${CMAKE_SYSTEM_NAME}" PARENT_SCOPE)
-    endif()
+    endif ()
 endfunction()
 
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})

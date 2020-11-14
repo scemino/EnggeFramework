@@ -1,10 +1,11 @@
 #pragma once
 #include <string_view>
 #include <ngf/System/TimeSpan.h>
-#include <System/Window.h>
+#include <ngf/System/Window.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/RenderWindow.h>
 #include <ngf/Graphics/RenderStates.h>
+#include <ngf/System/VideoDisplay.h>
 
 namespace ngf {
 class Application {
@@ -41,6 +42,10 @@ public:
                                           std::initializer_list<std::string> buttons,
                                           int acceptButton = -1, int cancelButton = -1,
                                           Window *window = nullptr);
+
+  /// Gets the video displays.
+  /// \return The video displays.
+  static VideoDisplayIterator getVideoDisplays();
 
 protected:
   virtual void onInit();
