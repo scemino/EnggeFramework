@@ -362,4 +362,14 @@ void Window::setMouseCursorGrabbed(bool grabbed) {
 bool Window::isMouseCursorGrabbed() const {
   return SDL_GetWindowGrab(m_window) == SDL_TRUE;
 }
+
+void Window::setMouseCursor(const Cursor &cursor) {
+  if (!cursor.m_cursor)
+    return;
+  SDL_SetCursor(cursor.m_cursor);
+}
+
+[[nodiscard]] Cursor Window::getMouseCursor() const {
+  return Cursor(SDL_GetCursor());
+}
 }

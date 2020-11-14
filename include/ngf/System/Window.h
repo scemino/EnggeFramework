@@ -5,7 +5,8 @@
 #include <glm/vec2.hpp>
 #include <ngf/Graphics/Color.h>
 #include <ngf/Graphics/Colors.h>
-#include <System/Event.h>
+#include <ngf/System/Event.h>
+#include <ngf/System/Cursor.h>
 
 namespace ngf {
 /// @brief Represents a configuration to initialize a window.
@@ -158,6 +159,14 @@ public:
   /// @brief Gets a value indicating whether or not the mouse cursor is grabbed.
   /// \return true if input is grabbed, false if released.
   [[nodiscard]] bool isMouseCursorGrabbed() const;
+
+  /// @brief Sets the mouse cursor.
+  /// \param cursor The mouse cursor to set.
+  void setMouseCursor(const Cursor& cursor);
+
+  /// @brief Gets the mouse cursor.
+  /// \return The mouse cursor.
+  [[nodiscard]] Cursor getMouseCursor() const;
 
 private:
   friend class Application;

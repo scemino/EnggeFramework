@@ -7,6 +7,8 @@ class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
     m_window.init({.title="01_Window", .size={640, 480}});
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
   }
 
   void onRender(ngf::RenderTarget &target) override {
@@ -52,6 +54,7 @@ private:
         m_window.restore();
       }
     }
+    ImGui::Separator();
     auto isMouseCursorGrabbed = m_window.isMouseCursorGrabbed();
     if (ImGui::Checkbox("Mouse cursor grabbed", &isMouseCursorGrabbed)) {
       m_window.setMouseCursorGrabbed(isMouseCursorGrabbed);
@@ -60,6 +63,13 @@ private:
     if (ImGui::Checkbox("Mouse cursor visible", &isMouseCursorVisible)) {
       m_window.setMouseCursorVisible(isMouseCursorVisible);
     }
+    const char *cursors =
+        "Arrow\0ArrowWait\0Wait\0Text\0Hand\0SizeHorizontal\0SizeVertical\0SizeTopLeftBottomRight\0SizeBottomLeftTopRight\0SizeAll\0Cross\0NotAllowed\0\0";
+    if (ImGui::Combo("Change cursor", &m_cursorIndex, cursors)) {
+      m_cursor.setType(static_cast<ngf::Cursor::Type>(m_cursorIndex));
+      m_window.setMouseCursor(m_cursor);
+    }
+    ImGui::Separator();
     ngf::ImGui::ColorEdit4("Color", &m_color);
     auto brightness = m_window.getBrightness();
     if (ImGui::DragFloat("Brightness", &brightness, 0.01f, 0.f, 1.0f)) {
@@ -110,6 +120,8 @@ private:
   }
 
 private:
+  ngf::Cursor m_cursor;
+  int m_cursorIndex{0};
   ngf::Color m_color{ngf::Colors::LightBlue};
   std::string m_title{"Title"};
   std::string m_message{"Message"};
@@ -120,10 +132,12 @@ private:
 int main() {
   for (const auto &display : ngf::Application::getVideoDisplays()) {
     auto bounds = display.getBounds();
-    std::cout << display.getId() << ": " << display.getName() << " [" << bounds.getPosition().x << ", " << bounds.getPosition().y << ", "
+    std::cout << display.getId() << ": " << display.getName() << " [" << bounds.getPosition().x << ", "
+              << bounds.getPosition().y << ", "
               << bounds.getSize().x << ", " << bounds.getSize().y << ']' << '\n';
     for (const auto &mode : display.getDisplayModes()) {
-      std::cout << "  " << mode.size.x << "x" << mode.size.y << ", " << mode.bitsPerPixel << " bpp, " << mode.refreshRate << "Hz\n";
+      std::cout << "  " << mode.size.x << "x" << mode.size.y << ", " << mode.bitsPerPixel << " bpp, "
+                << mode.refreshRate << "Hz\n";
     }
   }
 
