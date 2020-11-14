@@ -122,7 +122,6 @@ public:
   [[nodiscard]] glm::ivec2 mapCoordsToPixel(glm::vec2 point) const;
 
 private:
-  std::function<glm::ivec2()> m_getSize;
   View m_view;
   ngf::VertexArray m_vao;
   ngf::Shader m_defaultShader{};
