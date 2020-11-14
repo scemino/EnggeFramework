@@ -7,15 +7,6 @@ class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
     m_window.init({.title="01_Window", .size={640, 480}});
-    auto displays = ngf::Application::getVideoDisplays();
-    for (const auto &display : displays) {
-      auto bounds = display.getBounds();
-      std::cout << display.getId() << ": " << display.getName() << " [" << bounds.getPosition().x << ", " << bounds.getPosition().y << ", "
-                << bounds.getSize().x << ", " << bounds.getSize().y << ']' << '\n';
-      for (const auto &mode : display.getDisplayModes()) {
-        std::cout << "  " << mode.size.x << "x" << mode.size.y << ", " << mode.bitsPerPixel << " bpp, " << mode.refreshRate << "Hz\n";
-      }
-    }
   }
 
   void onRender(ngf::RenderTarget &target) override {
@@ -127,6 +118,15 @@ private:
 };
 
 int main() {
+  for (const auto &display : ngf::Application::getVideoDisplays()) {
+    auto bounds = display.getBounds();
+    std::cout << display.getId() << ": " << display.getName() << " [" << bounds.getPosition().x << ", " << bounds.getPosition().y << ", "
+              << bounds.getSize().x << ", " << bounds.getSize().y << ']' << '\n';
+    for (const auto &mode : display.getDisplayModes()) {
+      std::cout << "  " << mode.size.x << "x" << mode.size.y << ", " << mode.bitsPerPixel << " bpp, " << mode.refreshRate << "Hz\n";
+    }
+  }
+
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

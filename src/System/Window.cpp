@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 #include "src/Graphics/GlDebug.h"
+#include "src/System/SdlSystem.h"
 
 namespace ngf {
 
@@ -62,7 +63,8 @@ Window::~Window() {
 }
 
 void Window::init(const WindowConfig &config) {
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+  priv::SdlSystem::ensureInit();
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
     std::ostringstream ss;
     ss << "Error when initializing SDL (error=" << SDL_GetError() << ")";
     throw std::runtime_error(ss.str());
@@ -72,18 +74,9 @@ void Window::init(const WindowConfig &config) {
 #if __APPLE__
   // GL 3.3 Core + GLSL 150
   const char *glsl_version = "#version 150";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);// Always required on Mac
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 #else
   // GL 3.0 + GLSL 130
   const char *glsl_version = "#version 130";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(
-      SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #endif
 
   // Create window with graphics context

@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_sdl.h>
+#include "src/System/SdlSystem.h"
 
 namespace ngf {
 
@@ -148,6 +149,7 @@ int Application::showMessageBox(const std::string &title,
 }
 
 VideoDisplayIterator Application::getVideoDisplays() {
+  priv::SdlSystem::ensureInit();
   return VideoDisplayIterator();
 }
 }
