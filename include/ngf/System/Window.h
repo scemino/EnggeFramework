@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <initializer_list>
 #include <SDL.h>
 #include <glm/vec2.hpp>
 #include <ngf/Graphics/Color.h>
@@ -154,7 +155,7 @@ public:
   /// \param grabbed true to grab input, false to release.
   void setMouseCursorGrabbed(bool grabbed = true);
 
-  /// @brief Gets a value indicating whether or not the mouse cursor is visgrabbedible.
+  /// @brief Gets a value indicating whether or not the mouse cursor is grabbed.
   /// \return true if input is grabbed, false if released.
   [[nodiscard]] bool isMouseCursorGrabbed() const;
 
@@ -163,6 +164,18 @@ public:
   /// \param message Message to display.
   /// \param type Type of the message: Information, Warning or Error.
   void showMessageBox(const std::string &title, const std::string &message, MessageBoxType type) const;
+
+  /// @brief Displays a message box with a title, a message, a type and a list of buttons.
+  /// \param title Title of the message box.
+  /// \param message Message to display.
+  /// \param type Type of the message: Information, Warning or Error.
+  /// \param buttons List of button texts.
+  /// \param acceptButton Index of the accept button or -1.
+  /// \param cancelButton Index of the cancel button or -1.
+  /// \return The index of the button which has been pressed.
+  [[nodiscard]] int showMessageBox(const std::string &title, const std::string &message, MessageBoxType type,
+                                   std::initializer_list<std::string> buttons,
+                                   int acceptButton = -1, int cancelButton = -1) const;
 
 private:
   friend class Application;

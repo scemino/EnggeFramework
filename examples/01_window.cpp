@@ -77,18 +77,34 @@ private:
     if (ImGui::Button("Show")) {
       ngf::MessageBoxType type;
       switch (m_type) {
-      case 0:
-        type = ngf::MessageBoxType::Info;
+      case 0:type = ngf::MessageBoxType::Info;
         break;
-      case 1:
-        type = ngf::MessageBoxType::Warning;
+      case 1:type = ngf::MessageBoxType::Warning;
         break;
-      case 2:
-        type = ngf::MessageBoxType::Error;
+      case 2:type = ngf::MessageBoxType::Error;
         break;
       }
       m_window.showMessageBox(m_title, m_message, type);
     }
+    if (ImGui::Button("Show custom MessageBox")) {
+      auto result = m_window.showMessageBox("Question",
+                                            "What is your favorite ghost?",
+                                            ngf::MessageBoxType::Info,
+                                            {"Blinky", "Inky", "Pinky", "Clyde"},
+                                            0,
+                                            2);
+      switch (result) {
+      case 0:m_lastResult = "Blinky";
+        break;
+      case 1:m_lastResult = "Inky";
+        break;
+      case 2:m_lastResult = "Pinky";
+        break;
+      case 3:m_lastResult = "Clyde";
+        break;
+      }
+    }
+    ImGui::Text("Last result: %s", m_lastResult.c_str());
     ImGui::End();
   }
 
@@ -96,6 +112,7 @@ private:
   ngf::Color m_color{ngf::Colors::LightBlue};
   std::string m_title{"Title"};
   std::string m_message{"Message"};
+  std::string m_lastResult;
   int m_type{0};
 };
 

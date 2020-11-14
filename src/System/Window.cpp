@@ -6,6 +6,7 @@
 #include <examples/imgui_impl_sdl.h>
 #include <iostream>
 #include <sstream>
+#include <vector>
 #include "src/Graphics/GlDebug.h"
 
 namespace ngf {
@@ -46,6 +47,16 @@ GamepadAxis getGamepadAxis(Uint8 axis) {
 
   assert(false);
 }
+
+SDL_MessageBoxFlags toMessageBoxFlags(MessageBoxType type) {
+  switch (type) {
+  case MessageBoxType::Error:return SDL_MESSAGEBOX_ERROR;
+  case MessageBoxType::Warning:return SDL_MESSAGEBOX_WARNING;
+  case MessageBoxType::Info:return SDL_MESSAGEBOX_INFORMATION;
+  default:return static_cast<SDL_MessageBoxFlags>(0);
+  }
+}
+
 }
 
 Window::Window() = default;
@@ -370,16 +381,39 @@ bool Window::isMouseCursorGrabbed() const {
 }
 
 void Window::showMessageBox(const std::string &title, const std::string &message, MessageBoxType type) const {
-  SDL_MessageBoxFlags flags;
-  switch (type) {
-  case MessageBoxType::Error:flags = SDL_MESSAGEBOX_ERROR;
-    break;
-  case MessageBoxType::Warning:flags = SDL_MESSAGEBOX_WARNING;
-    break;
-  case MessageBoxType::Info:flags = SDL_MESSAGEBOX_INFORMATION;
-    break;
-  default:break;
+  SDL_ShowSimpleMessageBox(toMessageBoxFlags(type), title.c_str(), message.c_str(), m_window);
+}
+
+int Window::showMessageBox(const std::string &title,
+                           const std::string &message,
+                           MessageBoxType type,
+                           std::initializer_list<std::string> buttons,
+                           int acceptButton, int cancelButton) const {
+  // convert buttons
+  int i = 0;
+  std::vector<SDL_MessageBoxButtonData> buttonsData;
+  for (const auto &button : buttons) {
+    SDL_MessageBoxButtonFlags buttonFlags;
+    if (acceptButton == i)
+      buttonFlags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+    else if (cancelButton == i)
+      buttonFlags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+    else
+      buttonFlags = static_cast<SDL_MessageBoxButtonFlags>(0);
+    buttonsData.push_back({buttonFlags, i++, button.c_str()});
   }
-  SDL_ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), m_window);
+
+  SDL_MessageBoxData data;
+  data.window = m_window;
+  data.message = message.c_str();
+  data.title = title.c_str();
+  data.flags = toMessageBoxFlags(type);
+  data.numbuttons = buttonsData.size();
+  data.buttons = buttonsData.data();
+  data.colorScheme = nullptr;
+
+  int id;
+  SDL_ShowMessageBox(&data, &id);
+  return id;
 }
 }
