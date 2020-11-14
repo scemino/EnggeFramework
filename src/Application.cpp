@@ -10,6 +10,15 @@ namespace ngf {
 
 namespace {
 const TimeSpan TimePerFrame = TimeSpan::seconds(1.f / 60.f);
+
+SDL_MessageBoxFlags toMessageBoxFlags(MessageBoxType type) {
+  switch (type) {
+  case MessageBoxType::Error:return SDL_MESSAGEBOX_ERROR;
+  case MessageBoxType::Warning:return SDL_MESSAGEBOX_WARNING;
+  case MessageBoxType::Info:return SDL_MESSAGEBOX_INFORMATION;
+  default:return static_cast<SDL_MessageBoxFlags>(0);
+  }
+}
 }
 
 Application::Application() = default;
@@ -92,5 +101,49 @@ void Application::onEvent(Event &) {
 
 void Application::quit() {
   m_done = true;
+}
+
+void Application::showMessageBox(const std::string &title,
+                                 const std::string &message,
+                                 MessageBoxType type,
+                                 Window *window) {
+  auto handle = window ? window->getNativeHandle() : nullptr;
+  SDL_ShowSimpleMessageBox(toMessageBoxFlags(type), title.c_str(), message.c_str(), handle);
+}
+
+int Application::showMessageBox(const std::string &title,
+                                const std::string &message,
+                                MessageBoxType type,
+                                std::initializer_list<std::string> buttons,
+                                int acceptButton, int cancelButton,
+                                Window *window) {
+  auto handle = window ? window->getNativeHandle() : nullptr;
+
+  // convert buttons
+  int i = 0;
+  std::vector<SDL_MessageBoxButtonData> buttonsData;
+  for (const auto &button : buttons) {
+    SDL_MessageBoxButtonFlags buttonFlags;
+    if (acceptButton == i)
+      buttonFlags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+    else if (cancelButton == i)
+      buttonFlags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+    else
+      buttonFlags = static_cast<SDL_MessageBoxButtonFlags>(0);
+    buttonsData.push_back({buttonFlags, i++, button.c_str()});
+  }
+
+  SDL_MessageBoxData data;
+  data.window = handle;
+  data.message = message.c_str();
+  data.title = title.c_str();
+  data.flags = toMessageBoxFlags(type);
+  data.numbuttons = buttonsData.size();
+  data.buttons = buttonsData.data();
+  data.colorScheme = nullptr;
+
+  int id;
+  SDL_ShowMessageBox(&data, &id);
+  return id;
 }
 }

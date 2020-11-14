@@ -84,15 +84,16 @@ private:
       case 2:type = ngf::MessageBoxType::Error;
         break;
       }
-      m_window.showMessageBox(m_title, m_message, type);
+      showMessageBox(m_title, m_message, type, &m_window);
     }
     if (ImGui::Button("Show custom MessageBox")) {
-      auto result = m_window.showMessageBox("Question",
-                                            "What is your favorite ghost?",
-                                            ngf::MessageBoxType::Info,
-                                            {"Blinky", "Inky", "Pinky", "Clyde"},
-                                            0,
-                                            2);
+      auto result = showMessageBox("Question",
+                                   "What is your favorite ghost?",
+                                   ngf::MessageBoxType::Info,
+                                   {"Blinky", "Inky", "Pinky", "Clyde"},
+                                   0,
+                                   2,
+                                   &m_window);
       switch (result) {
       case 0:m_lastResult = "Blinky";
         break;

@@ -18,6 +18,30 @@ public:
   /// @brief Quits the application.
   void quit();
 
+  /// @brief Displays a message box with a title, a message, a type and an 'OK' button.
+  /// \param title Title of the message box.
+  /// \param message Message to display.
+  /// \param type Type of the message: Information, Warning or Error.
+  /// \param window Parent window or nullptr if no Window is available.
+  static void showMessageBox(const std::string &title,
+                             const std::string &message,
+                             MessageBoxType type = MessageBoxType::Info,
+                             Window *window = nullptr);
+
+  /// @brief Displays a message box with a title, a message, a type and a list of buttons.
+  /// \param title Title of the message box.
+  /// \param message Message to display.
+  /// \param type Type of the message: Information, Warning or Error.
+  /// \param buttons List of button texts.
+  /// \param acceptButton Index of the accept button or -1.
+  /// \param cancelButton Index of the cancel button or -1.
+  /// \param window Parent window or nullptr if no Window is available.
+  /// \return The index of the button which has been pressed.
+  [[nodiscard]] static int showMessageBox(const std::string &title, const std::string &message, MessageBoxType type,
+                                          std::initializer_list<std::string> buttons,
+                                          int acceptButton = -1, int cancelButton = -1,
+                                          Window *window = nullptr);
+
 protected:
   virtual void onInit();
   virtual void onExit();
