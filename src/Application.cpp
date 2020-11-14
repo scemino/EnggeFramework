@@ -89,4 +89,8 @@ void Application::onImGuiRender() {
 
 void Application::onEvent(Event &) {
 }
+
+void Application::quit() {
+  m_done = true;
+}
 }

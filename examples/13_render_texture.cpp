@@ -26,14 +26,25 @@ private:
     m_renderTexture = std::make_unique<ngf::RenderTexture>(size);
   }
 
+  void onEvent(ngf::Event &event) override {
+    switch (event.type) {
+    case ngf::EventType::KeyPressed:
+      if(event.key.keycode == ngf::Keycode::Q){
+        quit();
+      }
+      break;
+    default:break;
+    }
+  }
+
   void onRender(ngf::RenderTarget &target) override {
-    m_renderTexture->setActive();
+    m_renderTexture->activate();
     m_renderTexture->setView(ngf::View(ngf::frect::fromCenterSize({0, 0}, {640, 480})));
     m_renderTexture->clear(ngf::Colors::Gray);
     m_sprite->draw(*m_renderTexture);
     m_renderTexture->display();
 
-    target.setActive();
+    target.activate();
     target.setView(ngf::View(ngf::frect::fromCenterSize({0, 0}, {640, 480})));
     target.clear(ngf::Colors::LightBlue);
     ngf::Sprite sprite(m_renderTexture->getTexture());

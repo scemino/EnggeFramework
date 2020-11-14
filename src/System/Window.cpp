@@ -1,4 +1,4 @@
-#include <System/Window.h>
+#include <ngf/System/Window.h>
 #include <GL/glew.h>
 #include <SDL.h>
 #include <imgui.h>
@@ -110,7 +110,7 @@ void Window::init(const WindowConfig &config) {
   int w, h;
   SDL_GetWindowSize(m_window, &w, &h);
   auto size = getSize();
-  sizeScale = static_cast<float>(size.x) / static_cast<float>(w);
+  dpiScale = static_cast<float>(size.x) / static_cast<float>(w);
 
   auto err = glGetError();
   if (err != GL_NO_ERROR) {
@@ -174,7 +174,7 @@ bool Window::pollEvent(Event &event) {
   case SDL_KEYDOWN:
   case SDL_KEYUP:event.type = sdlEvent.type == SDL_KEYDOWN ? EventType::KeyPressed : EventType::KeyReleased;
     event.key.windowId = sdlEvent.key.windowID;
-    event.key.keycode = static_cast<std::int32_t>(sdlEvent.key.keysym.sym);
+    event.key.keycode = static_cast<Keycode>(sdlEvent.key.keysym.sym);
     event.key.scancode = static_cast<Scancode>(sdlEvent.key.keysym.scancode);
     event.key.modifiers = sdlEvent.key.keysym.mod;
     event.key.repeat = sdlEvent.key.repeat != 0;
@@ -248,11 +248,11 @@ std::string Window::getTitle() const {
   return SDL_GetWindowTitle(m_window);
 }
 
-void Window::setWindowFullscreen(bool fullscreen) {
+void Window::setFullscreen(bool fullscreen) {
   SDL_SetWindowFullscreen(m_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 }
 
-bool Window::isWindowFullscreen() const {
+bool Window::isFullscreen() const {
   auto flags = SDL_GetWindowFlags(m_window);
   return (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
 }
@@ -266,14 +266,18 @@ bool Window::isWindowResizable() const {
   return (flags & SDL_WINDOW_RESIZABLE) != 0;
 }
 
-glm::uvec2 Window::getSize() const {
-  int width;
-  int height;
-  SDL_GL_GetDrawableSize(m_window, &width, &height);
-  return glm::uvec2(width, height);
+glm::ivec2 Window::getSize() const {
+  glm::ivec2 size;
+  SDL_GL_GetDrawableSize(m_window, &size.x, &size.y);
+  return size;
 }
 
-void Window::setActive() {
+void Window::setSize(const glm::ivec2 &size) {
+  auto dpiScale = getDpiScale();
+  SDL_SetWindowSize(m_window, size.x * dpiScale, size.y * dpiScale);
+}
+
+void Window::activate() {
   if (SDL_GL_GetCurrentContext() != m_glContext) {
     SDL_GL_MakeCurrent(m_window, m_glContext);
   }
@@ -287,4 +291,81 @@ glm::ivec2 Window::getFramebufferSize() const {
   return size;
 }
 
+glm::ivec2 Window::getPosition() const {
+  glm::ivec2 pos;
+  SDL_GetWindowPosition(m_window, &pos.x, &pos.y);
+  return pos;
+}
+
+void Window::setPosition(const glm::ivec2 &pos) {
+  SDL_SetWindowPosition(m_window, pos.x, pos.y);
+}
+
+float Window::getBrightness() const {
+  return SDL_GetWindowBrightness(m_window);
+}
+
+void Window::setBrightness(float brightness) {
+  SDL_SetWindowBrightness(m_window, brightness);
+}
+
+bool Window::isMinimized() const {
+  auto flags = SDL_GetWindowFlags(m_window);
+  return (flags & SDL_WINDOW_MINIMIZED);
+}
+
+void Window::minimize() {
+  SDL_MinimizeWindow(m_window);
+}
+
+bool Window::isMaximized() const {
+  auto flags = SDL_GetWindowFlags(m_window);
+  return (flags & SDL_WINDOW_MAXIMIZED);
+}
+
+void Window::maximize() {
+  SDL_MaximizeWindow(m_window);
+}
+
+void Window::restore() {
+  SDL_RestoreWindow(m_window);
+}
+
+bool Window::isVisible() const {
+  auto flags = SDL_GetWindowFlags(m_window);
+  return (flags & SDL_WINDOW_SHOWN);
+}
+
+void Window::setVisible(bool visible) {
+  if (visible) {
+    SDL_ShowWindow(m_window);
+  } else {
+    SDL_HideWindow(m_window);
+  }
+}
+
+bool Window::isDecorated() const {
+  auto flags = SDL_GetWindowFlags(m_window);
+  return (flags & SDL_WINDOW_BORDERLESS);
+}
+
+void Window::setDecorated(bool decorated) {
+  SDL_SetWindowBordered(m_window, decorated ? SDL_TRUE : SDL_FALSE);
+}
+
+void Window::setMouseCursorVisible(bool visible) {
+  SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
+}
+
+bool Window::isMouseCursorVisible() const {
+  return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
+}
+
+void Window::setMouseCursorGrabbed(bool grabbed) {
+  SDL_SetWindowGrab(m_window, grabbed ? SDL_TRUE : SDL_FALSE);
+}
+
+bool Window::isMouseCursorGrabbed() const {
+  return SDL_GetWindowGrab(m_window) == SDL_TRUE;
+}
 }

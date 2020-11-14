@@ -22,7 +22,7 @@ public:
   [[nodiscard]] const Texture &getTexture() const { return m_texture; }
 
   /// @brief Activates the render-texture for rendering.
-  void setActive() override;
+  void activate() override;
 
   /// @brief Updates the content of the target texture.
   void display();

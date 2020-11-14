@@ -13,7 +13,7 @@ public:
   [[nodiscard]] glm::ivec2 getSize() const override { return m_window.getFramebufferSize(); }
 
   /// @brief Activates the window for rendering.
-  void setActive() override { m_window.setActive(); }
+  void activate() override { m_window.activate(); }
 
   /// @brief Updates the content of the window.
   void display() { m_window.display(); }

@@ -17,7 +17,7 @@ RenderTexture::~RenderTexture() {
   GL_CHECK(glDeleteFramebuffers(1, &m_handle));
 }
 
-void RenderTexture::setActive() {
+void RenderTexture::activate() {
   if (m_handle != 0) {
     GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_handle));
   }

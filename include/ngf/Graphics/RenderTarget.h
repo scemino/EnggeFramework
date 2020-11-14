@@ -32,7 +32,7 @@ public:
   void clear(const Color &color);
 
   /// @brief Activates the target for rendering.
-  virtual void setActive() = 0;
+  virtual void activate() = 0;
 
   /// @brief Draws primitives defined by vertices and indices.
   /// \param primitiveType The type of primitives to draw.

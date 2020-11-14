@@ -12,7 +12,11 @@ public:
   Application();
   virtual ~Application();
 
+  /// @brief Runs the main loop of the application.
   void run();
+
+  /// @brief Quits the application.
+  void quit();
 
 protected:
   virtual void onInit();
