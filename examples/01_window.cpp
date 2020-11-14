@@ -69,11 +69,34 @@ private:
     if (ImGui::DragInt2("Position", glm::value_ptr(pos))) {
       m_window.setPosition(pos);
     }
+    ImGui::Separator();
+    ImGui::InputText("Title", &m_title);
+    ImGui::InputText("Message", &m_message);
+    const char *types = "Info\0Warning\0Error\0\0";
+    ImGui::Combo("Type", &m_type, types);
+    if (ImGui::Button("Show")) {
+      ngf::MessageBoxType type;
+      switch (m_type) {
+      case 0:
+        type = ngf::MessageBoxType::Info;
+        break;
+      case 1:
+        type = ngf::MessageBoxType::Warning;
+        break;
+      case 2:
+        type = ngf::MessageBoxType::Error;
+        break;
+      }
+      m_window.showMessageBox(m_title, m_message, type);
+    }
     ImGui::End();
   }
 
 private:
   ngf::Color m_color{ngf::Colors::LightBlue};
+  std::string m_title{"Title"};
+  std::string m_message{"Message"};
+  int m_type{0};
 };
 
 int main() {

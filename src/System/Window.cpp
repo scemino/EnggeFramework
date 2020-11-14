@@ -368,4 +368,18 @@ void Window::setMouseCursorGrabbed(bool grabbed) {
 bool Window::isMouseCursorGrabbed() const {
   return SDL_GetWindowGrab(m_window) == SDL_TRUE;
 }
+
+void Window::showMessageBox(const std::string &title, const std::string &message, MessageBoxType type) const {
+  SDL_MessageBoxFlags flags;
+  switch (type) {
+  case MessageBoxType::Error:flags = SDL_MESSAGEBOX_ERROR;
+    break;
+  case MessageBoxType::Warning:flags = SDL_MESSAGEBOX_WARNING;
+    break;
+  case MessageBoxType::Info:flags = SDL_MESSAGEBOX_INFORMATION;
+    break;
+  default:break;
+  }
+  SDL_ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), m_window);
+}
 }

@@ -16,6 +16,12 @@ struct WindowConfig {
   bool resizable{true}; ///< true to set the window resizable.
 };
 
+enum class MessageBoxType {
+  Error,
+  Warning,
+  Info
+};
+
 /// @brief This class is used to manipulate a window.
 class Window {
 public:
@@ -75,7 +81,7 @@ public:
 
   /// @brief Sets the size of the window in pixels.
   /// \param size The size of the window in pixels.
-  void setSize(const glm::ivec2& size);
+  void setSize(const glm::ivec2 &size);
 
   /// @brief Gets the DPI scale of the window.
   /// \return the DPI scale of the window.
@@ -151,6 +157,12 @@ public:
   /// @brief Gets a value indicating whether or not the mouse cursor is visgrabbedible.
   /// \return true if input is grabbed, false if released.
   [[nodiscard]] bool isMouseCursorGrabbed() const;
+
+  /// @brief Displays a message box with a title, a message, a type and an 'OK' button.
+  /// \param title Title of the message box.
+  /// \param message Message to display.
+  /// \param type Type of the message: Information, Warning or Error.
+  void showMessageBox(const std::string &title, const std::string &message, MessageBoxType type) const;
 
 private:
   friend class Application;
