@@ -1,7 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <ngf/System/TimeSpan.h>
-#include <System/Scancode.h>
+#include <ngf/System/Scancode.h>
+#include <ngf/System/Keycode.h>
 #include <glm/vec2.hpp>
 
 namespace ngf {
@@ -47,7 +48,7 @@ struct ResizeEvent {
 /// @brief Represents a keyboard event.
 struct KeyEvent {
   std::uint32_t windowId;   ///< The window id of the event
-  std::int32_t keycode;     ///< Keycode of the key
+  Keycode keycode;     ///< Keycode of the key
   Scancode scancode;        ///< Scancode of the key
   std::uint16_t modifiers;  ///< Modifiers that are pressed
   bool repeat;              ///< true if the key was repeated
