@@ -22,12 +22,13 @@ struct Glyph {
 class Font {
 public:
   virtual ~Font() = default;
+
   /// @brief Gets the glyph for a specified codepoint.
   /// \param codepoint Codepoint for which we want to get the glyph.
   /// \return The glyph for the codepoint.
-  [[nodiscard]] virtual const Glyph &getGlyph(unsigned int codepoint) const = 0;
+  [[nodiscard]] virtual const Glyph &getGlyph(unsigned int codepoint, unsigned int characterSize, float outlineThickness = 0.0f) const = 0;
+
   /// @brief Get the kerning offset of two glyphs.
-  ///
   /// The kerning is an extra offset (negative) to apply between two glyphs when rendering them, to make the pair look more "natural".
   /// For example, the pair "AV" have a special kerning to make them closer than other characters.
   /// Most of the glyphs pairs have a kerning offset of zero, though.
@@ -42,5 +43,7 @@ public:
   /// \param characterSize Reference character size.
   /// \return Texture containing the glyphs of the requested size.
   [[nodiscard]] virtual const Texture &getTexture(unsigned int characterSize) const = 0;
+
+  virtual float getLineSpacing(unsigned int characterSize) const = 0;
 };
 }

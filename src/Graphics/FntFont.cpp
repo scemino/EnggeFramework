@@ -68,8 +68,7 @@ void FntFont::loadFromFile(const std::filesystem::path &path) {
   is.close();
 }
 
-float FntFont::getKerning(
-    unsigned int first, unsigned int second, unsigned int) const {
+float FntFont::getKerning(unsigned int first, unsigned int second, unsigned int) const {
   return m_chars.getKerning(first, second);
 }
 
@@ -212,7 +211,7 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
   return true;
 }
 
-const Glyph &FntFont::getGlyph(unsigned int codePoint) const {
+const Glyph &FntFont::getGlyph(unsigned int codePoint, unsigned int characterSize, float outlineThickness) const {
   return m_chars.getChar((int) codePoint);
 }
 }

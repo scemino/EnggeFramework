@@ -98,8 +98,7 @@ public:
   }
 
 private:
-  typedef std::map<int, Glyph>
-      GlyphTable; ///< Table mapping a codepoint to its glyph
+  using GlyphTable = std::map<int, Glyph>; ///< Table mapping a codepoint to its glyph
   GlyphTable m_chars;
   std::list<Kerning> m_kernings;
 };
@@ -114,11 +113,13 @@ public:
   void load(const std::filesystem::path &name, std::istream &input);
   void loadFromFile(const std::filesystem::path &path);
 
-  [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint) const override;
+  [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint, unsigned int characterSize, float outlineThickness) const override;
   [[nodiscard]] float getKerning(unsigned int first, unsigned int second,
                                  unsigned int characterSize) const override;
   [[nodiscard]] const Texture &getTexture(
       unsigned int characterSize) const override;
+
+  [[nodiscard]] float getLineSpacing(unsigned int) const override { return m_chars.lineHeight; }
 
 private:
   bool parse(const std::filesystem::path &path, std::istream &input);
