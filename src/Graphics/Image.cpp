@@ -1,7 +1,9 @@
-#define STB_IMAGE_IMPLEMENTATION
 #include <algorithm>
-#include <stb_image.h>
 #include <ngf/Graphics/Image.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 namespace ngf {
 
@@ -57,6 +59,33 @@ bool Image::loadFromMemory(const void *data, std::size_t dataSize) {
             << stbi_failure_reason() << std::endl;
 
   return false;
+}
+
+void Image::saveToFile (const std::filesystem::path& filename) const {
+  std::string filenameString = filename.string();
+
+  if (m_size.x == 0 || m_size.y == 0 || m_pixels.empty()) {
+    std::cerr << "Could not save image to file: '" << filenameString.c_str() << "'\n";
+    return;
+  }
+
+  auto ext = filename.extension();
+  if (ext == ".png") {
+    stbi_write_png(filenameString.c_str(), m_size.x, m_size.y, 4, m_pixels.data(), 0);
+    return;
+  }
+
+  if (ext == ".bmp") {
+    stbi_write_bmp(filenameString.c_str(), m_size.x, m_size.y, 4, m_pixels.data());
+    return;
+  }
+
+  if (ext == ".tga") {
+    stbi_write_tga(filenameString.c_str(), m_size.x, m_size.y, 4, m_pixels.data());
+    return;
+  }
+
+  std::cerr << "Format not supported: '" << ext << "'\n";
 }
 
 glm::uvec2 Image::getSize() const {

@@ -110,6 +110,21 @@ void main(void) {
 }
 )";
 
+const char *alphaFragmentShaderSource =
+    R"(#version 330 core
+precision mediump float;
+out vec4 FragColor;
+in vec4 v_color;
+in vec2 v_texCoords;
+
+uniform sampler2D u_texture;
+
+void main(void) {
+  vec4 texColor = texture(u_texture, v_texCoords);
+  FragColor = vec4(v_color.rgb, v_color.a * texColor.r);
+}
+)";
+
 void setBuffer(const Vertex *vertices, size_t sizeVertices, const std::uint16_t *indices, size_t sizeIndices) {
   ngf::VertexBuffer buf;
   constexpr size_t VertexSize = sizeof(Vertex);
@@ -156,6 +171,7 @@ RenderTarget::RenderTarget(glm::ivec2 size)
     : m_view(frect::fromPositionSize({0.0f, 0.0f}, {static_cast<float>(size.x), static_cast<float>(size.y)})),
       m_emptyTexture(createWhitePixel()) {
   m_defaultShader.load(vertexShaderSource, fragmentShaderSource);
+  m_defaultAlphaShader.load(vertexShaderSource, alphaFragmentShaderSource);
 }
 
 void RenderTarget::clear(const Color &color) {
@@ -180,7 +196,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   // set shader
   auto shader = states.shader;
   if (!shader) {
-    shader = &m_defaultShader;
+    shader = pTexture->getFormat() == Texture::Format::Alpha ? &m_defaultAlphaShader : &m_defaultShader;
   }
   shader->setUniform("u_texture", *pTexture);
 

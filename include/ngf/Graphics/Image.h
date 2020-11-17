@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <filesystem>
 #include <vector>
 #include <iostream>
 #include <glm/vec2.hpp>
@@ -27,6 +28,10 @@ public:
   /// \param data Memory where the image is defined, this can be a file or memory, etc.
   /// \return true if the image has been successfully loaded.
   bool loadFromMemory(const void* data, std::size_t dataSize);
+
+  /// @brief Save the image to a file.
+  /// \param path Path of the file to save.
+  void saveToFile(const std::filesystem::path& path) const;
 
   /// @brief Gets the size of the image (width x height).
   /// \return The size of the image.

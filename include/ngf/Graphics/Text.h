@@ -27,7 +27,7 @@ public:
   Text();
 
   /// @brief Creates a text from a string, font and size.
-  Text(std::wstring string, const Font &font, unsigned int characterSize = 30);
+  Text(std::wstring string, Font &font, unsigned int characterSize = 30);
 
   /// @brief Sets the text's string.
   /// \param string The text's string.
@@ -45,7 +45,7 @@ public:
 
   /// @brief Sets the text's font.
   /// \param font The text's font.
-  void setFont(const Font &font);
+  void setFont(Font &font);
 
   /// @brief Gets the text's font.
   /// \return The current text's font.
@@ -144,7 +144,7 @@ private:
 private:
   ngf::Transform m_transform{};
   std::wstring m_string;
-  const Font *m_font{nullptr};
+  Font *m_font{nullptr};
   unsigned int m_characterSize{30};
   float m_letterSpacingFactor{1.0f};
   Color m_color{Colors::White};
@@ -155,7 +155,6 @@ private:
   float m_lineSpacingFactor{1.0f};
   Alignment m_align{Alignment::Center};
   frect m_bounds{};
-  const Texture *m_fontTexture{nullptr};
   float m_maxWidth{0};
 };
 }

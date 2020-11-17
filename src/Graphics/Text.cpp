@@ -39,13 +39,13 @@ std::vector<std::wstring> splitInWords(std::wstring_view str) {
   return result;
 }
 
-float getWordWidth(std::wstring_view word, unsigned characterSize, const Font &font) {
+float getWordWidth(std::wstring_view word, unsigned characterSize, Font &font) {
   assert(!word.empty());
 
   float width = 0.0f;
-  char32_t prevCodepoint = '\0';
+  wchar_t prevCodepoint = '\0';
 
-  for (char32_t currCodepoint : word) {
+  for (wchar_t currCodepoint : word) {
     width += font.getKerning(prevCodepoint, currCodepoint, characterSize);
     prevCodepoint = currCodepoint;
 
@@ -61,7 +61,7 @@ std::vector<Paragraph> makeParagraphs(const std::wstring &str,
                                       float paragraphWidth,
                                       Alignment align,
                                       unsigned characterSize,
-                                      const Font &font) {
+                                      Font &font) {
   auto paragraphs = splitInParagraphs(str);
   std::vector<Paragraph> out;
 
@@ -157,13 +157,7 @@ std::vector<Paragraph> makeParagraphs(const std::wstring &str,
   return out;
 }
 
-glm::vec2 normalize(const Texture &texture, const glm::ivec2 &v) {
-  auto textureSize = glm::vec(texture.getSize());
-  return glm::vec2(static_cast<float>(v.x) / textureSize.x,
-                   static_cast<float>(v.y) / textureSize.y);
-}
-
-void addGlyphVertex(std::vector<Vertex> &array, const Texture &texture, const Glyph &glyph, const glm::vec2 &position) {
+void addGlyphVertex(std::vector<Vertex> &array, const Glyph &glyph, const glm::vec2 &position) {
   Vertex vertices[4];
 
   vertices[0].pos = position + glyph.bounds.getTopLeft();
@@ -171,10 +165,10 @@ void addGlyphVertex(std::vector<Vertex> &array, const Texture &texture, const Gl
   vertices[2].pos = position + glyph.bounds.getBottomLeft();
   vertices[3].pos = position + glyph.bounds.getBottomRight();
 
-  vertices[0].texCoords = normalize(texture, glyph.textureRect.getTopLeft());
-  vertices[1].texCoords = normalize(texture, glyph.textureRect.getTopRight());
-  vertices[2].texCoords = normalize(texture, glyph.textureRect.getBottomLeft());
-  vertices[3].texCoords = normalize(texture, glyph.textureRect.getBottomRight());
+  vertices[0].texCoords = glyph.textureRect.getTopLeft();
+  vertices[1].texCoords = glyph.textureRect.getTopRight();
+  vertices[2].texCoords = glyph.textureRect.getBottomLeft();
+  vertices[3].texCoords = glyph.textureRect.getBottomRight();
 
   // first triangle
   array.push_back(vertices[0]);
@@ -191,7 +185,7 @@ void addGlyphVertex(std::vector<Vertex> &array, const Texture &texture, const Gl
 
 Text::Text() = default;
 
-Text::Text(std::wstring string, const Font &font, unsigned int characterSize)
+Text::Text(std::wstring string, Font &font, unsigned int characterSize)
     : m_string(std::move(string)), m_font(&font),
       m_characterSize(characterSize) {
   ensureGeometryUpdate();
@@ -212,7 +206,7 @@ std::string Text::getString() const {
   return StringHelper::tostring(m_string);
 }
 
-void Text::setFont(const Font &font) {
+void Text::setFont(Font &font) {
   if (m_font == &font)
     return;
   m_font = &font;
@@ -252,7 +246,7 @@ void Text::draw(RenderTarget &target, RenderStates states) const {
     return;
 
   RenderStates s = states;
-  s.texture = m_fontTexture;
+  s.texture = m_font->getTexture(m_characterSize);
   s.transform *= m_transform.getTransform();
 
   if (m_outlineThickness > 0) {
@@ -265,9 +259,6 @@ void Text::draw(RenderTarget &target, RenderStates states) const {
 void Text::ensureGeometryUpdate() {
   if (!m_font || m_string.empty())
     return;
-
-  // Save the current fonts texture id
-  m_fontTexture = &m_font->getTexture(m_characterSize);
 
   m_vertices.clear();
   m_outlineVertices.clear();
@@ -298,13 +289,13 @@ void Text::ensureGeometryUpdate() {
 
           if (m_outlineThickness > 0.0f) {
             const auto &glyph = m_font->getGlyph(currCodepoint, m_characterSize, m_outlineThickness);
-            addGlyphVertex(m_outlineVertices, *m_fontTexture, glyph, position);
+            addGlyphVertex(m_outlineVertices, glyph, position);
             min = ngf::min(min, position + glyph.bounds.getTopLeft());
             max = ngf::max(max, position + glyph.bounds.getBottomRight());
           }
 
           const auto &glyph = m_font->getGlyph(currCodepoint, m_characterSize);
-          addGlyphVertex(m_vertices, *m_fontTexture, glyph, position);
+          addGlyphVertex(m_vertices, glyph, position);
 
           if (m_outlineThickness == 0.0f) {
             min = ngf::min(min, position + glyph.bounds.getTopLeft());

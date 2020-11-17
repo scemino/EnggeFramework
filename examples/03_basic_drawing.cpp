@@ -16,6 +16,7 @@ private:
 
   void onRender(ngf::RenderTarget &target) override {
     target.clear(ngf::Colors::LightBlue);
+    target.setView(ngf::View({ngf::frect::fromCenterSize({0,0},{640,480})}));
     target.draw(m_primitiveType, m_vertices);
     Application::onRender(target);
   }
@@ -42,10 +43,10 @@ private:
 
 private:
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::TriangleFan};
-  std::array<ngf::Vertex, 4> m_vertices{{{{0.0f, 480.0f}, ngf::Colors::Red},
-                                         {{640.0f, 480.0f}, ngf::Colors::Green},
-                                         {{640.0f, 0.0f}, ngf::Colors::Blue},
-                                         {{0.0f, 0.0f}, ngf::Colors::White}
+  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, 240.0f}, .color=ngf::Colors::Red},
+                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Green},
+                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Blue},
+                                         {.pos={-320.0f, -240.0f}, .color=ngf::Colors::White}
                                         }};
 };
 

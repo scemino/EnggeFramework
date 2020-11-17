@@ -125,6 +125,7 @@ private:
   View m_view;
   ngf::VertexArray m_vao;
   ngf::Shader m_defaultShader{};
+  ngf::Shader m_defaultAlphaShader{};
   ngf::Texture m_emptyTexture{};
 };
 

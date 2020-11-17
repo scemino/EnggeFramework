@@ -15,7 +15,7 @@ namespace ngf {
 struct Glyph {
   float advance{0};  ///< Offset to move horizontally to the next character.
   frect bounds;      ///< Bouding rectangle of the glyph, in coordinates relative to the baseline.
-  irect textureRect; ///< Texture coordinates of the glyph inside the font's texture.
+  frect textureRect; ///< Texture coordinates of the glyph inside the font's texture.
 };
 
 /// @brief Defines a particular format for text.
@@ -26,7 +26,9 @@ public:
   /// @brief Gets the glyph for a specified codepoint.
   /// \param codepoint Codepoint for which we want to get the glyph.
   /// \return The glyph for the codepoint.
-  [[nodiscard]] virtual const Glyph &getGlyph(unsigned int codepoint, unsigned int characterSize, float outlineThickness = 0.0f) const = 0;
+  [[nodiscard]] virtual const Glyph &getGlyph(unsigned int codepoint,
+                                              unsigned int characterSize,
+                                              float outlineThickness = 0.0f) = 0;
 
   /// @brief Get the kerning offset of two glyphs.
   /// The kerning is an extra offset (negative) to apply between two glyphs when rendering them, to make the pair look more "natural".
@@ -37,13 +39,13 @@ public:
   /// \param characterSize Reference character size.
   /// \return The kerning value for first and second, in pixels.
   [[nodiscard]] virtual float getKerning(unsigned int first,
-                                         unsigned int second, unsigned int characterSize) const = 0;
+                                         unsigned int second, unsigned int characterSize) = 0;
 
   /// @brief Gets the texture containing the loaded glyphs of a certain size.
   /// \param characterSize Reference character size.
   /// \return Texture containing the glyphs of the requested size.
-  [[nodiscard]] virtual const Texture &getTexture(unsigned int characterSize) const = 0;
+  [[nodiscard]] virtual const Texture *getTexture(unsigned int characterSize) = 0;
 
-  virtual float getLineSpacing(unsigned int characterSize) const = 0;
+  virtual float getLineSpacing(unsigned int characterSize) = 0;
 };
 }

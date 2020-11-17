@@ -1,4 +1,5 @@
 #include <ngf/Application.h>
+#include <ngf/Graphics/DefaultFont.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Text.h>
@@ -11,7 +12,7 @@ private:
   void onInit() override {
     m_window.init({"07 - Text", {640, 480}});
 
-    m_font.loadFromFile("./assets/press-start.fnt");
+    m_font.loadFromFile("./assets/PressStart2P-vaV7.ttf");
     m_text.setFont(m_font);
     m_text.setWideString(L"Welcome to Engge Framework");
     m_text.setAnchor(ngf::Anchor::Center);
@@ -47,7 +48,15 @@ private:
     if (ngf::ImGui::ColorEdit4("Color", &color)) {
       m_text.setColor(color);
     }
-    auto characterSize = (int)m_text.getCharacterSize();
+    auto outlineThickness = m_text.getOutlineThickness();
+    if (ImGui::DragFloat("Outline Thickness", &outlineThickness)) {
+      m_text.setOutlineThickness(outlineThickness);
+    }
+    auto outlineColor = m_text.getOutlineColor();
+    if (ngf::ImGui::ColorEdit4("Outline Color", &outlineColor)) {
+      m_text.setOutlineColor(outlineColor);
+    }
+    auto characterSize = (int) m_text.getCharacterSize();
     if (ImGui::DragInt("Character size", &characterSize)) {
       m_text.setCharacterSize(characterSize);
       m_text.setAnchor(ngf::Anchor::Center);
@@ -66,7 +75,7 @@ private:
   }
 
 private:
-  ngf::FntFont m_font;
+  ngf::DefaultFont m_font;
   ngf::Text m_text;
   int m_animIndex{0};
 };

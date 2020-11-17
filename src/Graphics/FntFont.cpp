@@ -36,22 +36,10 @@ const Glyph &CharSet::getChar(int id) const {
 FntFont::~FntFont() = default;
 
 void FntFont::load(const std::filesystem::path &path, std::istream &input) {
-  // Parse .fnt file
-  // trace("FntFont: parsing \"{}\"...", path);
-
   if (!parse(path, input)) {
     std::ostringstream s;
     s << "Cannot parse file: " << path;
     throw std::runtime_error(s.str());
-  }
-
-  // Load resources
-  // trace("FntFont: loading textures...");
-  m_textures.resize(m_chars.pages.size());
-
-  for (size_t i = 0; i < m_chars.pages.size(); i++) {
-    const std::string &texPath = m_chars.pages[i];
-    m_textures[i].load(texPath);
   }
 }
 
@@ -68,12 +56,12 @@ void FntFont::loadFromFile(const std::filesystem::path &path) {
   is.close();
 }
 
-float FntFont::getKerning(unsigned int first, unsigned int second, unsigned int) const {
+float FntFont::getKerning(unsigned int first, unsigned int second, unsigned int) {
   return m_chars.getKerning(first, second);
 }
 
-const Texture &FntFont::getTexture(unsigned int) const {
-  return m_textures[0];
+const Texture *FntFont::getTexture(unsigned int) {
+  return &m_textures[0];
 }
 
 bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
@@ -146,6 +134,7 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
           // of UIFontSmallBold.png) I replaced it to:
           auto pagePath = path;
           m_chars.pages[id] = pagePath.replace_extension(".png").u8string();
+          m_textures.emplace_back(m_chars.pages[id]);
         }
       }
     } else if (tag == "char") {
@@ -182,7 +171,8 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
           converter >> chnl;
       }
 
-      glyph.textureRect = irect::fromPositionSize({x, y}, {width, height});
+      auto rect = irect::fromPositionSize({x, y}, {width, height});
+      glyph.textureRect = m_textures.at(page).computeTextureCoords(rect);
       glyph.bounds = frect::fromPositionSize({xoffset, yoffset}, {width, height});
       m_chars.addChar(id, glyph);
     } else if (tag == "kerning") {
@@ -211,7 +201,7 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
   return true;
 }
 
-const Glyph &FntFont::getGlyph(unsigned int codePoint, unsigned int characterSize, float outlineThickness) const {
+const Glyph &FntFont::getGlyph(unsigned int codePoint, unsigned int, float) {
   return m_chars.getChar((int) codePoint);
 }
 }

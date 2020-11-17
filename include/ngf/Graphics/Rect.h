@@ -116,6 +116,13 @@ public:
     return min.x <= point.x && point.x < max.x && min.y <= point.y && point.y < max.y;
   }
 
+  /// @brief Shrinks the rectangle.
+  /// \param value The amount to shrink.
+  /// \return The rectangle shrinked.
+  constexpr Rect shrink(T value) const noexcept {
+    return Rect(min + value, max - value);
+  }
+
 private:
   constexpr Rect(vec min, vec max) noexcept
       : min(min), max(max) {

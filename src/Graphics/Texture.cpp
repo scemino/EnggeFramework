@@ -21,6 +21,27 @@ GLenum getGlFormat(Texture::Format format) {
   case Texture::Format::Rgb: return GL_RGB;
   }
   assert(false);
+  return GL_RGBA;
+}
+
+Texture::Format toFormat(int bpp) {
+  switch (bpp) {
+  case 1 : return Texture::Format::Alpha;
+  case 4: return Texture::Format::Rgba;
+  case 3: return Texture::Format::Rgb;
+  }
+  assert(false);
+  return Texture::Format::Rgba;
+}
+
+int getAlignment(Texture::Format format) {
+  switch (format) {
+  case Texture::Format::Rgba:return 4;
+  case Texture::Format::Rgb:return 3;
+  case Texture::Format::Alpha:return 1;
+  }
+  assert(false);
+  return 4;
 }
 }
 
@@ -29,31 +50,18 @@ Texture::Texture(Type type, Format format)
   GL_CHECK(glGenTextures(1, &m_img_tex));
 }
 
-Texture::Texture(const Image &image) {
-  m_type = Type::Texture2D;
-  m_format = image.getBpp() != 4 ? ngf::Texture::Format::Rgb : ngf::Texture::Format::Rgba;
-  auto type = getGlType(m_type);
-  GL_CHECK(glBindTexture(type, m_img_tex));
-  auto glFormat = getGlFormat(m_format);
-  m_size = image.getSize();
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               glFormat,
-               image.getSize().x,
-               image.getSize().y,
-               0,
-               glFormat,
-               GL_UNSIGNED_BYTE,
-               nullptr);
-  loadFromMemory(image.getSize(), image.getPixelsPtr());
+Texture::Texture(const Image &image)
+    : Texture(toFormat(image.getBpp()), image.getSize(), image.getPixelsPtr()) {
 }
 
-Texture::Texture(Format format, glm::uvec2 size, const void *data)
-    : m_type(Type::Texture2D), m_format{format}, m_size{size} {
-  GL_CHECK(glGenTextures(1, &m_img_tex));
-  bind(this);
+Texture::Texture(Format format, glm::ivec2 size, const void *data)
+    : m_type(Type::Texture2D), m_format(format), m_size(size) {
   auto glFormat = getGlFormat(format);
-  glTexImage2D(GL_TEXTURE_2D, 0, glFormat, size.x, size.y, 0, glFormat, GL_UNSIGNED_BYTE, data);
+  auto glInternalFormat = format == Format::Alpha ? GL_R8 : glFormat;
+  GL_CHECK(glGenTextures(1, &m_img_tex));
+  GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_img_tex));
+  GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, getAlignment(m_format)));
+  GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, m_size.x, m_size.y, 0, glFormat, GL_UNSIGNED_BYTE, data));
   updateFilters();
 }
 
@@ -62,8 +70,12 @@ Texture::Texture(Format format, const int width, const void *data)
   GL_CHECK(glGenTextures(1, &m_img_tex));
   bind(this);
   auto glFormat = getGlFormat(format);
-  glTexImage1D(GL_TEXTURE_1D, 0, glFormat, width, 0, glFormat, GL_UNSIGNED_BYTE, data);
+  GL_CHECK(glTexImage1D(GL_TEXTURE_1D, 0, glFormat, width, 0, glFormat, GL_UNSIGNED_BYTE, data));
   updateFilters();
+}
+
+Texture::Texture(glm::ivec2 size)
+    : Texture(Format::Rgba, size, nullptr) {
 }
 
 Texture::Texture(const std::filesystem::path &path) {
@@ -87,7 +99,15 @@ void Texture::loadFromStream(std::istream &input) {
   auto type = getGlType(m_type);
   GL_CHECK(glBindTexture(type, m_img_tex));
   auto glFormat = getGlFormat(m_format);
-  glTexImage2D(GL_TEXTURE_2D, 0, glFormat, img.getSize().x, img.getSize().y, 0, glFormat, GL_UNSIGNED_BYTE, nullptr);
+  GL_CHECK(glTexImage2D(GL_TEXTURE_2D,
+                        0,
+                        glFormat,
+                        img.getSize().x,
+                        img.getSize().y,
+                        0,
+                        glFormat,
+                        GL_UNSIGNED_BYTE,
+                        nullptr));
   loadFromMemory(img.getSize(), img.getPixelsPtr());
 }
 
@@ -109,7 +129,7 @@ bool Texture::isSmooth() const noexcept {
   return m_smooth;
 }
 
-void Texture::loadFromMemory(glm::uvec2 size, const void *data) {
+void Texture::loadFromMemory(glm::ivec2 size, const void *data) {
   auto type = getGlType(m_type);
   m_size = size;
   GL_CHECK(glBindTexture(type, m_img_tex));
@@ -123,7 +143,7 @@ void Texture::loadFromMemory(glm::uvec2 size, const void *data) {
 }
 
 void Texture::bind(const Texture *pTexture) {
-  if (pTexture) {
+  if (pTexture && pTexture->m_img_tex) {
     auto type = getGlType(pTexture->m_type);
     GL_CHECK(glBindTexture(type, pTexture->m_img_tex));
   } else {
@@ -136,5 +156,66 @@ void Texture::updateFilters() {
   auto type = getGlType(m_type);
   GL_CHECK(glTexParameteri(type, GL_TEXTURE_MAG_FILTER, getGlFilter(m_smooth)));
   GL_CHECK(glTexParameteri(type, GL_TEXTURE_MIN_FILTER, getGlFilter(m_smooth)));
+}
+
+frect Texture::computeTextureCoords(const irect &rect) const {
+  glm::vec2 size = m_size;
+  return frect::fromMinMax(static_cast<glm::vec2>(rect.min) / size, static_cast<glm::vec2>(rect.max) / size);
+}
+
+void Texture::update(const uint8_t *data, const irect &rect) {
+  assert(0 <= rect.min.x);
+  assert(0 <= rect.min.y);
+  assert(rect.max.x <= m_size.x);
+  assert(rect.max.y <= m_size.y);
+
+  if (!m_img_tex || !data)
+    return;
+
+  m_mipmap = false;
+
+  GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_img_tex));
+  GL_CHECK(glTexSubImage2D(GL_TEXTURE_2D,
+                           0,
+                           rect.min.x,
+                           rect.min.y,
+                           rect.getWidth(),
+                           rect.getHeight(),
+                           GL_RED,
+                           GL_UNSIGNED_BYTE,
+                           data));
+
+  GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, getGlFilter(m_smooth)));
+  GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, getGlFilter(m_smooth)));
+  if (m_format == Format::Alpha) {
+    GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_RED));
+  }
+}
+
+Image Texture::copyToImage() const {
+  if (!m_img_tex)
+    return Image();
+
+  auto size = getSize();
+  std::vector<uint8_t> pixels(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
+
+  GLuint framebuffer;
+  GL_CHECK(glGenFramebuffers(1, &framebuffer));
+
+  GLint boundFramebuffer;
+  GL_CHECK(glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFramebuffer));
+
+  GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
+  GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_img_tex, 0));
+  assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+  GL_CHECK(glPixelStorei(GL_PACK_ALIGNMENT, 4));
+  GL_CHECK(glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]));
+
+  GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, boundFramebuffer));
+  GL_CHECK(glDeleteFramebuffers(1, &framebuffer));
+
+  Image image(size, pixels.data());
+  return image;
 }
 }

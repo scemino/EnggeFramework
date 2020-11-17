@@ -113,13 +113,14 @@ public:
   void load(const std::filesystem::path &name, std::istream &input);
   void loadFromFile(const std::filesystem::path &path);
 
-  [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint, unsigned int characterSize, float outlineThickness) const override;
+  [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint,
+                                      unsigned int characterSize,
+                                      float outlineThickness) override;
   [[nodiscard]] float getKerning(unsigned int first, unsigned int second,
-                                 unsigned int characterSize) const override;
-  [[nodiscard]] const Texture &getTexture(
-      unsigned int characterSize) const override;
+                                 unsigned int characterSize) override;
+  [[nodiscard]] const Texture *getTexture(unsigned int characterSize) override;
 
-  [[nodiscard]] float getLineSpacing(unsigned int) const override { return m_chars.lineHeight; }
+  [[nodiscard]] float getLineSpacing(unsigned int) override { return m_chars.lineHeight; }
 
 private:
   bool parse(const std::filesystem::path &path, std::istream &input);

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ngf VERSION 0.0.1 LANGUAGES CXX)
+project(ngf VERSION 0.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -13,6 +13,7 @@ option(NGF_BUILD_DOCUMENTATION "Build documentation (needs Doxygen)" OFF)
 find_package(GLEW REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
 if (NOT WIN32)
     find_package(OpenGL REQUIRED)
 endif ()
@@ -54,6 +55,7 @@ set(GFX_SOURCE_FILES
         src/Graphics/Animation.cpp
         src/Graphics/CircleShape.cpp
         src/Graphics/Color.cpp
+        src/Graphics/DefaultFont.cpp
         src/Graphics/FntFont.cpp
         src/Graphics/GlDebug.cpp
         src/Graphics/Image.cpp
