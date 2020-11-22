@@ -30,12 +30,9 @@ frect transform(const glm::mat3& mat, const frect& rect) {
   auto pointBottomLeft = transform(mat, rect.getBottomLeft());
   auto pointBottomRight = transform(mat, rect.getBottomRight());
 
-  glm::vec2 min;
-  glm::vec2 max;
+  auto [minx, maxx] = std::minmax({ pointTopLeft.x, pointTopRight.x, pointBottomLeft.x, pointBottomRight.x });
+  auto [miny, maxy] = std::minmax({ pointTopLeft.y, pointTopRight.y, pointBottomLeft.y, pointBottomRight.y });
 
-  std::tie(min.x, max.x) = std::minmax({ pointTopLeft.x, pointTopRight.x, pointBottomLeft.x, pointBottomRight.x });
-  std::tie(min.y, max.y) = std::minmax({ pointTopLeft.y, pointTopRight.y, pointBottomLeft.y, pointBottomRight.y });
-
-  return frect::fromMinMax(min, max);
+  return frect::fromMinMax({ minx,miny }, {maxx,maxy});
 }
 }

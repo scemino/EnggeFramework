@@ -20,7 +20,7 @@ constexpr float det(float a, float b, float c, float d) {
   return a * d - b * c;
 }
 
-constexpr bool intersect_1d(float a, float b, float c, float d) {
+bool intersect_1d(float a, float b, float c, float d) {
   if (a > b)
     std::swap(a, b);
   if (c > d)
@@ -32,7 +32,7 @@ constexpr bool less(const glm::vec2 &p1, const glm::vec2 &p2) {
   return p1.x < p2.x - Epsilon || (fabs(p1.x - p2.x) < Epsilon && p1.y < p2.y - Epsilon);
 }
 
-constexpr bool intersect(glm::vec2 a, glm::vec2 b, glm::vec2 c, glm::vec2 d) {
+bool intersect(glm::vec2 a, glm::vec2 b, glm::vec2 c, glm::vec2 d) {
   if (!intersect_1d(a.x, b.x, c.x, d.x) || !intersect_1d(a.y, b.y, c.y, d.y))
     return false;
 
@@ -57,7 +57,7 @@ constexpr bool intersect(glm::vec2 a, glm::vec2 b, glm::vec2 c, glm::vec2 d) {
       betw(c.x, d.x, lx) && betw(c.y, d.y, ly);
 }
 
-constexpr bool lineSegmentsCross(const glm::vec2 &a,
+bool lineSegmentsCross(const glm::vec2 &a,
                                  const glm::vec2 &b,
                                  const glm::vec2 &c,
                                  const glm::vec2 &d) {

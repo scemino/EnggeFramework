@@ -1,5 +1,5 @@
 #include <ngf/System/VideoDisplay.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 namespace ngf {
 VideoDisplay::VideoDisplay(int id) : m_id(id) {}

@@ -11,7 +11,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="03 - Basic Drawing", .size={640, 480}});
+    m_window.init({"03 - Basic Drawing", {640, 480}});
   }
 
   void onRender(ngf::RenderTarget &target) override {
@@ -42,14 +42,14 @@ private:
 
 private:
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::TriangleFan};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::Red},
-                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::Green},
-                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::Blue},
-                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White}
+  std::array<ngf::Vertex, 4> m_vertices{{{{0.0f, 480.0f}, ngf::Colors::Red},
+                                         {{640.0f, 480.0f}, ngf::Colors::Green},
+                                         {{640.0f, 0.0f}, ngf::Colors::Blue},
+                                         {{0.0f, 0.0f}, ngf::Colors::White}
                                         }};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

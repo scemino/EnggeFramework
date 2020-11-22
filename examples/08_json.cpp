@@ -19,7 +19,7 @@ std::string toUtf8(const std::wstring &text) {
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="08 - Json", .size={640, 480}});
+    m_window.init({"08 - Json", {640, 480}});
 
     m_sprite = std::make_unique<ngf::Sprite>();
     m_texture = std::make_unique<ngf::Texture>("./assets/tiles.png");
@@ -80,7 +80,7 @@ private:
   ngf::GGPackValue m_json;
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

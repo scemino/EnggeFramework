@@ -13,7 +13,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="09 - Tween", .size={640, 480}});
+    m_window.init({"09 - Tween", {640, 480}});
 
     m_texture = std::make_unique<ngf::Texture>("./assets/background.jpg");
     m_textureCharacter = std::make_unique<ngf::Texture>("./assets/characters.png");
@@ -97,17 +97,17 @@ private:
   std::unique_ptr<ngf::Texture> m_texture;
   std::unique_ptr<ngf::Texture> m_textureCharacter;
   std::unique_ptr<ngf::Sprite> m_sprite;
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}},
-                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
-                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
-                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}}
+  std::array<ngf::Vertex, 4> m_vertices{{{{0.0f, 480.0f}, ngf::Colors::White, {0.0f, 1.0f}},
+                                         {{640.0f, 480.0f}, ngf::Colors::White, {1.0f, 1.0f}},
+                                         {{640.0f, 0.0f}, ngf::Colors::White, {1.0f, 0.0f}},
+                                         {{0.0f, 0.0f}, ngf::Colors::White, {0.0f, 0.0f}}
                                         }};
   ngf::Tween<glm::vec2> m_tween;
   ngf::Tween<float> m_tweenRotation;
   ngf::Tween<ngf::Color> m_tweenColor;
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

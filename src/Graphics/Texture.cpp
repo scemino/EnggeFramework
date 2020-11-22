@@ -1,5 +1,5 @@
 #include <ngf/Graphics/Texture.h>
-#include <Graphics/Image.h>
+#include <ngf/Graphics/Image.h>
 #include <fstream>
 #include "GlDebug.h"
 

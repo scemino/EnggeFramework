@@ -146,7 +146,7 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
           // UIFontSmallBold.fnt (it points to UIFontSmall.png instead
           // of UIFontSmallBold.png) I replaced it to:
           auto pagePath = path;
-          m_chars.pages[id] = pagePath.replace_extension(".png");
+          m_chars.pages[id] = pagePath.replace_extension(".png").u8string();
         }
       }
     } else if (tag == "char") {

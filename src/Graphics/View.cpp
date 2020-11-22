@@ -1,6 +1,6 @@
 #include <cassert>
 #include <glm/gtx/transform.hpp>
-#include "View.h"
+#include <ngf/Graphics/View.h>
 
 namespace ngf {
 namespace {

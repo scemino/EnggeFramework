@@ -1,5 +1,5 @@
 #include <ngf/System/DisplayMode.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 namespace ngf {
 namespace {

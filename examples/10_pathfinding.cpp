@@ -5,7 +5,7 @@
 #include <imgui.h>
 #include <algorithm>
 #include <glm/glm.hpp>
-#include <Math/PathFinding/PathFinder.h>
+#include <ngf/Math/PathFinding/PathFinder.h>
 
 constexpr glm::ivec2 points[] =
     {{3, 76}, {27, 76}, {28, 69}, {39, 70}, {50, 67}, {64, 77},
@@ -22,13 +22,13 @@ public:
         m_pathFinder(m_walkboxes) {
     m_vertices.reserve(pointsSize);
     std::transform(points, points + pointsSize, std::back_inserter(m_vertices), [](auto pt) {
-      return ngf::Vertex{.pos={pt.x, pt.y}};
+      return ngf::Vertex{{pt.x, pt.y}};
     });
   }
 
 private:
   void onInit() override {
-    m_window.init({.title="10 - Path finding", .size={1024, 780}});
+    m_window.init({"10 - Path finding", {1024, 780}});
   }
 
   void onEvent(ngf::Event &event) override {
@@ -53,7 +53,7 @@ private:
     m_path.clear();
     m_path.reserve(path.size());
     std::transform(path.begin(), path.end(), std::back_inserter(m_path), [](auto pt) {
-      return ngf::Vertex{.pos={pt.x, pt.y}};
+      return ngf::Vertex{{pt.x, pt.y}};
     });
   }
 
@@ -87,7 +87,7 @@ private:
   bool m_isInside{false};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

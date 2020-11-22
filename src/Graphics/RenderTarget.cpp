@@ -1,7 +1,7 @@
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Image.h>
-#include <Math/Transform.h>
-#include <System/Window.h>
+#include <ngf/Math/Transform.h>
+#include <ngf/System/Window.h>
 #include <utility>
 #include "GlDebug.h"
 

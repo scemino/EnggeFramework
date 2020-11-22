@@ -12,7 +12,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="12 - Render Texture", .size={640, 480}});
+    m_window.init({"12 - Render Texture", {640, 480}});
 
     m_textureCharacter = std::make_unique<ngf::Texture>("./assets/characters.png");
 
@@ -85,14 +85,14 @@ private:
   std::unique_ptr<ngf::RenderTexture> m_renderTexture;
   glm::vec2 m_worldPos{};
   ngf::Color m_color = {ngf::Colors::White, 0.5f};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, -240.0f}, .color=ngf::Colors::Red},
-                                         {.pos={320.0f, -240.0f}, .color=m_color},
-                                         {.pos={320.0f, 240.0f}, .color=m_color},
-                                         {.pos={-320.0f, 240.0f}, .color=m_color}
+  std::array<ngf::Vertex, 4> m_vertices{{{{-320.0f, -240.0f}, ngf::Colors::Red},
+                                         {{320.0f, -240.0f}, m_color},
+                                         {{320.0f, 240.0f}, m_color},
+                                         {{-320.0f, 240.0f}, m_color}
                                         }};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

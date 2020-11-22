@@ -17,7 +17,7 @@ public:
 
 private:
   void onInit() override {
-    m_window.init({.title="WimpyViewer", .size={1024, 768}});
+    m_window.init({"WimpyViewer", {1024, 768}});
     m_room.loadRoom(m_path);
   }
 
@@ -67,10 +67,10 @@ private:
     constexpr float length_2 = length / 2.f;
     constexpr float length_4 = length / 4.f;
     std::array<ngf::Vertex, 4> posVertices = {
-        ngf::Vertex{.pos = {-length_2, 0.f}, .color = color},
-        ngf::Vertex{.pos = {length_2, 0.f}, .color = color},
-        ngf::Vertex{.pos = {0.f, -length_2}, .color = color},
-        ngf::Vertex{.pos = {0.f, length_2}, .color = color}};
+        ngf::Vertex{{-length_2, 0.f}, color},
+        ngf::Vertex{{length_2, 0.f}, color},
+        ngf::Vertex{{0.f, -length_2}, color},
+        ngf::Vertex{{0.f, length_2}, color}};
 
     ngf::RenderStates states;
     ngf::Transform tObj;
@@ -81,22 +81,22 @@ private:
     if (object.useDir != Direction::None) {
       std::array<ngf::Vertex, 2> dirVertices;
       switch (object.useDir) {
-      case Direction::Back:dirVertices[0].pos = {-length_4, -length_4};
-        dirVertices[1].pos = {length_4, -length_4};
+      case Direction::Back:dirVertices[0]{-length_4, -length_4};
+        dirVertices[1]{length_4, -length_4};
         break;
-      case Direction::Front:dirVertices[0].pos = {-length_4, length_4};
-        dirVertices[1].pos = {length_4, length_4};
+      case Direction::Front:dirVertices[0]{-length_4, length_4};
+        dirVertices[1]{length_4, length_4};
         break;
-      case Direction::Left:dirVertices[0].pos = {-length_4, -length_4};
-        dirVertices[1].pos = {-length_4, length_4};
+      case Direction::Left:dirVertices[0]{-length_4, -length_4};
+        dirVertices[1]{-length_4, length_4};
         break;
-      case Direction::Right:dirVertices[0].pos = {length_4, -length_4};
-        dirVertices[1].pos = {length_4, length_4};
+      case Direction::Right:dirVertices[0]{length_4, -length_4};
+        dirVertices[1]{length_4, length_4};
         break;
       default:break;
       }
-      dirVertices[0].color = color;
-      dirVertices[1].color = color;
+      dirVertices[0]color;
+      dirVertices[1]color;
       target.draw(ngf::PrimitiveType::Lines, dirVertices, states);
 
       ngf::CircleShape circle(1.0f);
@@ -115,10 +115,10 @@ private:
 
     auto color = getColor(object.type);
     std::array<ngf::Vertex, 4> hotspotVertices = {
-        ngf::Vertex{.pos = object.hotspot.getTopLeft(), .color = color},
-        ngf::Vertex{.pos = object.hotspot.getBottomLeft(), .color = color},
-        ngf::Vertex{.pos = object.hotspot.getBottomRight(), .color = color},
-        ngf::Vertex{.pos = object.hotspot.getTopRight(), .color = color}};
+        ngf::Vertex{object.hotspot.getTopLeft(), color},
+        ngf::Vertex{object.hotspot.getBottomLeft(), color},
+        ngf::Vertex{object.hotspot.getBottomRight(), color},
+        ngf::Vertex{object.hotspot.getTopRight(), color}};
 
     // draw hotspot and position
     ngf::RenderStates states;
@@ -139,10 +139,10 @@ private:
     const auto color = getColor(object.type);
     const auto y = object.zsort;
     std::array<ngf::Vertex, 2> vertices;
-    vertices[0].pos = {0, y};
-    vertices[0].color = color;
-    vertices[1].pos = {target.getSize().x, y};
-    vertices[1].color = color;
+    vertices[0]{0, y};
+    vertices[0]color;
+    vertices[1]{target.getSize().x, y};
+    vertices[1]color;
     target.draw(ngf::PrimitiveType::Lines, vertices);
 
     ngf::CircleShape circle(1.0f);

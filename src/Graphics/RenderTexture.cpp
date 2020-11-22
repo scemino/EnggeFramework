@@ -1,4 +1,4 @@
-#include "RenderTexture.h"
+#include <ngf/Graphics/RenderTexture.h>
 #include "GlDebug.h"
 
 namespace ngf {

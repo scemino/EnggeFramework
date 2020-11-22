@@ -129,7 +129,7 @@ std::ostream &operator<<(std::ostream &o, const ngf::Event &event) {
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="02_Inputs", .size={640, 480}});
+    m_window.init({"02_Inputs", {640, 480}});
   }
 
   void onRender(ngf::RenderTarget& target) override {
@@ -154,7 +154,7 @@ private:
   std::string m_lastInput;
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

@@ -1,5 +1,5 @@
 #include <ngf/System/StopWatch.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 namespace ngf{
 StopWatch::StopWatch() : m_startTime(TimeSpan::milliseconds(SDL_GetTicks())) {

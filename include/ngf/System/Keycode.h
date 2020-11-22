@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL_keycode.h>
+#include <SDL2/SDL_keycode.h>
 
 namespace ngf {
 

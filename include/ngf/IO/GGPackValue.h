@@ -303,10 +303,10 @@ public:
     throw std::logic_error("This is not an array");
   }
 
-  basic_ggpackvalue &operator[](const std::string &key) {
+  basic_ggpackvalue operator[](const std::string &key) {
     if (m_type == GGPackValueType::Hash) {
       if (m_value.hash_value->find(key) == m_value.hash_value->end())
-        return nullValue;
+        return nullptr;
       return m_value.hash_value->at(key);
     }
     throw std::logic_error("This is not an hashtable");
@@ -315,7 +315,7 @@ public:
   const basic_ggpackvalue &operator[](const std::string &key) const {
     if (m_type == GGPackValueType::Hash) {
       if (m_value.hash_value->find(key) == m_value.hash_value->end())
-        return nullValue;
+        return nullptr;
       return m_value.hash_value->at(key);
     }
     throw std::logic_error("This is not an hashtable");
@@ -450,9 +450,6 @@ private:
     assert(object != nullptr);
     return object.release();
   }
-
-public:
-  static inline basic_ggpackvalue nullValue{nullptr};
 };
 
 using GGPackValue = basic_ggpackvalue<>;

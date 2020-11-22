@@ -6,7 +6,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="01_Window", .size={640, 480}});
+    m_window.init({"01_Window", {640, 480}});
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
   }
@@ -129,7 +129,7 @@ private:
   int m_type{0};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   for (const auto &display : ngf::Application::getVideoDisplays()) {
     auto bounds = display.getBounds();
     std::cout << display.getId() << ": " << display.getName() << " [" << bounds.getPosition().x << ", "

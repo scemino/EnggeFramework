@@ -5,7 +5,7 @@
 #include <ngf/Graphics/VertexArray.h>
 #include <ngf/Graphics/RenderStates.h>
 #include <ngf/Graphics/View.h>
-#include <System/Window.h>
+#include <ngf/System/Window.h>
 #include <glm/vec2.hpp>
 
 namespace ngf {

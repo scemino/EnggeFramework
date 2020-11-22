@@ -3,7 +3,7 @@
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Graphics/Vertex.h>
-#include <Math/Transform.h>
+#include <ngf/Math/Transform.h>
 #include <imgui.h>
 #include <memory>
 #include <array>
@@ -12,7 +12,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="04 - Texture", .size={640, 480}});
+    m_window.init({"04 - Texture", {640, 480}});
     m_texture = std::make_unique<ngf::Texture>();
     m_texture->load("./assets/background.jpg");
   }
@@ -62,14 +62,14 @@ private:
 private:
   ngf::Transform m_transform{};
   std::unique_ptr<ngf::Texture> m_texture;
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={0.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 1.0f}},
-                                         {.pos={640.0f, 480.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 1.0f}},
-                                         {.pos={640.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={1.0f, 0.0f}},
-                                         {.pos={0.0f, 0.0f}, .color=ngf::Colors::White, .texCoords={0.0f, 0.0f}}
+  std::array<ngf::Vertex, 4> m_vertices{{{{0.0f, 480.0f}, ngf::Colors::White, {0.0f, 1.0f}},
+                                         {{640.0f, 480.0f}, ngf::Colors::White, {1.0f, 1.0f}},
+                                         {{640.0f, 0.0f}, ngf::Colors::White, {1.0f, 0.0f}},
+                                         {{0.0f, 0.0f}, ngf::Colors::White, {0.0f, 0.0f}}
                                         }};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

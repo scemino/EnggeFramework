@@ -13,7 +13,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="11 - Button", .size={640, 480}});
+    m_window.init({"11 - Button", {640, 480}});
 
     m_textureCharacter = std::make_unique<ngf::Texture>("./assets/characters.png");
 
@@ -109,7 +109,7 @@ private:
   glm::vec2 m_worldPos{};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;

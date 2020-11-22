@@ -1,5 +1,5 @@
 #include <cstring>
-#include "IO/GGPackBufferStream.h"
+#include <ngf/IO/GGPackBufferStream.h>
 
 namespace ngf {
 GGPackBufferStream::GGPackBufferStream(std::vector<char> input) : m_input(std::move(input)) {}

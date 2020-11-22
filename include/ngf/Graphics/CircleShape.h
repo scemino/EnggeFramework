@@ -1,4 +1,5 @@
 #pragma once
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <ngf/Graphics/Rect.h>
 #include <ngf/Graphics/Shape.h>

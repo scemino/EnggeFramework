@@ -36,6 +36,11 @@
 cmake-build-debug/
 cmake-build-release/
 
+# VisualdStudio
+.vs/
+out/*
+CMakeSettings.json
+
 # docs
 docs/
 !Doxyfile

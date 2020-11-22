@@ -1,6 +1,6 @@
 macro(add_ngf_example NAME)
     add_executable("${NAME}" "${NAME}.cpp")
-    target_link_libraries("${NAME}" ngf)
+    target_link_libraries("${NAME}" PRIVATE ngf glm SDL2::SDL2 SDL2::SDL2main GLEW::GLEW imgui)
     install(TARGETS "${NAME}" DESTINATION "bin/examples")
 endmacro()
 

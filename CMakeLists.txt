@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ngf VERSION 0.0.1 LANGUAGES CXX C)
+project(ngf VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -11,7 +11,8 @@ option(NGF_BUILD_DOCUMENTATION "Build documentation (needs Doxygen)" OFF)
 
 # dependencies
 find_package(GLEW REQUIRED)
-find_package(SDL2 REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 if (NOT WIN32)
     find_package(OpenGL REQUIRED)
 endif ()
@@ -19,16 +20,24 @@ endif ()
 # include
 set(NGLIB_HEADERS_DIR ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/extlibs/stb
-        ${PROJECT_SOURCE_DIR}/include/ngf
-        ${PROJECT_SOURCE_DIR}/include/ngf/Graphics
-        ${PROJECT_SOURCE_DIR}/include/ngf/Window
-        ${PROJECT_SOURCE_DIR}/include/ngf/System
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/extlibs/imgui
         ${PROJECT_SOURCE_DIR}/extlibs)
 
 include_directories(${NGLIB_HEADERS_DIR})
 
-# source
+# imgui library
+add_library(imgui
+        # Main Imgui files
+        extlibs/imgui/imgui.cpp extlibs/imgui/imgui_draw.cpp extlibs/imgui/imgui_widgets.cpp
+        extlibs/imgui/misc/cpp/imgui_stdlib.cpp)
+target_include_directories(imgui PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_link_libraries(imgui PRIVATE SDL2::SDL2 ${OPENGL_LIBRARIES} GLEW::GLEW)
+
+# ngf sources
 set(SYS_SOURCE_FILES
         src/System/Cursor.cpp
         src/System/DisplayMode.cpp
@@ -38,8 +47,7 @@ set(SYS_SOURCE_FILES
         src/System/Times.cpp
         src/System/TimeSpan.cpp
         src/System/Util.cpp
-        src/System/VideoDisplay.cpp
-        )
+        src/System/VideoDisplay.cpp)
 set(WIN_SOURCE_FILES src/System/Window.cpp)
 set(GFX_SOURCE_FILES
         src/Graphics/AnimatedSprite.cpp
@@ -59,8 +67,7 @@ set(GFX_SOURCE_FILES
         src/Graphics/Texture.cpp
         src/Graphics/VertexArray.cpp
         src/Graphics/VertexBuffer.cpp
-        src/Graphics/View.cpp
-        )
+        src/Graphics/View.cpp)
 set(IO_SOURCE_FILES
         src/IO/GGPackHashReader.cpp
         src/IO/GGPack.cpp
@@ -83,35 +90,25 @@ set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WI
         extlibs/imgui/examples/imgui_impl_sdl.cpp
         extlibs/imgui/examples/imgui_impl_opengl3.cpp)
 
-# imgui library
-add_library(imgui SHARED
-        # Main Imgui files
-        extlibs/imgui/imgui.cpp extlibs/imgui/imgui_draw.cpp extlibs/imgui/imgui_widgets.cpp
-        extlibs/imgui/misc/cpp/imgui_stdlib.cpp)
-
 # ngf library
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
-target_include_directories(${PROJECT_NAME}
-        PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui)
-# For Linux only, to use std::filesystem
+add_library(${PROJECT_NAME} ${SOURCE_FILES})
+target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
+# if debug -> add DEBUG preprocessor
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+## add exta compilation flags
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else()
+    target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra)
+endif ()
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 ${OPENGL_LIBRARIES} glm GLEW::GLEW imgui)
+## For Linux only, to use std::filesystem
 if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     target_link_libraries(${PROJECT_NAME} stdc++fs)
 endif ()
-
-target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
-set_target_properties("${PROJECT_NAME}" PROPERTIES CXX_EXTENSIONS OFF)
-
-# add exta compilation flags
-target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra)
-# if debug -> add DEBUG preprocessor
-target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 # Build examples
 if (NGF_BUILD_EXAMPLES)
@@ -154,8 +151,10 @@ if (NGF_BUILD_TESTS)
 endif ()
 
 # install ngf lib
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(TARGETS imgui DESTINATION lib)
+install(TARGETS ${PROJECT_NAME} imgui
+EXPORT ngf-export
+LIBRARY DESTINATION lib
+ARCHIVE DESTINATION lib)
 
 # Create a package
 ## Configure CPack

@@ -5,7 +5,7 @@
 #include <ngf/Graphics/Drawable.h>
 #include <ngf/Graphics/FntFont.h>
 #include <ngf/Graphics/Vertex.h>
-#include "Math/Transform.h"
+#include <ngf/Math/Transform.h>
 
 namespace ngf {
 class RenderTarget;

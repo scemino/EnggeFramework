@@ -1,6 +1,7 @@
 #include <ngf/Application.h>
 #include <ngf/Graphics/RenderWindow.h>
 #include <ngf/System/StopWatch.h>
+#include <SDL2/SDL.h>
 #include <imgui.h>
 #include <GL/glew.h>
 #include <examples/imgui_impl_opengl3.h>
@@ -124,13 +125,13 @@ int Application::showMessageBox(const std::string &title,
   int i = 0;
   std::vector<SDL_MessageBoxButtonData> buttonsData;
   for (const auto &button : buttons) {
-    SDL_MessageBoxButtonFlags buttonFlags;
+      Uint32 buttonFlags;
     if (acceptButton == i)
       buttonFlags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
     else if (cancelButton == i)
       buttonFlags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
     else
-      buttonFlags = static_cast<SDL_MessageBoxButtonFlags>(0);
+      buttonFlags = 0;
     buttonsData.push_back({buttonFlags, i++, button.c_str()});
   }
 

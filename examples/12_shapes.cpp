@@ -12,7 +12,7 @@
 class DemoApplication final : public ngf::Application {
 private:
   void onInit() override {
-    m_window.init({.title="12 - Shapes", .size={640, 480}});
+    m_window.init({"12 - Shapes", {640, 480}});
     updateShape();
   }
 
@@ -69,7 +69,7 @@ private:
   int m_primitiveIndex{0};
 };
 
-int main() {
+int main(int argc, char* argv[]) {
   DemoApplication app{};
   app.run();
   return EXIT_SUCCESS;
