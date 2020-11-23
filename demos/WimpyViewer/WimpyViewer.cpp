@@ -81,22 +81,22 @@ private:
     if (object.useDir != Direction::None) {
       std::array<ngf::Vertex, 2> dirVertices;
       switch (object.useDir) {
-      case Direction::Back:dirVertices[0]{-length_4, -length_4};
-        dirVertices[1]{length_4, -length_4};
+      case Direction::Back:dirVertices[0] = {{-length_4, -length_4}};
+        dirVertices[1] = {{length_4, -length_4}};
         break;
-      case Direction::Front:dirVertices[0]{-length_4, length_4};
-        dirVertices[1]{length_4, length_4};
+      case Direction::Front:dirVertices[0] = {{-length_4, length_4}};
+        dirVertices[1] = {{length_4, length_4}};
         break;
-      case Direction::Left:dirVertices[0]{-length_4, -length_4};
-        dirVertices[1]{-length_4, length_4};
+      case Direction::Left:dirVertices[0] = {{-length_4, -length_4}};
+        dirVertices[1] = {{-length_4, length_4}};
         break;
-      case Direction::Right:dirVertices[0]{length_4, -length_4};
-        dirVertices[1]{length_4, length_4};
+      case Direction::Right:dirVertices[0] = {{length_4, -length_4}};
+        dirVertices[1] = {{length_4, length_4}};
         break;
       default:break;
       }
-      dirVertices[0]color;
-      dirVertices[1]color;
+      dirVertices[0].color = color;
+      dirVertices[1].color = color;
       target.draw(ngf::PrimitiveType::Lines, dirVertices, states);
 
       ngf::CircleShape circle(1.0f);
@@ -139,10 +139,8 @@ private:
     const auto color = getColor(object.type);
     const auto y = object.zsort;
     std::array<ngf::Vertex, 2> vertices;
-    vertices[0]{0, y};
-    vertices[0]color;
-    vertices[1]{target.getSize().x, y};
-    vertices[1]color;
+    vertices[0] = {{0, y}, color};
+    vertices[1] = {{target.getSize().x, y}, color};
     target.draw(ngf::PrimitiveType::Lines, vertices);
 
     ngf::CircleShape circle(1.0f);

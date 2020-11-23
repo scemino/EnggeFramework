@@ -43,10 +43,10 @@ private:
 
 private:
   ngf::PrimitiveType m_primitiveType{ngf::PrimitiveType::TriangleFan};
-  std::array<ngf::Vertex, 4> m_vertices{{{.pos={-320.0f, 240.0f}, .color=ngf::Colors::Red},
-                                         {.pos={320.0f, 240.0f}, .color=ngf::Colors::Green},
-                                         {.pos={320.0f, -240.0f}, .color=ngf::Colors::Blue},
-                                         {.pos={-320.0f, -240.0f}, .color=ngf::Colors::White}
+  std::array<ngf::Vertex, 4> m_vertices{{{{-320.0f, 240.0f}, ngf::Colors::Red},
+                                         {{320.0f, 240.0f}, ngf::Colors::Green},
+                                         {{320.0f, -240.0f}, ngf::Colors::Blue},
+                                         {{-320.0f, -240.0f}, ngf::Colors::White}
                                         }};
 };
 

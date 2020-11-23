@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <initializer_list>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <glm/vec2.hpp>
 #include <ngf/Graphics/Color.h>
 #include <ngf/Graphics/Colors.h>

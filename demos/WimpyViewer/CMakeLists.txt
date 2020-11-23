@@ -1,3 +1,7 @@
 add_executable("WimpyViewer" "WimpyViewer.cpp")
-target_link_libraries("WimpyViewer" ngf)
+if (WIN32)
+    target_link_libraries("WimpyViewer" SDL2::SDL2main ngf)
+else()
+    target_link_libraries("WimpyViewer" ngf)
+endif()
 install(TARGETS "WimpyViewer" DESTINATION "bin/demos")

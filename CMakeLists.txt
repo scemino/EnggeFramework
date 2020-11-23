@@ -19,7 +19,7 @@ if (NOT WIN32)
 endif ()
 
 # include
-set(NGLIB_HEADERS_DIR ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS}
+set(NGLIB_HEADERS_DIR ${OPENGL_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/extlibs/stb
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}
@@ -36,7 +36,7 @@ add_library(imgui
 target_include_directories(imgui PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_link_libraries(imgui PRIVATE SDL2::SDL2 ${OPENGL_LIBRARIES} GLEW::GLEW)
+target_link_libraries(imgui PRIVATE ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} GLEW::GLEW)
 
 # ngf sources
 set(SYS_SOURCE_FILES
@@ -106,10 +106,11 @@ endif ()
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 ${OPENGL_LIBRARIES} glm GLEW::GLEW imgui)
 ## For Linux only, to use std::filesystem
 if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    target_link_libraries(${PROJECT_NAME} stdc++fs)
+    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui stdc++fs)
+else()
+    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} SDL2::SDL2 ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui)
 endif ()
 
 # Build examples
@@ -164,7 +165,7 @@ function(get_short_system_name variable)
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
         set(${variable} "OSX" PARENT_SCOPE)
     elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-        set(${variable} "Win32" PARENT_SCOPE)
+        set(${variable} "win64" PARENT_SCOPE)
     else ()
         set(${variable} "${CMAKE_SYSTEM_NAME}" PARENT_SCOPE)
     endif ()

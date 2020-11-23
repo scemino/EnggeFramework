@@ -312,7 +312,7 @@ public:
     throw std::logic_error("This is not an hashtable");
   }
 
-  const basic_ggpackvalue &operator[](const std::string &key) const {
+  basic_ggpackvalue operator[](const std::string &key) const {
     if (m_type == GGPackValueType::Hash) {
       if (m_value.hash_value->find(key) == m_value.hash_value->end())
         return nullptr;
