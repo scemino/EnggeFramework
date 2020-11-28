@@ -5,23 +5,11 @@
 **Engge Framework** is a C++ framework based on SDL.
 
 ## Why
-
-Why developping another framework, there are a ton of frameworks: SDL, SFML, Gamedev Framework, etc.
-
-Acually when I was developping engge, I've been facing several issues with [SFML](https://www.sfml-dev.org) which is a fantastic library, really easy to use and well-written.
-
-But here are the unsolved issues:
-* change the default coordinates system, engge requires the Y-axis to be up oriented
-* SFML does not recognize my Xbox-360 Gamepad and as I understand gamepads are not really well managed by SFML
-* cross-platform engine
-
-So why not choose another framework ?
-
-Well:
-* for SFML, you already know
-* SDL is a too low-level library
-* gf is really nice, but it has too much features and dependencies that engge does not need.
-And the second reason is it's really easier to learn/understand our own framework
+I need a basic 2D framework for **engge** which needs to be:
+- cross platform
+- easy to use
+- easy to understand (my code, my mistake)
+- with only the piece of code I need for **engge**
 
 ## Dependencies
 I try not have too much dependencies, but also it's not necessary to code something already nice-done.
