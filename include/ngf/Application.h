@@ -47,6 +47,8 @@ public:
   /// \return The video displays.
   static VideoDisplayIterator getVideoDisplays();
 
+  RenderTarget *getRenderTarget() { return m_renderTarget.get(); }
+
 protected:
   virtual void onInit();
   virtual void onExit();
@@ -54,7 +56,6 @@ protected:
   virtual void onRender(ngf::RenderTarget &target);
   virtual void onImGuiRender();
   virtual void onEvent(Event &event);
-  RenderTarget *getRenderTarget() { return m_renderTarget.get(); }
 
 private:
   void processEvents();
