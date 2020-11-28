@@ -25,6 +25,26 @@ std::tuple<int, std::string> parseError(std::string_view error) {
   auto msg = strtok(nullptr, ":");
   return {line, msg};
 }
+
+std::vector<glm::vec2> toVertices(sol::variadic_args va) {
+  std::vector<float> values;
+  if (va.size() == 1) {
+    for (const auto &v : va.get<sol::table>()) {
+      auto x = v.second.as<float>();
+      values.push_back(x);
+    }
+  } else {
+    for (auto v : va) {
+      float x = v;
+      values.push_back(x);
+    }
+  }
+  std::vector<glm::vec2> vertices;
+  for (size_t i = 0; i < values.size(); i += 2) {
+    vertices.emplace_back(values[i], values[i + 1]);
+  }
+  return vertices;
+}
 }
 
 DemoApplication::DemoApplication() { m_app = this; }
@@ -67,9 +87,9 @@ function lua.draw()
 graphics.clear(c,0.8,0.8,1.0)
 graphics.setColor(c,c,c,1)
 graphics.setImage(img)
-graphics.drawCircle(-r,-r,r)
+graphics.circle(-r,-r,r)
 graphics.setColor(1,1,1,1)
-graphics.print("Hello world",0,0)
+graphics.print("Hello world")
 end)");
   lua.script(m_editor.GetText());
 }
@@ -129,12 +149,28 @@ void DemoApplication::registerGraphics() {
                           sol::call_constructor,
                           sol::factories([](const std::string &d) { return std::make_shared<Image>(d); }));
 
-  lua.new_usertype<Graphics>("graphics",
-                             "drawCircle", &Graphics::drawCircle,
-                             "clear", sol::overload(&Graphics::clearRgba, &Graphics::clear),
-                             "print", &Graphics::print,
-                             "setImage", &Graphics::setImage,
-                             "setColor", &Graphics::setColor);
+  lua.new_usertype<Graphics>(
+      "graphics",
+      "circle", sol::overload(&Graphics::circle, [](float x, float y, float r) { Graphics::circle(x, y, r, 30); }),
+      "rectangle", &Graphics::rectangle,
+      "polygon", [](sol::variadic_args va) { Graphics::polygon(toVertices(va)); },
+      "clear", sol::overload(
+          &Graphics::clear,
+          []() { Graphics::clear(0.f, 0.f, 0.f, 1.f); }),
+      "print", sol::overload(
+          &Graphics::print,
+          [](std::string_view str, float x, float y, float ox, float oy, float r) {
+            Graphics::print(str, x, y, ox, oy, r, 1.f, 1.f);
+          },
+          [](std::string_view str, float x, float y, float ox, float oy) {
+            Graphics::print(str, x, y, ox, oy, 0.f, 1.f, 1.f);
+          },
+          [](std::string_view str, float x, float y) { Graphics::print(str, x, y, 0.f, 0.f, 0.f, 1.f, 1.f); },
+          [](std::string_view str) { Graphics::print(str, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f); }),
+      "setImage", &Graphics::setImage,
+      "setColor", sol::overload(
+          &Graphics::setColor,
+          [](float r, float g, float b) { Graphics::setColor(r, g, b, 1.f); }));
 }
 
 DemoApplication *DemoApplication::m_app{nullptr};
