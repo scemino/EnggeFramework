@@ -12,7 +12,7 @@
 class WimpyViewerApplication final : public ngf::Application {
 public:
   explicit WimpyViewerApplication(std::filesystem::path path)
-      : m_path(std::move(path)), m_roomEditor(m_room) {
+      : m_path(std::move(path)), m_roomEditor(*this, m_room) {
   }
 
 private:

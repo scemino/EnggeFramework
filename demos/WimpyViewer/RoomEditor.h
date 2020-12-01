@@ -1,6 +1,7 @@
 #pragma once
 #include <ngf/Graphics/Color.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
+#include <ngf/Application.h>
 #include <sstream>
 #include <imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -8,11 +9,11 @@
 
 class RoomEditor final {
 public:
-  explicit RoomEditor(Room &room) : m_room(room) {}
+  explicit RoomEditor(ngf::Application& application, Room &room) : m_application(application), m_room(room) {}
 
   [[nodiscard]] ngf::Color getClearColor() const { return m_clearColor; }
 
-  const Object *getSelectedObject() const { return m_selectedObject; }
+  [[nodiscard]] const Object *getSelectedObject() const { return m_selectedObject; }
 
   void draw() {
     showMainMenuBar();
@@ -27,7 +28,9 @@ private:
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("Quit", "Command|Ctrl+Q");
+        if(ImGui::MenuItem("Quit", "Command|Ctrl+Q")){
+          m_application.quit();
+        }
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
@@ -363,6 +366,7 @@ private:
   }
 
 private:
+  ngf::Application& m_application;
   Room &m_room;
   ngf::Color m_clearColor{ngf::Colors::LightBlue};
   Object *m_selectedObject{nullptr};
