@@ -134,7 +134,7 @@ public:
     // layers
     for (const auto &gLayer : wimpy["layers"]) {
       std::vector<SpriteSheetItem> items;
-      auto parallax = gLayer["parallax"].getDouble();
+      auto parallax = parseParallax(gLayer["parallax"]);
       auto zsort = gLayer["zsort"].getDouble();
       if (gLayer["name"].isArray()) {
         for (const auto &name : gLayer["name"]) {
@@ -143,7 +143,7 @@ public:
       } else if (gLayer["name"].isString()) {
         items.push_back(m_frames[gLayer["name"].getString()]);
       }
-      auto layer = std::make_unique<Layer>(offsetY, m_roomSize.y, m_texture, items, glm::vec2{parallax, 1.f}, zsort);
+      auto layer = std::make_unique<Layer>(offsetY, m_roomSize.y, m_texture, items, parallax, zsort);
       m_layers.push_back(std::move(layer));
     }
 
@@ -155,11 +155,11 @@ public:
     loadWalkboxes(wimpy);
     loadObjects(wimpy);
 
-    m_camera.position = glm::vec2(0, m_roomSize.y / 2.f);
+    m_camera.position = glm::vec2(0, 0);
     m_camera.size = getScreenSize(m_height);
   }
 
-  ngf::Transform &getTransform() { return m_transform; }
+  ngf::Transform &getTransform() noexcept { return m_transform; }
 
   void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
     states.transform *= m_transform.getTransform();
@@ -168,17 +168,18 @@ public:
     for (const auto &layer : m_layers) {
       ngf::RenderStates layerStates = states;
       ngf::Transform t;
-      t.setPosition({(-m_camera.position.x) * layer->getParallax().x, 0});
+      t.setPosition({-m_camera.position.x * layer->getParallax().x, m_camera.position.y * layer->getParallax().y});
       layerStates.transform *= t.getTransform();
       layer->draw(target, layerStates);
     }
 
     // draw objects
+    ngf::RenderStates localStates = states;
+    ngf::Transform t;
+    t.setPosition({-m_camera.position.x, m_camera.position.y});
+    localStates.transform *= t.getTransform();
+
     for (const auto &object : m_objects) {
-      ngf::RenderStates localStates = states;
-      ngf::Transform t;
-      t.setPosition({-m_camera.position.x, 0});
-      localStates.transform *= t.getTransform();
       object.draw(target, localStates);
     }
 
@@ -187,23 +188,18 @@ public:
       if (!walkbox.isVisible())
         continue;
 
-      ngf::RenderStates localStates = states;
-      ngf::Transform t;
-      t.setPosition({-m_camera.position.x, 0});
-      localStates.transform *= t.getTransform();
-
       std::vector<ngf::Vertex> polygon;
-      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [](const auto &p) {
-        return ngf::Vertex{(glm::vec2) p, ngf::Colors::LimeGreen};
+      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [this](const auto &p) {
+        return ngf::Vertex{{p.x, m_roomSize.y - p.y}, ngf::Colors::LimeGreen};
       });
       target.draw(ngf::PrimitiveType::LineLoop, polygon, localStates);
     }
   }
 
-  glm::ivec2 getSize() const { return m_roomSize; }
+  glm::ivec2 getSize() const noexcept { return m_roomSize; }
 
-  Camera &getCamera() { return m_camera; }
-  const Camera &getCamera() const { return m_camera; }
+  Camera &getCamera() noexcept { return m_camera; }
+  const Camera &getCamera() const noexcept { return m_camera; }
 
   Layers layers() noexcept { return Layers(m_layers); }
   Objects objects() noexcept { return Objects(m_objects); }
@@ -304,11 +300,27 @@ private:
     assert(false);
   }
 
+  static glm::vec2 parseParallax(const ngf::GGPackValue &gValue) {
+    if (gValue.isDouble()) {
+      return glm::ivec2{gValue.getDouble(), 1.f};
+    }
+
+    if (gValue.isString()) {
+      auto str = gValue.getString();
+      char *end;
+      auto x = std::strtof(str.data() + 1, &end);
+      auto y = std::strtof(end + 1, &end);
+      return glm::vec2{x, y};
+    }
+    assert(false);
+    return glm::ivec2{};
+  }
+
   static bool toBool(const ngf::GGPackValue &gValue) {
     return !gValue.isNull() && gValue.getInt() == 1;
   }
 
-  ngf::Walkbox parsePolygon(std::string_view text) const {
+  static ngf::Walkbox parsePolygon(std::string_view text) {
     const char *p = text.data();
     auto size = text.size();
     char *p2;
@@ -316,7 +328,7 @@ private:
     do {
       auto x = std::strtol(p + 1, &p2, 10);
       auto y = std::strtol(p2 + 1, &p2, 10);
-      points.emplace_back(x, m_roomSize.y - y);
+      points.emplace_back(x, y);
       p = p2 + 2;
     } while ((p - text.data()) < size);
     return ngf::Walkbox(points);
