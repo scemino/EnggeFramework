@@ -164,6 +164,9 @@ public:
   void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
     states.transform *= m_transform.getTransform();
 
+    const auto screenSize = getScreenSize(m_height);
+    const auto offsetY = screenSize.y - m_roomSize.y;
+
     // draw layers
     for (const auto &layer : m_layers) {
       ngf::RenderStates layerStates = states;
@@ -176,7 +179,7 @@ public:
     // draw objects
     ngf::RenderStates localStates = states;
     ngf::Transform t;
-    t.setPosition({-m_camera.position.x, m_camera.position.y});
+    t.setPosition({-m_camera.position.x, m_camera.position.y + offsetY});
     localStates.transform *= t.getTransform();
 
     for (const auto &object : m_objects) {
