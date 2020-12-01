@@ -62,9 +62,12 @@ public:
     t.setPosition({pos.x, pos.y});
     localStates.transform *= t.getTransform();
 
-    const auto frame = animations[0].frames.back().frame;
-    ngf::Sprite sprite(*texture, frame);
-    sprite.setAnchor(ngf::Anchor::Center);
+    const auto frame = animations[0].frames.back();
+    glm::vec2 off = {
+        frame.spriteSourceSize.min.x - frame.sourceSize.x / 2.f,
+        frame.spriteSourceSize.min.y - frame.sourceSize.y / 2.f};
+    ngf::Sprite sprite(*texture, frame.frame);
+    sprite.getTransform().setPosition(off);
     sprite.draw(target, localStates);
   }
 };
