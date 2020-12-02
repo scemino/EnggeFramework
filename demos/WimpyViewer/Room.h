@@ -175,7 +175,7 @@ public:
 
     // draw background layers
     for (const auto &layer : m_layers) {
-      if (layer->getZSort() >= 0)
+      if (layer->getZSort() < 0)
         continue;
       ngf::RenderStates layerStates = states;
       ngf::Transform t;
@@ -189,20 +189,19 @@ public:
     ngf::Transform t;
     t.setPosition({-m_camera.position.x, m_camera.position.y + offsetY});
     localStates.transform *= t.getTransform();
+    for (const auto &object : m_objects) {
+      object.draw(target, localStates);
+    }
 
     // draw foreground layers
     for (const auto &layer : m_layers) {
-      if (layer->getZSort() < 0)
+      if (layer->getZSort() >= 0)
         continue;
       ngf::RenderStates layerStates = states;
       ngf::Transform t;
       t.setPosition({-m_camera.position.x * layer->getParallax().x, m_camera.position.y * layer->getParallax().y});
       layerStates.transform *= t.getTransform();
       layer->draw(target, layerStates);
-    }
-
-    for (const auto &object : m_objects) {
-      object.draw(target, localStates);
     }
 
     // draw walkboxes
