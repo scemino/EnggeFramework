@@ -167,8 +167,10 @@ public:
     const auto screenSize = getScreenSize(m_height);
     const auto offsetY = screenSize.y - m_roomSize.y;
 
-    // draw layers
+    // draw background layers
     for (const auto &layer : m_layers) {
+      if (layer->getZSort() >= 0)
+        continue;
       ngf::RenderStates layerStates = states;
       ngf::Transform t;
       t.setPosition({-m_camera.position.x * layer->getParallax().x, m_camera.position.y * layer->getParallax().y});
@@ -181,6 +183,17 @@ public:
     ngf::Transform t;
     t.setPosition({-m_camera.position.x, m_camera.position.y + offsetY});
     localStates.transform *= t.getTransform();
+
+    // draw foreground layers
+    for (const auto &layer : m_layers) {
+      if (layer->getZSort() < 0)
+        continue;
+      ngf::RenderStates layerStates = states;
+      ngf::Transform t;
+      t.setPosition({-m_camera.position.x * layer->getParallax().x, m_camera.position.y * layer->getParallax().y});
+      layerStates.transform *= t.getTransform();
+      layer->draw(target, layerStates);
+    }
 
     for (const auto &object : m_objects) {
       object.draw(target, localStates);
