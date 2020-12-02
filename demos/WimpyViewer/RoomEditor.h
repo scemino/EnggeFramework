@@ -2,6 +2,7 @@
 #include <ngf/Graphics/Color.h>
 #include <ngf/Graphics/ImGuiExtensions.h>
 #include <ngf/Application.h>
+#include <functional>
 #include <sstream>
 #include <imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -9,11 +10,13 @@
 
 class RoomEditor final {
 public:
-  explicit RoomEditor(ngf::Application& application, Room &room) : m_application(application), m_room(room) {}
+  explicit RoomEditor(ngf::Application &application, Room &room) : m_application(application), m_room(room) {}
 
   [[nodiscard]] ngf::Color getClearColor() const { return m_clearColor; }
 
   [[nodiscard]] const Object *getSelectedObject() const { return m_selectedObject; }
+  [[nodiscard]] Object *getSelectedObject() { return m_selectedObject; }
+  void onSelectedObjectChanged(std::function<void(Object *)> callback) { m_selectedObjectChanged = callback; }
 
   void draw() {
     showMainMenuBar();
@@ -28,7 +31,7 @@ private:
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
-        if(ImGui::MenuItem("Quit", "Command|Ctrl+Q")){
+        if (ImGui::MenuItem("Quit", "Command|Ctrl+Q")) {
           m_application.quit();
         }
         ImGui::EndMenu();
@@ -234,7 +237,11 @@ private:
       ImGui::Checkbox("", &object.visible);
       ImGui::SameLine();
       if (ImGui::Selectable(object.name.c_str(), isSelected)) {
+        auto previousObject = m_selectedObject;
         m_selectedObject = &object;
+        if (m_selectedObjectChanged) {
+          m_selectedObjectChanged(previousObject);
+        }
       }
       if (ImGui::BeginPopupContextItem()) {
         if (ImGui::Button("Edit Properties...")) {
@@ -366,7 +373,7 @@ private:
   }
 
 private:
-  ngf::Application& m_application;
+  ngf::Application &m_application;
   Room &m_room;
   ngf::Color m_clearColor{ngf::Colors::LightBlue};
   Object *m_selectedObject{nullptr};
@@ -378,4 +385,5 @@ private:
   bool m_showWalkboxInfo{false};
   bool m_showNewAnimPopup{false};
   std::string m_newAnimName;
+  std::function<void(Object *)> m_selectedObjectChanged{nullptr};
 };

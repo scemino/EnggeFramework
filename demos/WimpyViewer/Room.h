@@ -86,14 +86,6 @@ class Room final : public ngf::Drawable {
 public:
   ~Room() override = default;
 
-  void loadSheet(const std::filesystem::path &path) {
-    auto sheetJson = ngf::Json::load(path);
-    for (const auto &frame : sheetJson["frames"].items()) {
-      auto sheetItem = toSpriteSheetItem(frame.key(), frame.value());
-      m_frames.insert({frame.key(), sheetItem});
-    }
-  }
-
   void loadRoom(const std::filesystem::path &path) {
     // load wimpy
     const auto wimpy = ngf::Json::load(path);
@@ -157,6 +149,12 @@ public:
 
     m_camera.position = glm::vec2(0, 0);
     m_camera.size = getScreenSize(m_height);
+  }
+
+  void update(const ngf::TimeSpan &elapsed) {
+    for(auto& obj : m_objects){
+      obj.update(elapsed);
+    }
   }
 
   void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
@@ -232,6 +230,14 @@ public:
   Frames frames() noexcept { return Frames(m_frames); }
 
 private:
+  void loadSheet(const std::filesystem::path &path) {
+    auto sheetJson = ngf::Json::load(path);
+    for (const auto &frame : sheetJson["frames"].items()) {
+      auto sheetItem = toSpriteSheetItem(frame.key(), frame.value());
+      m_frames.insert({frame.key(), sheetItem});
+    }
+  }
+
   void loadWalkboxes(const ngf::GGPackValue &wimpy) {
     for (const auto &gWalkbox : wimpy["walkboxes"]) {
       auto walkbox = parsePolygon(gWalkbox["polygon"].getString());

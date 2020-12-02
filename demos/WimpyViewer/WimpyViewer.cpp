@@ -14,6 +14,10 @@ class WimpyViewerApplication final : public ngf::Application {
 public:
   explicit WimpyViewerApplication(std::filesystem::path path)
       : m_path(std::move(path)), m_roomEditor(*this, m_room), m_cameraControl(m_room) {
+    m_roomEditor.onSelectedObjectChanged([](auto pObj) {
+      if (pObj)
+        pObj->pause();
+    });
   }
 
 private:
@@ -25,11 +29,29 @@ private:
   }
 
   void onEvent(ngf::Event &event) override {
-    if (event.type == ngf::EventType::MouseMoved) {
-      m_mousePos = event.mouseMoved.position;
+    switch (event.type) {
+    case ngf::EventType::MouseMoved:m_mousePos = event.mouseMoved.position;
       m_worldPos = getRenderTarget()->mapPixelToCoords(m_mousePos);
+      break;
+    case ngf::EventType::KeyPressed: {
+      auto pObj = m_roomEditor.getSelectedObject();
+      if (pObj && !pObj->animations.empty() && event.key.scancode >= ngf::Scancode::D1
+          && event.key.scancode <= ngf::Scancode::D0) {
+        auto digit = static_cast<int>(event.key.scancode) - static_cast<int>(ngf::Scancode::D1);
+        if (digit < pObj->animations.size()) {
+          pObj->animationIndex = digit;
+          pObj->play();
+        }
+      }
+    }
+      break;
+    default:break;
     }
     m_cameraControl.onEvent(*this, event);
+  }
+
+  void onUpdate(const ngf::TimeSpan &elapsed) override {
+    m_room.update(elapsed);
   }
 
   void onRender(ngf::RenderTarget &target) override {

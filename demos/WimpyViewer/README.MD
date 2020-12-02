@@ -1,6 +1,8 @@
 # Wimpy Viewer
 
 This is a demo for Engge Framework.
+This is a viewer of wimpy file (you guessed it right?).
+What is a wimpy file, a wimpy file is a file containing room data in Thimbleweed Park.
 
 ## Usage
 
@@ -16,8 +18,8 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 * [ ] delete walkbox
 * [ ] hotspot edition
 * [ ] zsort edition
-* [ ] play object animations
 * [ ] delete object
+* [x] play object animations
 * [x] display layers
 * [x] display objects
 * [x] display walkboxes
