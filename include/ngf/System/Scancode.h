@@ -113,7 +113,7 @@ enum class Scancode {
   KeypadPeriod = 99,
 
   NonUSBackslash = 100,
-  Applciation = 101,
+  Application = 101,
   Power = 102,
 
   KeypadEquals = 103,
