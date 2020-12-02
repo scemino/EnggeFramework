@@ -4,6 +4,7 @@
 #include <ngf/Application.h>
 #include <functional>
 #include <sstream>
+#include <utility>
 #include <imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include "Room.h"
@@ -16,7 +17,9 @@ public:
 
   [[nodiscard]] const Object *getSelectedObject() const { return m_selectedObject; }
   [[nodiscard]] Object *getSelectedObject() { return m_selectedObject; }
-  void onSelectedObjectChanged(std::function<void(Object *)> callback) { m_selectedObjectChanged = callback; }
+  void onSelectedObjectChanged(std::function<void(Object *)> callback) {
+    m_selectedObjectChanged = std::move(callback);
+  }
 
   void draw() {
     showMainMenuBar();
@@ -309,7 +312,28 @@ private:
         m_selectedWalkbox = &walkbox;
       }
       if (ImGui::BeginPopupContextItem()) {
-        ImGui::Button("Rename...");
+        if (ImGui::Button("Rename...")) {
+          ImGui::OpenPopup("Rename_Walkbox");
+        }
+
+        if (ImGui::BeginPopup("Rename_Walkbox")) {
+          m_newWalkboxName = m_selectedWalkbox->getName();
+          if (m_newWalkboxName.empty()) {
+            m_newWalkboxName = "unnamed";
+          }
+          ImGui::TextUnformatted("Name (enter to accept):");
+          ImGui::SetKeyboardFocusHere(0);
+          if (ImGui::InputText("",
+                               &m_newWalkboxName,
+                               ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+            if (!m_newWalkboxName.empty()) {
+              m_selectedWalkbox->setName(m_newWalkboxName);
+            }
+            ImGui::CloseCurrentPopup();
+          }
+          ImGui::EndPopup();
+        }
+
         ImGui::Button("Delete");
         ImGui::EndPopup();
       }
@@ -385,5 +409,6 @@ private:
   bool m_showWalkboxInfo{false};
   bool m_showNewAnimPopup{false};
   std::string m_newAnimName;
+  std::string m_newWalkboxName;
   std::function<void(Object *)> m_selectedObjectChanged{nullptr};
 };

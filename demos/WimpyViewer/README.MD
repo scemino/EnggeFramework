@@ -14,11 +14,11 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 ## TODO
 
 * [ ] walkbox edition
-* [ ] rename walkbox
 * [ ] delete walkbox
 * [ ] hotspot edition
 * [ ] zsort edition
 * [ ] delete object
+* [x] rename walkbox
 * [x] play object animations
 * [x] display layers
 * [x] display objects
