@@ -162,6 +162,12 @@ public:
   ngf::Transform &getTransform() noexcept { return m_transform; }
 
   void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
+
+    ngf::View view{ngf::frect::fromCenterSize(m_camera.size / 2.f,
+                                              m_camera.size)};
+    view.zoom(m_camera.zoom);
+    target.setView(view);
+
     states.transform *= m_transform.getTransform();
 
     const auto screenSize = getScreenSize(m_height);

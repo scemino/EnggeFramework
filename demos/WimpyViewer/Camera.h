@@ -10,4 +10,5 @@ public:
 public:
   glm::vec2 position;
   glm::vec2 size;
+  float zoom{1.f};
 };

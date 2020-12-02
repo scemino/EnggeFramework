@@ -8,16 +8,19 @@
 #include "Camera.h"
 #include "Room.h"
 #include "RoomEditor.h"
+#include "CameraControl.h"
 
 class WimpyViewerApplication final : public ngf::Application {
 public:
   explicit WimpyViewerApplication(std::filesystem::path path)
-      : m_path(std::move(path)), m_roomEditor(*this, m_room) {
+      : m_path(std::move(path)), m_roomEditor(*this, m_room), m_cameraControl(m_room) {
   }
 
 private:
   void onInit() override {
     m_window.init({"WimpyViewer", {1024, 768}});
+    auto &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     m_room.loadRoom(m_path);
   }
 
@@ -26,12 +29,12 @@ private:
       m_mousePos = event.mouseMoved.position;
       m_worldPos = getRenderTarget()->mapPixelToCoords(m_mousePos);
     }
+    m_cameraControl.onEvent(*this, event);
   }
 
   void onRender(ngf::RenderTarget &target) override {
     ngf::View view{ngf::frect::fromCenterSize(m_room.getCamera().size / 2.f,
                                               m_room.getCamera().size)};
-    view.zoom(m_zoom);
     target.setView(view);
     target.clear(m_roomEditor.getClearColor());
 
@@ -160,7 +163,7 @@ private:
     ImGui::Text("World pos (%.f,%.f)", m_worldPos.x, m_worldPos.y);
 
     ImGui::DragFloat2("Position", glm::value_ptr(m_room.getCamera().position));
-    ImGui::DragFloat("Zoom", &m_zoom, 0.1f, 0.1f, 10.f);
+    ImGui::DragFloat("Zoom", &m_room.getCamera().zoom, 0.1f, 0.1f, 10.f);
 
     ImGui::End();
 
@@ -170,10 +173,10 @@ private:
 private:
   std::filesystem::path m_path;
   Room m_room;
-  float m_zoom{1.f};
   glm::ivec2 m_mousePos{};
   glm::vec2 m_worldPos{};
   RoomEditor m_roomEditor;
+  CameraControl m_cameraControl;
 };
 
 int main(int argc, char **argv) {

@@ -47,7 +47,13 @@ public:
   /// \return The video displays.
   static VideoDisplayIterator getVideoDisplays();
 
+  /// Gets the render target.
+  /// \return The render target.
   RenderTarget *getRenderTarget() { return m_renderTarget.get(); }
+
+  /// Gets the window.
+  /// \return The window.
+  Window &getWindow() { return m_window; }
 
 protected:
   virtual void onInit();
