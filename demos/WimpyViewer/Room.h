@@ -159,16 +159,12 @@ public:
     m_camera.size = getScreenSize(m_height);
   }
 
-  ngf::Transform &getTransform() noexcept { return m_transform; }
-
   void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
 
     ngf::View view{ngf::frect::fromCenterSize(m_camera.size / 2.f,
                                               m_camera.size)};
     view.zoom(m_camera.zoom);
     target.setView(view);
-
-    states.transform *= m_transform.getTransform();
 
     const auto screenSize = getScreenSize(m_height);
     const auto offsetY = screenSize.y - m_roomSize.y;
@@ -189,6 +185,14 @@ public:
     ngf::Transform t;
     t.setPosition({-m_camera.position.x, m_camera.position.y + offsetY});
     localStates.transform *= t.getTransform();
+
+    if (m_objectsZOrderDirty) {
+      m_objectsZOrderDirty = false;
+      std::sort(m_objects.begin(), m_objects.end(), [](const auto &o1, const auto &o2) {
+        return o1.zsort > o2.zsort;
+      });
+    }
+
     for (const auto &object : m_objects) {
       object.draw(target, localStates);
     }
@@ -323,7 +327,7 @@ private:
 
   static glm::vec2 parseParallax(const ngf::GGPackValue &gValue) {
     if (gValue.isDouble()) {
-      return glm::ivec2{gValue.getDouble(), 1.f};
+      return glm::vec2{gValue.getDouble(), 1.f};
     }
 
     if (gValue.isString()) {
@@ -396,11 +400,11 @@ private:
   std::vector<std::unique_ptr<Layer>> m_layers;
   std::shared_ptr<ngf::Texture> m_texture;
   std::vector<ngf::Walkbox> m_walkboxes;
-  std::vector<Object> m_objects;
-  ngf::Transform m_transform;
+  mutable std::vector<Object> m_objects;
   glm::ivec2 m_roomSize{0, 0};
   int m_fullscreen{0};
   int m_height{0};
   Camera m_camera{};
   std::map<std::string, SpriteSheetItem> m_frames;
+  mutable bool m_objectsZOrderDirty{true};
 };
