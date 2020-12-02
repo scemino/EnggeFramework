@@ -33,6 +33,9 @@ set(LUA_SOURCE_FILES
         lua-5.4.1/src/lzio.c)
 
 add_executable(LuaSample ${LUA_SOURCE_FILES} ImGuiColorTextEdit/TextEditor.cpp Graphics.cpp DemoApplication.cpp main.cpp)
+if (MSVC)
+    target_compile_options(LuaSample PRIVATE /W4 /Zc:twoPhase-)
+endif ()
 if (WIN32)
     target_link_libraries(LuaSample SDL2::SDL2main ngf ${FREETYPE_LIBRARIES})
 else()
