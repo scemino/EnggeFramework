@@ -1,7 +1,6 @@
 #include <ngf/Application.h>
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Shader.h>
-#include <ngf/Graphics/CircleShape.h>
 #include <ngf/Graphics/RectangleShape.h>
 #include <ngf/IO/MemoryStream.h>
 #include <imgui.h>
@@ -15,6 +14,12 @@
 
 const char *handle_green =
     R"(=pxq9_8v7&0C/2'K(HH=4hFJ(4hFJ(15###i><u9t%###1EHr9809Gf)9+##=<Pt8WcGP(9U&%;>GnZcY&px%t?kj;`=T'=M`qGil1vV$k.bs-Q%EI-r^@v,As:p/Ta8OPlUaW-(@Ah3qRoe`8V$t+mnvCn_,qc5$.O]Jp#47INZ8FiBR7cdOA(YdjOYo6O)*5.?'Xa)ZP95TwHLc'8;hJ6>N%3vTj.In4BFK:oD$>b=A+,10OtlHWn@wjH'^&ar$ST(FXI:Mb];J.4S)M%EV?Z4ncJsXml_M]*_nu87Ha0e&j5CR'hpJ<Jf<bFRe(hBXY;,5^RQ.-Ya'o.SrgW7isjdn;h)%'Hx+@Jq$^B$CU)wQ$0tYN5Cr_(KYveN+hojDx0'a5exZu5OT:Fep@YAmCrqF'pj_RO#x8I7M*wBd1Ju9$IX@5>5AiCY2>P2W<aB;d9<Hicob'g[$.84)>nbP0bO.h++$05/QkZJOav+IdOmRG<`&X7aBO1SPT2)]pB's_$%(dgInSa^`w9Q@)r>m0#,e0&$7:%2#/6?sC0Q/VZOG0A7Gm2%*h$###Ub90<d$bsAP$###)";
+
+const char *handle_red =
+    R"(=pxq9_8v7&0C/2'K(HH=4hFJ(4hFJ(15###i><u9t%###1EHr9809Gf)9+##+[Ot8WcGP(+VQ#;'Lp*NVB7V)3f0u..f@O8ND.Bcrlu*6&[_psN-R6(&cw;o3/Pu7quSGQ(Z4L?2n;_ichP]4[G2-GSFb<nfaZ+v0#su07jxeRY[tvf_,*5Hd0f(m8`WV?H7*CbIxCEn-<HSXI8S_pHXJ,$3]O`nYN3s_O?slL8RJLIO9D,W>PR3_;Mc.']Pl;8cq[t.ZMYRKb]--l0U:,s`nMI-4X'vp#($%^?<[ac)aS6bYXMs'>;T8<%0oYVDM.jOp8I]C7i36XL;L^bN4L):0d0E[^n_A)q<Bk++M-T;N4&q__)b<54dAQX(<f)%dRq)M8(Ebp1_doE6B3L_l1Rh@ReEg,H;h2q4`L])>;6[I9[n<P*jG.^qEF>QJpm;JPp<P(s6t?'[q(r>1#I3JoJ'E3+0DQe'QKpfe-t.@-+T3-['K<%1>ew.ZTf)q:jrR&<uG9eL]Y&F205^aMrwE1V_TDj6:FHCwtQ##mb:J:T%f#[HVq0#)";
+
+const char *handle_blue =
+    R"(=pxq9_8v7&0C/2'K(HH=4hFJ(4hFJ(15###i><u9t%###1EHr9809Gf)9+##/hOt8WcGP(EH>&;QMp*N$A7Tcb$SdP>W%wWe/J:M>9Y3:4&sC$]u8IO0psS[qDWN.HD;V.aE*RiTTML2'5XM@8M>EnJCrp3ZOnshfJ<xt4`<iW--9A.'0@,$Qma/mE+=S'+)='2<g&B?)-,'?C<QVgH2t;Ks50D+HMnh9$(3HoIV>U2Lfd<g>dp$m9j0IV>in.1aFIxR^6#DlT^+_,i_?TFWuNkhr5;/Rm*NkG8x3d`o@L.ZYB4>s>MR.NE>Cj-k@(/dTl]Hh&`VcF9HEJh#>J2.ocog>B]/6r%B:<`w11KhfunA#5awt),LdKb5g#76ge`n&)Kp`nb56)3G_P.++j%`(W$Gvlb4mm1Q&KKN4+k:bQqk5nm+k$Yv@:0&Wj/ffk>+gi-)YW)0KS0L%2f6L?MEfmuSJiWD:WUIR+E7Q:(,bKHj>6$[(RNQ9IE<p$ow'ioE8cnwdtR.S<%qfQ1Jlunu0nXAo[_kRLe=7s&e0#mb:J:T%f#[HVq0#)";
 
 class WimpyViewerApplication final : public ngf::Application {
 public:
@@ -33,10 +38,17 @@ private:
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     m_room.loadRoom(m_path);
 
-    auto data = ngf::Base85::decode(handle_green);
-    m_greenHandle = std::make_shared<ngf::Texture>();
+    m_greenHandle = decodeTexture(handle_green);
+    m_redHandle = decodeTexture(handle_red);
+    m_blueHandle = decodeTexture(handle_blue);
+  }
+
+  static std::shared_ptr<ngf::Texture> decodeTexture(const char *src) {
+    auto data = ngf::Base85::decode(src);
+    auto texture = std::make_shared<ngf::Texture>();
     ngf::MemoryStream ms(data.data(), data.data() + data.size());
-    m_greenHandle->loadFromStream(ms);
+    texture->loadFromStream(ms);
+    return texture;
   }
 
   void onEvent(ngf::Event &event) override {
@@ -129,16 +141,36 @@ private:
 
     auto pSelectedWalkbox = m_roomEditor.getSelectedWalkbox();
     if (pSelectedWalkbox) {
-      ngf::RectangleShape handle;
-      handle.setSize({5, 5});
-      handle.setAnchor(ngf::Anchor::Center);
-      handle.setTexture(*m_greenHandle, false);
+      auto handle = createHandle(*m_greenHandle);
       for (auto it = pSelectedWalkbox->cbegin(); it != pSelectedWalkbox->cend(); it++) {
         glm::vec2 pos(it->x, m_room.getSize().y - it->y);
         handle.getTransform().setPosition(pos);
         handle.draw(target, states);
       }
     }
+  }
+
+  static ngf::RectangleShape createHandle(const ngf::Texture &texture) {
+    ngf::RectangleShape handle;
+    handle.setSize({5, 5});
+    handle.setAnchor(ngf::Anchor::Center);
+    handle.setTexture(texture, false);
+    return handle;
+  }
+
+  std::shared_ptr<ngf::Texture> getTexture(ObjectType type) const {
+    switch (type) {
+    case ObjectType::Prop: return m_blueHandle;
+    case ObjectType::Spot:return m_greenHandle;
+    case ObjectType::Trigger:return m_redHandle;
+    case ObjectType::None:return m_redHandle;
+    default:assert(false);
+      break;
+    }
+  }
+
+  ngf::RectangleShape createHandle(ObjectType type) const {
+    return createHandle(*getTexture(type));
   }
 
   void onImGuiRender() override {
@@ -192,10 +224,11 @@ private:
     }
   }
 
-  static void drawPosition(ngf::RenderTarget &target, const Object &object) {
+  void drawPosition(ngf::RenderTarget &target, const Object &object) const {
     if (object.type == ObjectType::Trigger)
       return;
 
+    // draw position
     auto color = getColor(object.type);
 
     constexpr float length = 8.f;
@@ -214,6 +247,7 @@ private:
     target.draw(ngf::PrimitiveType::Lines, posVertices, states);
 
     if (object.useDir != Direction::None) {
+      // draw direction arrow
       std::array<ngf::Vertex, 2> dirVertices;
       switch (object.useDir) {
       case Direction::Back:dirVertices[0] = {{-length_4, -length_4}};
@@ -234,14 +268,12 @@ private:
       dirVertices[1].color = color;
       target.draw(ngf::PrimitiveType::Lines, dirVertices, states);
 
-      ngf::CircleShape circle(1.0f);
-      circle.setAnchor(ngf::Anchor::Center);
-      circle.setColor(color);
-      circle.draw(target, states);
+      auto handle = createHandle(object.type);
+      handle.draw(target, states);
     }
   }
 
-  static void drawHotspot(ngf::RenderTarget &target, const Object &object) {
+  void drawHotspot(ngf::RenderTarget &target, const Object &object) const {
     if (object.type != ObjectType::None && object.type != ObjectType::Trigger)
       return;
 
@@ -260,17 +292,15 @@ private:
     states.transform = tObj.getTransform();
     target.draw(ngf::PrimitiveType::LineLoop, hotspotVertices, states);
 
-    // draw circle on each vertex
-    ngf::CircleShape circle(1.0f);
-    circle.setColor(color);
-    circle.setAnchor(ngf::Anchor::Center);
+    // draw handle on each vertex
+    auto handle = createHandle(object.type);
     for (auto &vertex : hotspotVertices) {
-      circle.getTransform().setPosition(vertex.pos);
-      circle.draw(target, states);
+      handle.getTransform().setPosition(vertex.pos);
+      handle.draw(target, states);
     }
   }
 
-  static void drawZSort(ngf::RenderTarget &target, const Object &object) {
+  void drawZSort(ngf::RenderTarget &target, const Object &object) const {
     const auto color = getColor(object.type);
     const auto y = object.zsort;
     std::array<ngf::Vertex, 2> vertices;
@@ -278,18 +308,18 @@ private:
     vertices[1] = {{target.getSize().x, y}, color};
     target.draw(ngf::PrimitiveType::Lines, vertices);
 
-    ngf::CircleShape circle(1.0f);
-    circle.getTransform().setPosition({5.f, y});
-    circle.setColor(color);
-    circle.setAnchor(ngf::Anchor::Center);
-    circle.draw(target, {});
+    auto handle = createHandle(object.type);
+    handle.getTransform().setPosition({5.f, y});
+    handle.draw(target, {});
 
-    circle.getTransform().setPosition({target.getSize().x - 5.f, y});
-    circle.draw(target, {});
+    handle.getTransform().setPosition({target.getSize().x - 5.f, y});
+    handle.draw(target, {});
   }
 
 private:
   std::shared_ptr<ngf::Texture> m_greenHandle;
+  std::shared_ptr<ngf::Texture> m_redHandle;
+  std::shared_ptr<ngf::Texture> m_blueHandle;
   std::filesystem::path m_path;
   Room m_room;
   glm::ivec2 m_mousePos{};
