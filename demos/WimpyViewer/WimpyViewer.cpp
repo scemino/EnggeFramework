@@ -2,6 +2,8 @@
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/CircleShape.h>
+#include <ngf/Graphics/RectangleShape.h>
+#include <ngf/IO/MemoryStream.h>
 #include <imgui.h>
 #include <utility>
 #include "SpriteSheetItem.h"
@@ -9,6 +11,10 @@
 #include "Room.h"
 #include "RoomEditor.h"
 #include "CameraControl.h"
+#include "Base85.h"
+
+const char *handle_green =
+    R"(=pxq9_8v7&0C/2'K(HH=4hFJ(4hFJ(15###i><u9t%###1EHr9809Gf)9+##=<Pt8WcGP(9U&%;>GnZcY&px%t?kj;`=T'=M`qGil1vV$k.bs-Q%EI-r^@v,As:p/Ta8OPlUaW-(@Ah3qRoe`8V$t+mnvCn_,qc5$.O]Jp#47INZ8FiBR7cdOA(YdjOYo6O)*5.?'Xa)ZP95TwHLc'8;hJ6>N%3vTj.In4BFK:oD$>b=A+,10OtlHWn@wjH'^&ar$ST(FXI:Mb];J.4S)M%EV?Z4ncJsXml_M]*_nu87Ha0e&j5CR'hpJ<Jf<bFRe(hBXY;,5^RQ.-Ya'o.SrgW7isjdn;h)%'Hx+@Jq$^B$CU)wQ$0tYN5Cr_(KYveN+hojDx0'a5exZu5OT:Fep@YAmCrqF'pj_RO#x8I7M*wBd1Ju9$IX@5>5AiCY2>P2W<aB;d9<Hicob'g[$.84)>nbP0bO.h++$05/QkZJOav+IdOmRG<`&X7aBO1SPT2)]pB's_$%(dgInSa^`w9Q@)r>m0#,e0&$7:%2#/6?sC0Q/VZOG0A7Gm2%*h$###Ub90<d$bsAP$###)";
 
 class WimpyViewerApplication final : public ngf::Application {
 public:
@@ -26,6 +32,11 @@ private:
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
     m_room.loadRoom(m_path);
+
+    auto data = ngf::Base85::decode(handle_green);
+    m_greenHandle = std::make_shared<ngf::Texture>();
+    ngf::MemoryStream ms(data.data(), data.data() + data.size());
+    m_greenHandle->loadFromStream(ms);
   }
 
   void onEvent(ngf::Event &event) override {
@@ -81,28 +92,9 @@ private:
     target.clear(m_roomEditor.getClearColor());
 
     // draw room
-    ngf::RenderStates states;
-    m_room.draw(target, states);
+    m_room.draw(target, {});
 
-    // draw walkboxes
-    const auto screenSize = m_room.getScreenSize();
-    const auto offsetY = screenSize.y - m_room.getSize().y;
-    const auto &camera = m_room.getCamera();
-    ngf::RenderStates wbStates = states;
-    ngf::Transform t;
-    t.setPosition({-camera.position.x, camera.position.y + offsetY});
-    wbStates.transform *= t.getTransform();
-    for (const auto &walkbox: m_room.walkboxes()) {
-      if (!walkbox.isVisible())
-        continue;
-
-      const auto color = m_roomEditor.getSelectedWalkbox() == &walkbox ? ngf::Colors::LimeGreen : ngf::Colors::Green;
-      std::vector<ngf::Vertex> polygon;
-      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [this, color](const auto &p) {
-        return ngf::Vertex{{p.x, m_room.getSize().y - p.y}, color};
-      });
-      target.draw(ngf::PrimitiveType::LineLoop, polygon, wbStates);
-    }
+    drawWalkboxes(target);
 
     // draw position, zsort line and hotspot if an object is selected
     auto selectedObject = m_roomEditor.getSelectedObject();
@@ -113,6 +105,40 @@ private:
     }
 
     Application::onRender(target);
+  }
+
+  void drawWalkboxes(ngf::RenderTarget &target) {
+    const auto screenSize = m_room.getScreenSize();
+    const auto offsetY = screenSize.y - m_room.getSize().y;
+    const auto &camera = m_room.getCamera();
+    ngf::RenderStates states;
+    ngf::Transform t;
+    t.setPosition({-camera.position.x, camera.position.y + offsetY});
+    states.transform *= t.getTransform();
+    for (const auto &walkbox: m_room.walkboxes()) {
+      if (!walkbox.isVisible())
+        continue;
+
+      const auto color = m_roomEditor.getSelectedWalkbox() == &walkbox ? ngf::Colors::LimeGreen : ngf::Colors::Green;
+      std::vector<ngf::Vertex> polygon;
+      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [this, color](const auto &p) {
+        return ngf::Vertex{{p.x, m_room.getSize().y - p.y}, color};
+      });
+      target.draw(ngf::PrimitiveType::LineLoop, polygon, states);
+    }
+
+    auto pSelectedWalkbox = m_roomEditor.getSelectedWalkbox();
+    if (pSelectedWalkbox) {
+      ngf::RectangleShape handle;
+      handle.setSize({5, 5});
+      handle.setAnchor(ngf::Anchor::Center);
+      handle.setTexture(*m_greenHandle, false);
+      for (auto it = pSelectedWalkbox->cbegin(); it != pSelectedWalkbox->cend(); it++) {
+        glm::vec2 pos(it->x, m_room.getSize().y - it->y);
+        handle.getTransform().setPosition(pos);
+        handle.draw(target, states);
+      }
+    }
   }
 
   void onImGuiRender() override {
@@ -145,7 +171,7 @@ private:
   };
 
   WalkboxVertexHitTest getWalkboxVertexAt(glm::vec2 pos) {
-    for (auto& wb : m_room.walkboxes()) {
+    for (auto &wb : m_room.walkboxes()) {
       for (auto it = wb.cbegin(); it != wb.cend(); it++) {
         auto rect = ngf::frect::fromCenterSize(*it, glm::vec2{5, 5});
         if (rect.contains(m_worldPos)) {
@@ -263,6 +289,7 @@ private:
   }
 
 private:
+  std::shared_ptr<ngf::Texture> m_greenHandle;
   std::filesystem::path m_path;
   Room m_room;
   glm::ivec2 m_mousePos{};

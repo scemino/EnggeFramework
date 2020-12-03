@@ -17,7 +17,6 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 * [ ] view center object menu
 * [ ] auto center objects menu
 * [ ] walkbox add vertex
-* [ ] walkbox show handle on vertices
 * [ ] delete walkbox
 * [ ] hotspot edition
 * [ ] zsort edition
@@ -25,6 +24,7 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 * [ ] new object menu
 * [ ] delete object
 * [ ] save wimpy file
+* [x] walkbox show handle on vertices
 * [x] walkbox edit vertex
 * [x] rename walkbox
 * [x] play object animations
