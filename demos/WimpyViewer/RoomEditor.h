@@ -17,9 +17,13 @@ public:
 
   [[nodiscard]] const Object *getSelectedObject() const { return m_selectedObject; }
   [[nodiscard]] Object *getSelectedObject() { return m_selectedObject; }
+
   void onSelectedObjectChanged(std::function<void(Object *)> callback) {
     m_selectedObjectChanged = std::move(callback);
   }
+
+  void setSelectedWalkbox(ngf::Walkbox *walkbox) { m_selectedWalkbox = walkbox; }
+  [[nodiscard]] ngf::Walkbox *getSelectedWalkbox() { return m_selectedWalkbox; }
 
   void draw() {
     showMainMenuBar();

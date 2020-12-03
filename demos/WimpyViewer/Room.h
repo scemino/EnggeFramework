@@ -86,6 +86,10 @@ class Room final : public ngf::Drawable {
 public:
   ~Room() override = default;
 
+  glm::ivec2 getScreenSize() const noexcept {
+    return getScreenSize(m_height);
+  }
+
   void loadRoom(const std::filesystem::path &path) {
     // load wimpy
     const auto wimpy = ngf::Json::load(path);
@@ -152,7 +156,7 @@ public:
   }
 
   void update(const ngf::TimeSpan &elapsed) {
-    for(auto& obj : m_objects){
+    for (auto &obj : m_objects) {
       obj.update(elapsed);
     }
   }
@@ -205,19 +209,9 @@ public:
       layerStates.transform *= t.getTransform();
       layer->draw(target, layerStates);
     }
-
-    // draw walkboxes
-    for (const auto &walkbox : m_walkboxes) {
-      if (!walkbox.isVisible())
-        continue;
-
-      std::vector<ngf::Vertex> polygon;
-      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [this](const auto &p) {
-        return ngf::Vertex{{p.x, m_roomSize.y - p.y}, ngf::Colors::LimeGreen};
-      });
-      target.draw(ngf::PrimitiveType::LineLoop, polygon, localStates);
-    }
   }
+
+  int getHeight() const noexcept { return m_height; }
 
   glm::ivec2 getSize() const noexcept { return m_roomSize; }
 
@@ -241,6 +235,7 @@ private:
   void loadWalkboxes(const ngf::GGPackValue &wimpy) {
     for (const auto &gWalkbox : wimpy["walkboxes"]) {
       auto walkbox = parsePolygon(gWalkbox["polygon"].getString());
+      walkbox.setYAxisDirection(ngf::YAxisDirection::Up);
       if (gWalkbox["name"].isString()) {
         walkbox.setName(gWalkbox["name"].getString());
       }

@@ -30,8 +30,20 @@ private:
 
   void onEvent(ngf::Event &event) override {
     switch (event.type) {
-    case ngf::EventType::MouseMoved:m_mousePos = event.mouseMoved.position;
-      m_worldPos = getRenderTarget()->mapPixelToCoords(m_mousePos);
+    case ngf::EventType::MouseMoved: {
+      m_mousePos = event.mouseMoved.position;
+      const auto scale = ngf::Window::getDpiScale();
+      m_worldPos = getRenderTarget()->mapPixelToCoords(m_mousePos) * scale;
+      m_worldPos.y = m_room.getSize().y - m_worldPos.y;
+      m_worldPos += m_room.getCamera().position;
+    }
+      break;
+    case ngf::EventType::MouseButtonPressed: {
+      auto pWalkbox = getWalkboxAt(m_worldPos);
+      if (pWalkbox) {
+        m_roomEditor.setSelectedWalkbox(pWalkbox);
+      }
+    }
       break;
     case ngf::EventType::KeyPressed: {
       auto pObj = m_roomEditor.getSelectedObject();
@@ -55,14 +67,43 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
-    ngf::View view{ngf::frect::fromCenterSize(m_room.getCamera().size / 2.f,
-                                              m_room.getCamera().size)};
-    target.setView(view);
     target.clear(m_roomEditor.getClearColor());
 
+    // draw room
     ngf::RenderStates states;
     m_room.draw(target, states);
 
+    // draw walkboxes
+    const auto screenSize = m_room.getScreenSize();
+    const auto offsetY = screenSize.y - m_room.getSize().y;
+    const auto &camera = m_room.getCamera();
+    ngf::RenderStates wbStates = states;
+    ngf::Transform t;
+    t.setPosition({-camera.position.x, camera.position.y + offsetY});
+    wbStates.transform *= t.getTransform();
+    for (const auto &walkbox: m_room.walkboxes()) {
+      if (!walkbox.isVisible())
+        continue;
+
+      const auto color = m_roomEditor.getSelectedWalkbox() == &walkbox ? ngf::Colors::LimeGreen : ngf::Colors::Green;
+      std::vector<ngf::Vertex> polygon;
+      std::transform(walkbox.cbegin(), walkbox.cend(), std::back_inserter(polygon), [this, color](const auto &p) {
+        return ngf::Vertex{{p.x, m_room.getSize().y - p.y}, color};
+      });
+      target.draw(ngf::PrimitiveType::LineLoop, polygon, wbStates);
+    }
+    // draw highligthed vertex
+//    if (m_walkboxVertexIndex != -1) {
+//      ngf::CircleShape c;
+//      c.setColor(ngf::Colors::IndianRed);
+//      c.setRadius(2);
+//      c.setAnchor(ngf::Anchor::Center);
+//      auto it = m_walkboxHovered->cbegin() + m_walkboxVertexIndex;
+//      c.getTransform().setPosition({it->x, m_room.getSize().y - it->y});
+//      c.draw(target, wbStates);
+//    }
+
+    // draw position, zsort line and hotspot if an object is selected
     auto selectedObject = m_roomEditor.getSelectedObject();
     if (selectedObject) {
       drawPosition(target, *selectedObject);
@@ -71,6 +112,29 @@ private:
     }
 
     Application::onRender(target);
+  }
+
+  void onImGuiRender() override {
+    ImGui::Begin("Tools");
+    ImGui::Text("%.2f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Text("Mouse pos (%d,%d)", m_mousePos.x, m_mousePos.y);
+    ImGui::Text("World pos (%.f,%.f)", m_worldPos.x, m_worldPos.y);
+
+    ImGui::DragFloat2("Position", glm::value_ptr(m_room.getCamera().position));
+    ImGui::DragFloat("Zoom", &m_room.getCamera().zoom, 0.1f, 0.1f, 10.f);
+
+    ImGui::End();
+
+    m_roomEditor.draw();
+  }
+
+  ngf::Walkbox *getWalkboxAt(glm::vec2 pos) {
+    for (auto &wb : m_room.walkboxes()) {
+      if (wb.inside(m_worldPos)) {
+        return &wb;
+      }
+    }
+    return nullptr;
   }
 
   [[nodiscard]] static ngf::Color getColor(ObjectType type) {
@@ -176,20 +240,6 @@ private:
 
     circle.getTransform().setPosition({target.getSize().x - 5.f, y});
     circle.draw(target, {});
-  }
-
-  void onImGuiRender() override {
-    ImGui::Begin("Tools");
-    ImGui::Text("%.2f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Text("Mouse pos (%d,%d)", m_mousePos.x, m_mousePos.y);
-    ImGui::Text("World pos (%.f,%.f)", m_worldPos.x, m_worldPos.y);
-
-    ImGui::DragFloat2("Position", glm::value_ptr(m_room.getCamera().position));
-    ImGui::DragFloat("Zoom", &m_room.getCamera().zoom, 0.1f, 0.1f, 10.f);
-
-    ImGui::End();
-
-    m_roomEditor.draw();
   }
 
 private:
