@@ -102,6 +102,11 @@ public:
 
   friend std::ostream &operator<<(std::ostream &os, const Walkbox &walkbox);
 
+  /// @brief Inserts a point to the walkbox at a specified position.
+  /// \param pos Position where to insert the new point of the polygon.
+  /// \param point Point to insert in the walkbox.
+  void insert(const_iterator pos, const_reference point) { m_polygon.insert(pos, point); }
+
 private:
   bool m_visible{true};
   std::vector<glm::ivec2> m_polygon;

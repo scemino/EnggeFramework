@@ -73,6 +73,20 @@ private:
         m_roomEditor.setSelectedWalkbox(pWalkbox);
       }
       m_walkboxVertex = getWalkboxVertexAt(m_worldPos);
+
+      // test if mouse right button is pressed near a walkbox
+      if (event.mouseButton.button == 3 && !m_walkboxVertex.walkbox) {
+        for (auto &wb : m_room.walkboxes()) {
+          auto edgePoint = wb.getClosestPointOnEdge(m_worldPos);
+          if (glm::distance(edgePoint, m_worldPos) < 5.f) {
+            // yes, so add a vertex in this walkbox
+            auto index = getIndexWhereToInsertPoint(wb, edgePoint);
+            auto it = wb.cbegin() + index;
+            wb.insert(it, edgePoint);
+            break;
+          }
+        }
+      }
     }
       break;
     case ngf::EventType::MouseButtonReleased: {
@@ -150,6 +164,15 @@ private:
     }
   }
 
+  static int getIndexWhereToInsertPoint(const ngf::Walkbox &wb, glm::ivec2 edgePoint) {
+    std::vector<float> dists(wb.size());
+    for (int i = 0; i < wb.size(); i++) {
+      dists[i] = ngf::Walkbox::distanceToSegment(edgePoint, wb.at(i), wb.at((i + 1) % wb.size()));
+    }
+    auto dIt = std::min_element(dists.cbegin(), dists.cend());
+    return static_cast<int>((std::distance(dists.cbegin(), dIt) + 1) % wb.size());
+  }
+
   static ngf::RectangleShape createHandle(const ngf::Texture &texture) {
     ngf::RectangleShape handle;
     handle.setSize({5, 5});
@@ -162,10 +185,9 @@ private:
     switch (type) {
     case ObjectType::Prop: return m_blueHandle;
     case ObjectType::Spot:return m_greenHandle;
-    case ObjectType::Trigger:return m_redHandle;
+    case ObjectType::Trigger:
     case ObjectType::None:return m_redHandle;
     default:assert(false);
-      break;
     }
   }
 
@@ -189,7 +211,7 @@ private:
 
   ngf::Walkbox *getWalkboxAt(glm::vec2 pos) {
     for (auto &wb : m_room.walkboxes()) {
-      if (wb.inside(m_worldPos)) {
+      if (wb.inside(pos)) {
         return &wb;
       }
     }
@@ -206,7 +228,7 @@ private:
     for (auto &wb : m_room.walkboxes()) {
       for (auto it = wb.cbegin(); it != wb.cend(); it++) {
         auto rect = ngf::frect::fromCenterSize(*it, glm::vec2{5, 5});
-        if (rect.contains(m_worldPos)) {
+        if (rect.contains(pos)) {
           const auto index = static_cast<int>(std::distance(wb.cbegin(), it));
           return {&wb, index};
         }
