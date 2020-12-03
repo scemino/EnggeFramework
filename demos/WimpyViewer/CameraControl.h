@@ -9,6 +9,8 @@ class CameraControl {
 public:
   explicit CameraControl(Room &room) : m_room(room) {}
 
+  [[nodiscard]] bool isPanOrZoomEnabled() const { return m_panEnabled || m_zoomEnabled; }
+
   void onEvent(ngf::Application &app, ngf::Event &event) {
     auto target = app.getRenderTarget();
     if (!target)

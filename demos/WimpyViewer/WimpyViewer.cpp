@@ -36,13 +36,24 @@ private:
       m_worldPos = getRenderTarget()->mapPixelToCoords(m_mousePos) * scale;
       m_worldPos.y = m_room.getSize().y - m_worldPos.y;
       m_worldPos += m_room.getCamera().position;
+      if (m_walkboxVertex.walkbox) {
+        auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
+        (*it) = m_worldPos;
+      }
     }
       break;
     case ngf::EventType::MouseButtonPressed: {
+      if (m_cameraControl.isPanOrZoomEnabled())
+        break;
       auto pWalkbox = getWalkboxAt(m_worldPos);
       if (pWalkbox) {
         m_roomEditor.setSelectedWalkbox(pWalkbox);
       }
+      m_walkboxVertex = getWalkboxVertexAt(m_worldPos);
+    }
+      break;
+    case ngf::EventType::MouseButtonReleased: {
+      m_walkboxVertex.walkbox = nullptr;
     }
       break;
     case ngf::EventType::KeyPressed: {
@@ -92,16 +103,6 @@ private:
       });
       target.draw(ngf::PrimitiveType::LineLoop, polygon, wbStates);
     }
-    // draw highligthed vertex
-//    if (m_walkboxVertexIndex != -1) {
-//      ngf::CircleShape c;
-//      c.setColor(ngf::Colors::IndianRed);
-//      c.setRadius(2);
-//      c.setAnchor(ngf::Anchor::Center);
-//      auto it = m_walkboxHovered->cbegin() + m_walkboxVertexIndex;
-//      c.getTransform().setPosition({it->x, m_room.getSize().y - it->y});
-//      c.draw(target, wbStates);
-//    }
 
     // draw position, zsort line and hotspot if an object is selected
     auto selectedObject = m_roomEditor.getSelectedObject();
@@ -135,6 +136,25 @@ private:
       }
     }
     return nullptr;
+  }
+
+  struct WalkboxVertexHitTest {
+  public:
+    ngf::Walkbox *walkbox{nullptr};
+    int vertexIndex{-1};
+  };
+
+  WalkboxVertexHitTest getWalkboxVertexAt(glm::vec2 pos) {
+    for (auto& wb : m_room.walkboxes()) {
+      for (auto it = wb.cbegin(); it != wb.cend(); it++) {
+        auto rect = ngf::frect::fromCenterSize(*it, glm::vec2{5, 5});
+        if (rect.contains(m_worldPos)) {
+          const auto index = static_cast<int>(std::distance(wb.cbegin(), it));
+          return {&wb, index};
+        }
+      }
+    }
+    return {};
   }
 
   [[nodiscard]] static ngf::Color getColor(ObjectType type) {
@@ -249,6 +269,7 @@ private:
   glm::vec2 m_worldPos{};
   RoomEditor m_roomEditor;
   CameraControl m_cameraControl;
+  WalkboxVertexHitTest m_walkboxVertex;
 };
 
 int main(int argc, char **argv) {
