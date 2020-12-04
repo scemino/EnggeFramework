@@ -17,12 +17,12 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 * [ ] view center object menu
 * [ ] auto center objects menu
 * [ ] delete walkbox
-* [ ] hotspot edition
 * [ ] zsort edition
-* [ ] zsort show handles
 * [ ] new object menu
 * [ ] delete object
 * [ ] save wimpy file
+* [x] zsort show handles
+* [x] hotspot edition
 * [x] walkbox add vertex
 * [x] walkbox show handle on vertices
 * [x] walkbox edit vertex

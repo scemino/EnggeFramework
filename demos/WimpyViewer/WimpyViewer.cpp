@@ -71,6 +71,34 @@ private:
               {m_worldPos.x - m_objectHitTest.pObj->pos.x,
                m_worldPos.y - m_room.getSize().y + m_objectHitTest.pObj->pos.y};
           break;
+        case ObjectHit::Hotspot: {
+          auto delta = m_worldPos - m_objectHitTest.startPos;
+          auto hotspot = m_objectHitTest.startHotspot;
+          m_objectHitTest.pObj->hotspot =
+              ngf::irect::fromPositionSize({hotspot.getPosition().x + delta.x, hotspot.getPosition().y - delta.y},
+                                           hotspot.getSize());
+        }
+          break;
+        case ObjectHit::HotspotVertex: {
+          auto delta = m_worldPos - m_objectHitTest.startPos;
+          auto hotspot = m_objectHitTest.startHotspot;
+          switch (m_objectHitTest.vertexIndex) {
+          case 0:hotspot.min.x += delta.x;
+            hotspot.min.y -= delta.y;
+            break;
+          case 1:hotspot.max.x += delta.x;
+            hotspot.min.y -= delta.y;
+            break;
+          case 2:hotspot.max.x += delta.x;
+            hotspot.max.y -= delta.y;
+            break;
+          case 3:hotspot.min.x += delta.x;
+            hotspot.max.y -= delta.y;
+            break;
+          }
+          m_objectHitTest.pObj->hotspot = hotspot;
+        }
+          break;
         }
       }
     }
@@ -103,28 +131,8 @@ private:
 
       // test if we are near an object: position, hotspot or zsort
       auto pObj = m_roomEditor.getSelectedObject();
-      if (pObj) {
-        ObjectHit hit;
-        ngf::frect rect;
-        // if this a prop, we want to modify the position of the object
-        if (pObj->type == ObjectType::Prop) {
-          hit = ObjectHit::Position;
-          rect = ngf::frect::fromCenterSize(
-              {pObj->pos.x, m_room.getSize().y - pObj->pos.y},
-              {5, 5});
-        } else if (pObj->type != ObjectType::Trigger) {
-          // else we want to modify the use position of the object (except for trigger)
-          hit = ObjectHit::UsePosition;
-          rect = ngf::frect::fromCenterSize(
-              {pObj->pos.x + pObj->usePos.x,
-               m_room.getSize().y - (pObj->pos.y - pObj->usePos.y)},
-              {5, 5});
-        }
-        if (rect.contains(m_worldPos)) {
-          m_objectHitTest.pObj = pObj;
-          m_objectHitTest.hit = hit;
-        }
-      }
+      if (pObj)
+        objectHitTest(pObj);
     }
       break;
     case ngf::EventType::MouseButtonReleased: {
@@ -147,6 +155,62 @@ private:
     default:break;
     }
     m_cameraControl.onEvent(*this, event);
+  }
+
+  void objectHitTest(Object *pObj) {
+    assert(pObj);
+
+    m_objectHitTest.hit = ObjectHit::None;
+    m_objectHitTest.startPos = m_worldPos;
+    m_objectHitTest.startHotspot = pObj->hotspot;
+    ObjectHit hit;
+    ngf::frect rect;
+
+    // if this a prop, we want to modify the position of the object
+    if (pObj->type == ObjectType::Prop) {
+      hit = ObjectHit::Position;
+      rect = ngf::frect::fromCenterSize(
+          {pObj->pos.x, m_room.getSize().y - pObj->pos.y},
+          {5, 5});
+    } else if (pObj->type != ObjectType::Trigger) {
+      // else we want to modify the use position of the object (except for trigger)
+      hit = ObjectHit::UsePosition;
+      rect = ngf::frect::fromCenterSize(
+          {pObj->pos.x + pObj->usePos.x,
+           m_room.getSize().y - (pObj->pos.y - pObj->usePos.y)},
+          {5, 5});
+    }
+
+    if (rect.contains(m_worldPos)) {
+      m_objectHitTest.pObj = pObj;
+      m_objectHitTest.hit = hit;
+      return;
+    }
+
+    // test if mouse is over hotspot vertex
+    glm::ivec2 pos = {pObj->pos.x, m_room.getSize().y - pObj->pos.y};
+    auto hs = ngf::irect::fromMinMax({pObj->hotspot.min.x,-pObj->hotspot.max.y},
+                                     {pObj->hotspot.max.x,-pObj->hotspot.min.y});
+    auto hotspot = ngf::frect::fromPositionSize(hs.getPosition() + pos, hs.getSize());
+    std::array<glm::vec2, 4>
+        positions = {hotspot.getBottomLeft(), hotspot.getBottomRight(),
+                     hotspot.getTopRight(), hotspot.getTopLeft()};
+    for (auto i = 0; i < 4; i++) {
+      auto vertexPos = positions[i];
+      if (glm::distance(vertexPos, m_worldPos) < 5.f) {
+        m_objectHitTest.pObj = pObj;
+        m_objectHitTest.hit = ObjectHit::HotspotVertex;
+        m_objectHitTest.vertexIndex = i;
+        return;
+      }
+    }
+
+    // test if mouse is over object's hotspot
+    if (hotspot.contains(m_worldPos)) {
+      m_objectHitTest.pObj = pObj;
+      m_objectHitTest.hit = ObjectHit::Hotspot;
+      return;
+    }
   }
 
   void onUpdate(const ngf::TimeSpan &elapsed) override {
@@ -276,6 +340,9 @@ private:
   public:
     Object *pObj{nullptr};
     ObjectHit hit{ObjectHit::None};
+    glm::vec2 startPos;
+    ngf::irect startHotspot;
+    int vertexIndex{0};
   };
 
   WalkboxVertexHitTest getWalkboxVertexAt(glm::vec2 pos) {
