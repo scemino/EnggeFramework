@@ -44,6 +44,9 @@ private:
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("New Walkbox...", "Shift-W")) {
+          newWalkbox();
+        }
         if (ImGui::MenuItem("Edit Properties...", "E", false, m_selectedObject != nullptr)) {
           m_showObjectProperties = true;
         }
@@ -338,7 +341,13 @@ private:
           ImGui::EndPopup();
         }
 
-        ImGui::Button("Delete");
+        if (ImGui::Button("Delete")) {
+          auto walkboxes = m_room.walkboxes();
+          auto it = std::find_if(walkboxes.cbegin(), walkboxes.cend(),[this](const auto& wb){
+            return &wb == m_selectedWalkbox;
+          });
+          walkboxes.erase(it);
+        }
         ImGui::EndPopup();
       }
       ImGui::PopID();
@@ -346,12 +355,21 @@ private:
     ImGui::Columns(1);
 
     if (ImGui::Button("New walkbox")) {
-      std::array<glm::ivec2, 4>
-          points{glm::ivec2{200, 100}, glm::ivec2{400, 100}, glm::ivec2{400, 200}, glm::ivec2{200, 200}};
-      m_room.walkboxes().push_back(ngf::Walkbox(points));
+      newWalkbox();
     }
 
     ImGui::End();
+  }
+
+  void newWalkbox() {
+    glm::vec2 center = {m_room.getScreenSize().x / 2.f, m_room.getScreenSize().y / 2.f};
+    std::array<glm::ivec2, 4> points{
+        glm::ivec2{center.x - 40, center.y - 20},
+        glm::ivec2{center.x + 40, center.y - 20},
+        glm::ivec2{center.x + 40, center.y + 20},
+        glm::ivec2{center.x - 40, center.y + 20}};
+    m_room.walkboxes().push_back(ngf::Walkbox(points));
+    m_selectedWalkbox = nullptr;
   }
 
   static void HelpMarker(const char *desc) {
@@ -401,6 +419,7 @@ private:
   }
 
 private:
+  glm::vec2 m_worldPos;
   ngf::Application &m_application;
   Room &m_room;
   ngf::Color m_clearColor{ngf::Colors::LightBlue};
