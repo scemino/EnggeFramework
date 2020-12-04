@@ -105,6 +105,7 @@ private:
           m_objectHitTest.pObj->zsort = zsort + delta.y;
         }
           break;
+        default:break;
         }
       }
     }
@@ -429,10 +430,9 @@ private:
       dirVertices[0].color = color;
       dirVertices[1].color = color;
       target.draw(ngf::PrimitiveType::Lines, dirVertices, states);
-
-      auto handle = createHandle(object.type);
-      handle.draw(target, states);
     }
+    auto handle = createHandle(object.type);
+    handle.draw(target, states);
   }
 
   void drawHotspot(ngf::RenderTarget &target, const Object &object) const {

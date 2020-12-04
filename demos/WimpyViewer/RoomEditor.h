@@ -15,7 +15,6 @@ public:
 
   [[nodiscard]] ngf::Color getClearColor() const { return m_clearColor; }
 
-  [[nodiscard]] const Object *getSelectedObject() const { return m_selectedObject; }
   [[nodiscard]] Object *getSelectedObject() { return m_selectedObject; }
 
   void onSelectedObjectChanged(std::function<void(Object *)> callback) {
@@ -44,6 +43,9 @@ private:
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("New Object...", "N")) {
+          newObject();
+        }
         if (ImGui::MenuItem("New Walkbox...", "Shift-W")) {
           newWalkbox();
         }
@@ -247,11 +249,7 @@ private:
       ImGui::Checkbox("", &object.visible);
       ImGui::SameLine();
       if (ImGui::Selectable(object.name.c_str(), isSelected)) {
-        auto previousObject = m_selectedObject;
-        m_selectedObject = &object;
-        if (m_selectedObjectChanged) {
-          m_selectedObjectChanged(previousObject);
-        }
+        setSelectObject(&object);
       }
       if (ImGui::BeginPopupContextItem()) {
         if (ImGui::Button("Edit Properties...")) {
@@ -281,6 +279,11 @@ private:
           ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4) ImColor::HSV(0.0f, 0.7f, 0.7f));
           ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(0.0f, 0.8f, 0.8f));
           if (ImGui::Button("DELETE")) {
+            auto it = std::find_if(objects.cbegin(), objects.cend(), [this](const auto &obj) {
+              return &obj == m_selectedObject;
+            });
+            m_selectedObject = nullptr;
+            m_room.objects().erase(it);
             ImGui::CloseCurrentPopup();
           }
           ImGui::PopStyleColor(3);
@@ -343,7 +346,7 @@ private:
 
         if (ImGui::Button("Delete")) {
           auto walkboxes = m_room.walkboxes();
-          auto it = std::find_if(walkboxes.cbegin(), walkboxes.cend(),[this](const auto& wb){
+          auto it = std::find_if(walkboxes.cbegin(), walkboxes.cend(), [this](const auto &wb) {
             return &wb == m_selectedWalkbox;
           });
           walkboxes.erase(it);
@@ -370,6 +373,26 @@ private:
         glm::ivec2{center.x - 40, center.y + 20}};
     m_room.walkboxes().push_back(ngf::Walkbox(points));
     m_selectedWalkbox = nullptr;
+  }
+
+  void newObject() {
+    glm::vec2 center = {m_room.getScreenSize().x / 2.f, m_room.getScreenSize().y / 2.f};
+    Object obj;
+    obj.name = "nameObject";
+    obj.zsort = static_cast<int>(m_room.getScreenSize().y / 2.f);
+    obj.pos = center;
+    obj.hotspot = ngf::irect::fromMinMax({-20, 20}, {40, 40});
+    m_room.objects().push_back(obj);
+    setSelectObject(&m_room.objects().back());
+    m_showObjectProperties = true;
+  }
+
+  void setSelectObject(Object *pObj) {
+    auto previousObject = m_selectedObject;
+    m_selectedObject = pObj;
+    if (m_selectedObjectChanged) {
+      m_selectedObjectChanged(previousObject);
+    }
   }
 
   static void HelpMarker(const char *desc) {
@@ -419,7 +442,6 @@ private:
   }
 
 private:
-  glm::vec2 m_worldPos;
   ngf::Application &m_application;
   Room &m_room;
   ngf::Color m_clearColor{ngf::Colors::LightBlue};
@@ -430,7 +452,6 @@ private:
   bool m_showObjectProperties{false};
   bool m_showObjectAnimations{false};
   bool m_showWalkboxInfo{false};
-  bool m_showNewAnimPopup{false};
   std::string m_newAnimName;
   std::string m_newWalkboxName;
   std::function<void(Object *)> m_selectedObjectChanged{nullptr};

@@ -69,6 +69,8 @@ class Objects final {
 public:
   using iterator = std::vector<Object>::iterator;
   using const_iterator = std::vector<Object>::const_iterator;
+  using const_reference = std::vector<Object>::const_reference;
+  using reference = std::vector<Object>::reference;
 
   explicit Objects(std::vector<Object> &objects) : m_objects(objects) {
   }
@@ -77,6 +79,10 @@ public:
   iterator end() noexcept { return m_objects.end(); }
   [[nodiscard]] const_iterator cbegin() const noexcept { return m_objects.cbegin(); }
   [[nodiscard]] const_iterator cend() const noexcept { return m_objects.cend(); }
+
+  void push_back(const_reference object) { m_objects.push_back(object); }
+  reference back() noexcept { return m_objects.back(); }
+  iterator erase(const_iterator position) { return m_objects.erase(position); }
 
 private:
   std::vector<Object> &m_objects;

@@ -13,11 +13,13 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 
 ## TODO
 
+* [ ] fix shortcuts don't work
+* [ ] walkbox should be editable only if "Edit Walkboxes" is checked in the menu
 * [ ] view center object menu
 * [ ] auto center objects menu
-* [ ] new object menu
-* [ ] delete object
 * [ ] save wimpy file
+* [x] new object menu
+* [x] delete object
 * [x] zsort edition
 * [x] zsort show handles
 * [x] hotspot edition
