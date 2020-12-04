@@ -62,16 +62,29 @@ private:
       if (m_walkboxVertex.walkbox) {
         auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
         (*it) = m_worldPos;
+      } else if (m_objectHitTest.pObj) {
+        switch (m_objectHitTest.hit) {
+        case ObjectHit::Position:m_objectHitTest.pObj->pos = {m_worldPos.x, m_room.getSize().y - m_worldPos.y};
+          break;
+        case ObjectHit::UsePosition:
+          m_objectHitTest.pObj->usePos =
+              {m_worldPos.x - m_objectHitTest.pObj->pos.x,
+               m_worldPos.y - m_room.getSize().y + m_objectHitTest.pObj->pos.y};
+          break;
+        }
       }
     }
       break;
     case ngf::EventType::MouseButtonPressed: {
       if (m_cameraControl.isPanOrZoomEnabled())
         break;
+
+      // test if we selected a walkbox
       auto pWalkbox = getWalkboxAt(m_worldPos);
       if (pWalkbox) {
         m_roomEditor.setSelectedWalkbox(pWalkbox);
       }
+      // test if we are near a walkbox vertex
       m_walkboxVertex = getWalkboxVertexAt(m_worldPos);
 
       // test if mouse right button is pressed near a walkbox
@@ -87,10 +100,36 @@ private:
           }
         }
       }
+
+      // test if we are near an object: position, hotspot or zsort
+      auto pObj = m_roomEditor.getSelectedObject();
+      if (pObj) {
+        ObjectHit hit;
+        ngf::frect rect;
+        // if this a prop, we want to modify the position of the object
+        if (pObj->type == ObjectType::Prop) {
+          hit = ObjectHit::Position;
+          rect = ngf::frect::fromCenterSize(
+              {pObj->pos.x, m_room.getSize().y - pObj->pos.y},
+              {5, 5});
+        } else if (pObj->type != ObjectType::Trigger) {
+          // else we want to modify the use position of the object (except for trigger)
+          hit = ObjectHit::UsePosition;
+          rect = ngf::frect::fromCenterSize(
+              {pObj->pos.x + pObj->usePos.x,
+               m_room.getSize().y - (pObj->pos.y - pObj->usePos.y)},
+              {5, 5});
+        }
+        if (rect.contains(m_worldPos)) {
+          m_objectHitTest.pObj = pObj;
+          m_objectHitTest.hit = hit;
+        }
+      }
     }
       break;
     case ngf::EventType::MouseButtonReleased: {
       m_walkboxVertex.walkbox = nullptr;
+      m_objectHitTest.pObj = nullptr;
     }
       break;
     case ngf::EventType::KeyPressed: {
@@ -224,6 +263,21 @@ private:
     int vertexIndex{-1};
   };
 
+  enum class ObjectHit {
+    None,
+    Position,
+    UsePosition,
+    Hotspot,
+    HotspotVertex,
+    Zsort
+  };
+
+  struct ObjectHitTest {
+  public:
+    Object *pObj{nullptr};
+    ObjectHit hit{ObjectHit::None};
+  };
+
   WalkboxVertexHitTest getWalkboxVertexAt(glm::vec2 pos) {
     for (auto &wb : m_room.walkboxes()) {
       for (auto it = wb.cbegin(); it != wb.cend(); it++) {
@@ -264,7 +318,11 @@ private:
 
     ngf::RenderStates states;
     ngf::Transform tObj;
-    tObj.setPosition({object.pos.x + object.usePos.x, object.pos.y - object.usePos.y});
+    if (object.type == ObjectType::Prop) {
+      tObj.setPosition(object.pos);
+    } else {
+      tObj.setPosition({object.pos.x + object.usePos.x, object.pos.y - object.usePos.y});
+    }
     states.transform = tObj.getTransform();
     target.draw(ngf::PrimitiveType::Lines, posVertices, states);
 
@@ -349,6 +407,7 @@ private:
   RoomEditor m_roomEditor;
   CameraControl m_cameraControl;
   WalkboxVertexHitTest m_walkboxVertex;
+  ObjectHitTest m_objectHitTest;
 };
 
 int main(int argc, char **argv) {
