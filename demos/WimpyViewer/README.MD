@@ -14,7 +14,6 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 ## TODO
 
 * [ ] fix shortcuts don't work
-* [ ] walkbox should be editable only if "Edit Walkboxes" is checked in the menu
 * [ ] view center object menu
 * [ ] auto center objects menu
 * [ ] save wimpy file
@@ -23,6 +22,7 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 * [x] zsort edition
 * [x] zsort show handles
 * [x] hotspot edition
+* [x] walkbox should be editable only if "Edit Walkboxes" is checked in the menu
 * [x] new walkbox menu
 * [x] delete walkbox
 * [x] walkbox add vertex

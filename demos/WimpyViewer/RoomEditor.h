@@ -24,6 +24,8 @@ public:
   void setSelectedWalkbox(ngf::Walkbox *walkbox) { m_selectedWalkbox = walkbox; }
   [[nodiscard]] ngf::Walkbox *getSelectedWalkbox() { return m_selectedWalkbox; }
 
+  [[nodiscard]] bool isWalkboxInEdition() const noexcept { return m_walkboxInEdition; }
+
   void draw() {
     showMainMenuBar();
     showObjects();
@@ -55,7 +57,9 @@ private:
         if (ImGui::MenuItem("Edit Animations...", "A", false, m_selectedObject != nullptr)) {
           m_showObjectAnimations = true;
         }
-        ImGui::MenuItem("Edit Walkboxes...", "W");
+        if (ImGui::MenuItem("Edit Walkboxes...", "W", m_walkboxInEdition)) {
+          m_walkboxInEdition = !m_walkboxInEdition;
+        }
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("View")) {
@@ -455,4 +459,5 @@ private:
   std::string m_newAnimName;
   std::string m_newWalkboxName;
   std::function<void(Object *)> m_selectedObjectChanged{nullptr};
+  bool m_walkboxInEdition{false};
 };

@@ -252,6 +252,9 @@ private:
   }
 
   void drawWalkboxes(ngf::RenderTarget &target) {
+    if (!m_roomEditor.isWalkboxInEdition())
+      return;
+
     const auto screenSize = m_room.getScreenSize();
     const auto offsetY = screenSize.y - m_room.getSize().y;
     const auto &camera = m_room.getCamera();
