@@ -99,6 +99,12 @@ private:
           m_objectHitTest.pObj->hotspot = hotspot;
         }
           break;
+        case ObjectHit::Zsort: {
+          auto delta = m_worldPos - m_objectHitTest.startPos;
+          auto zsort = m_objectHitTest.startZsort;
+          m_objectHitTest.pObj->zsort = zsort + delta.y;
+        }
+          break;
         }
       }
     }
@@ -163,6 +169,7 @@ private:
     m_objectHitTest.hit = ObjectHit::None;
     m_objectHitTest.startPos = m_worldPos;
     m_objectHitTest.startHotspot = pObj->hotspot;
+    m_objectHitTest.startZsort = pObj->zsort;
     ObjectHit hit;
     ngf::frect rect;
 
@@ -189,8 +196,8 @@ private:
 
     // test if mouse is over hotspot vertex
     glm::ivec2 pos = {pObj->pos.x, m_room.getSize().y - pObj->pos.y};
-    auto hs = ngf::irect::fromMinMax({pObj->hotspot.min.x,-pObj->hotspot.max.y},
-                                     {pObj->hotspot.max.x,-pObj->hotspot.min.y});
+    auto hs = ngf::irect::fromMinMax({pObj->hotspot.min.x, -pObj->hotspot.max.y},
+                                     {pObj->hotspot.max.x, -pObj->hotspot.min.y});
     auto hotspot = ngf::frect::fromPositionSize(hs.getPosition() + pos, hs.getSize());
     std::array<glm::vec2, 4>
         positions = {hotspot.getBottomLeft(), hotspot.getBottomRight(),
@@ -209,6 +216,13 @@ private:
     if (hotspot.contains(m_worldPos)) {
       m_objectHitTest.pObj = pObj;
       m_objectHitTest.hit = ObjectHit::Hotspot;
+      return;
+    }
+
+    // test if mouse is over object's zsort
+    if (fabs(m_worldPos.y - static_cast<float>(pObj->zsort)) < 5.f) {
+      m_objectHitTest.pObj = pObj;
+      m_objectHitTest.hit = ObjectHit::Zsort;
       return;
     }
   }
@@ -343,6 +357,7 @@ private:
     glm::vec2 startPos;
     ngf::irect startHotspot;
     int vertexIndex{0};
+    int startZsort{0};
   };
 
   WalkboxVertexHitTest getWalkboxVertexAt(glm::vec2 pos) {
@@ -449,7 +464,7 @@ private:
 
   void drawZSort(ngf::RenderTarget &target, const Object &object) const {
     const auto color = getColor(object.type);
-    const auto y = object.zsort;
+    const auto y = m_room.getSize().y - object.zsort;
     std::array<ngf::Vertex, 2> vertices;
     vertices[0] = {{0, y}, color};
     vertices[1] = {{target.getSize().x, y}, color};
