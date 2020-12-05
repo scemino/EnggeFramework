@@ -99,11 +99,11 @@ public:
   void loadRoom(const std::filesystem::path &path) {
     // load wimpy
     const auto wimpy = ngf::Json::load(path);
-    auto sheet = wimpy["sheet"].getString();
+    m_sheet = wimpy["sheet"].getString();
 
     // load sheet
     auto sheetPath = path;
-    sheetPath.replace_filename(sheet).replace_extension(".json");
+    sheetPath.replace_filename(m_sheet).replace_extension(".json");
     loadSheet(sheetPath);
 
     // load texture
@@ -414,4 +414,5 @@ private:
   Camera m_camera{};
   std::map<std::string, SpriteSheetItem> m_frames;
   mutable bool m_objectsZOrderDirty{true};
+  std::string m_sheet;
 };

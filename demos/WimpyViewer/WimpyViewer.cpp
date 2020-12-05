@@ -138,7 +138,7 @@ private:
 
       // test if we are near an object: position, hotspot or zsort
       auto pObj = m_roomEditor.getSelectedObject();
-      if (pObj)
+      if (pObj && !m_roomEditor.isWalkboxInEdition())
         objectHitTest(pObj);
     }
       break;
@@ -410,7 +410,7 @@ private:
     ngf::RenderStates states;
     ngf::Transform tObj;
     if (object.type == ObjectType::Prop) {
-      tObj.setPosition((glm::vec2)object.pos + cameraPos);
+      tObj.setPosition((glm::vec2) object.pos + cameraPos);
     } else {
       tObj.setPosition(glm::vec2(object.pos.x + object.usePos.x, object.pos.y - object.usePos.y) + cameraPos);
     }
@@ -439,8 +439,11 @@ private:
       dirVertices[1].color = color;
       target.draw(ngf::PrimitiveType::Lines, dirVertices, states);
     }
-    auto handle = createHandle(object.type);
-    handle.draw(target, states);
+
+    if (!m_roomEditor.isWalkboxInEdition()) {
+      auto handle = createHandle(object.type);
+      handle.draw(target, states);
+    }
   }
 
   void drawHotspot(ngf::RenderTarget &target, const Object &object) const {
@@ -468,10 +471,12 @@ private:
     target.draw(ngf::PrimitiveType::LineLoop, hotspotVertices, states);
 
     // draw handle on each vertex
-    auto handle = createHandle(object.type);
-    for (auto &vertex : hotspotVertices) {
-      handle.getTransform().setPosition(vertex.pos);
-      handle.draw(target, states);
+    if (!m_roomEditor.isWalkboxInEdition()) {
+      auto handle = createHandle(object.type);
+      for (auto &vertex : hotspotVertices) {
+        handle.getTransform().setPosition(vertex.pos);
+        handle.draw(target, states);
+      }
     }
   }
 
@@ -493,12 +498,14 @@ private:
     vertices[1] = {{target.getSize().x, y}, color};
     target.draw(ngf::PrimitiveType::Lines, vertices, s);
 
-    auto handle = createHandle(object.type);
-    handle.getTransform().setPosition({5.f, y});
-    handle.draw(target, s);
+    if (!m_roomEditor.isWalkboxInEdition()) {
+      auto handle = createHandle(object.type);
+      handle.getTransform().setPosition({5.f, y});
+      handle.draw(target, s);
 
-    handle.getTransform().setPosition({target.getSize().x - 5.f, y});
-    handle.draw(target, s);
+      handle.getTransform().setPosition({target.getSize().x - 5.f, y});
+      handle.draw(target, s);
+    }
   }
 
 private:
