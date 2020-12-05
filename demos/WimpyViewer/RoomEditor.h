@@ -63,6 +63,10 @@ private:
         ImGui::EndMenu();
       }
       if (ImGui::BeginMenu("View")) {
+        if (ImGui::MenuItem("Center Object", "C", false, m_selectedObject != nullptr)) {
+          centerObject();
+        }
+        ImGui::Separator();
         if (ImGui::BeginMenu("Show/Hide Layers")) {
           for (const auto &layer : m_room.layers()) {
             auto zsort = layer->getZSort();
@@ -81,6 +85,7 @@ private:
         ImGui::Separator();
         ngf::ImGui::ColorEdit4("Background color", &m_clearColor, ImGuiColorEditFlags_NoInputs);
         ImGui::Separator();
+        ImGui::Checkbox("Autocenter Objects...", &m_autocenterObjects);
         ImGui::Checkbox("Show Objects...", &m_showObjects);
         ImGui::Checkbox("Show walkbox Info...", &m_showWalkboxInfo);
         ImGui::EndMenu();
@@ -391,9 +396,22 @@ private:
     m_showObjectProperties = true;
   }
 
+  void centerObject() {
+    if (!m_selectedObject)
+      return;
+    auto pos = m_selectedObject->pos;
+    glm::vec2 screenSize = m_room.getScreenSize();
+    m_room.getCamera().position =
+        (glm::vec2) glm::vec2(m_selectedObject->pos.x - screenSize.x / 2.f,
+                              screenSize.y / 2.f - m_selectedObject->pos.y);
+  }
+
   void setSelectObject(Object *pObj) {
     auto previousObject = m_selectedObject;
     m_selectedObject = pObj;
+    if (m_autocenterObjects) {
+      centerObject();
+    }
     if (m_selectedObjectChanged) {
       m_selectedObjectChanged(previousObject);
     }
@@ -460,4 +478,5 @@ private:
   std::string m_newWalkboxName;
   std::function<void(Object *)> m_selectedObjectChanged{nullptr};
   bool m_walkboxInEdition{false};
+  bool m_autocenterObjects{false};
 };

@@ -14,9 +14,9 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 ## TODO
 
 * [ ] fix shortcuts don't work
-* [ ] view center object menu
-* [ ] auto center objects menu
 * [ ] save wimpy file
+* [x] view center object menu
+* [x] autocenter objects menu
 * [x] new object menu
 * [x] delete object
 * [x] zsort edition

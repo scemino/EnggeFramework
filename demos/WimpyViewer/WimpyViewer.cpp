@@ -390,6 +390,11 @@ private:
     if (object.type == ObjectType::Trigger)
       return;
 
+    const auto &camera = m_room.getCamera();
+    const auto screenSize = m_room.getScreenSize();
+    const auto offsetY = screenSize.y - m_room.getSize().y;
+    glm::vec2 cameraPos = {-camera.position.x, camera.position.y + offsetY};
+
     // draw position
     auto color = getColor(object.type);
 
@@ -405,9 +410,9 @@ private:
     ngf::RenderStates states;
     ngf::Transform tObj;
     if (object.type == ObjectType::Prop) {
-      tObj.setPosition(object.pos);
+      tObj.setPosition((glm::vec2)object.pos + cameraPos);
     } else {
-      tObj.setPosition({object.pos.x + object.usePos.x, object.pos.y - object.usePos.y});
+      tObj.setPosition(glm::vec2(object.pos.x + object.usePos.x, object.pos.y - object.usePos.y) + cameraPos);
     }
     states.transform = tObj.getTransform();
     target.draw(ngf::PrimitiveType::Lines, posVertices, states);
@@ -442,8 +447,13 @@ private:
     if (object.type != ObjectType::None && object.type != ObjectType::Trigger)
       return;
 
+    const auto &camera = m_room.getCamera();
+    const auto screenSize = m_room.getScreenSize();
+    const auto offsetY = screenSize.y - m_room.getSize().y;
+    glm::ivec2 cameraPos = {-camera.position.x, camera.position.y + offsetY};
+
     ngf::Transform tObj;
-    tObj.setPosition(object.pos);
+    tObj.setPosition(object.pos + cameraPos);
 
     auto color = getColor(object.type);
     std::array<ngf::Vertex, 4> hotspotVertices = {
@@ -466,19 +476,29 @@ private:
   }
 
   void drawZSort(ngf::RenderTarget &target, const Object &object) const {
+    const auto &camera = m_room.getCamera();
+    const auto screenSize = m_room.getScreenSize();
+    const auto offsetY = screenSize.y - m_room.getSize().y;
+    glm::ivec2 cameraPos = {-camera.position.x, camera.position.y + offsetY};
+
+    ngf::Transform trsf;
+    trsf.setPosition(cameraPos);
+    ngf::RenderStates s;
+    s.transform = trsf.getTransform();
+
     const auto color = getColor(object.type);
     const auto y = m_room.getSize().y - object.zsort;
     std::array<ngf::Vertex, 2> vertices;
     vertices[0] = {{0, y}, color};
     vertices[1] = {{target.getSize().x, y}, color};
-    target.draw(ngf::PrimitiveType::Lines, vertices);
+    target.draw(ngf::PrimitiveType::Lines, vertices, s);
 
     auto handle = createHandle(object.type);
     handle.getTransform().setPosition({5.f, y});
-    handle.draw(target, {});
+    handle.draw(target, s);
 
     handle.getTransform().setPosition({target.getSize().x - 5.f, y});
-    handle.draw(target, {});
+    handle.draw(target, s);
   }
 
 private:
