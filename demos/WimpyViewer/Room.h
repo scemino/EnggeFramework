@@ -232,7 +232,8 @@ public:
 private:
   void loadSheet(const std::filesystem::path &path) {
     auto sheetJson = ngf::Json::load(path);
-    for (const auto &frame : sheetJson["frames"].items()) {
+    const auto &frames = sheetJson["frames"];
+    for (const auto &frame : frames.items()) {
       auto sheetItem = toSpriteSheetItem(frame.key(), frame.value());
       m_frames.insert({frame.key(), sheetItem});
     }
@@ -265,6 +266,7 @@ private:
       assert(false);
     }
     }
+    return {};
   }
 
   Object parseObject(const ngf::GGPackValue &gObject) {
@@ -330,6 +332,7 @@ private:
     if (text == "DIR_RIGHT")
       return Direction::Right;
     assert(false);
+    return Direction::Front;
   }
 
   static glm::vec2 parseParallax(const ngf::GGPackValue &gValue) {
