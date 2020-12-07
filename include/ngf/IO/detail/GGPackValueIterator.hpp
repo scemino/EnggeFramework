@@ -178,6 +178,7 @@ public:
       assert(false);
     }
     }
+    return false;
   }
 
   bool operator!=(const GGPackValueIterator &rhs) const {
@@ -200,6 +201,7 @@ public:
       assert(false);
     }
     }
+    return *m_arrayIt;
   }
 
   pointer operator->() {

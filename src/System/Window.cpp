@@ -33,6 +33,7 @@ GamepadButton getGamepadButton(Uint8 button) {
   default:break;
   }
   assert(false);
+  return GamepadButton::A;
 }
 
 GamepadAxis getGamepadAxis(Uint8 axis) {
@@ -47,6 +48,7 @@ GamepadAxis getGamepadAxis(Uint8 axis) {
   }
 
   assert(false);
+  return GamepadAxis::LeftX;
 }
 }
 
