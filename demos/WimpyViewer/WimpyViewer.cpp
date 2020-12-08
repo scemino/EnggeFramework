@@ -4,7 +4,6 @@
 #include <ngf/Graphics/RectangleShape.h>
 #include <ngf/IO/MemoryStream.h>
 #include <imgui.h>
-#include <utility>
 #include "SpriteSheetItem.h"
 #include "Camera.h"
 #include "Room.h"
@@ -23,8 +22,8 @@ const char *handle_blue =
 
 class WimpyViewerApplication final : public ngf::Application {
 public:
-  explicit WimpyViewerApplication(std::filesystem::path path)
-      : m_path(std::move(path)), m_roomEditor(*this, m_room), m_cameraControl(m_room) {
+  explicit WimpyViewerApplication()
+      : m_roomEditor(*this, m_room), m_cameraControl(m_room) {
     m_roomEditor.onSelectedObjectChanged([](auto pObj) {
       if (pObj)
         pObj->pause();
@@ -36,7 +35,6 @@ private:
     m_window.init({"WimpyViewer", {1024, 768}});
     auto &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-    m_room.loadRoom(m_path);
 
     m_greenHandle = decodeTexture(handle_green);
     m_redHandle = decodeTexture(handle_red);
@@ -51,8 +49,22 @@ private:
     return texture;
   }
 
+  void openWimpy(const std::string &path) {
+    try {
+      m_room.loadRoom(path);
+    } catch (const std::exception &exception) {
+      std::ostringstream s;
+      s << "Invalid wimpy file (" << path << ") : " << exception.what();
+      Application::showMessageBox("Error", s.str(), ngf::MessageBoxType::Warning, &m_window);
+    }
+  }
+
   void onEvent(ngf::Event &event) override {
     switch (event.type) {
+    case ngf::EventType::DropFile: {
+      openWimpy(event.drop.file);
+    }
+      break;
     case ngf::EventType::MouseMoved: {
       m_mousePos = event.mouseMoved.position;
       const auto scale = ngf::Window::getDpiScale();
@@ -236,16 +248,18 @@ private:
     target.clear(m_roomEditor.getClearColor());
 
     // draw room
-    m_room.draw(target, {});
+    if (m_room.isLoaded()) {
+      m_room.draw(target, {});
 
-    drawWalkboxes(target);
+      drawWalkboxes(target);
 
-    // draw position, zsort line and hotspot if an object is selected
-    auto selectedObject = m_roomEditor.getSelectedObject();
-    if (selectedObject) {
-      drawPosition(target, *selectedObject);
-      drawZSort(target, *selectedObject);
-      drawHotspot(target, *selectedObject);
+      // draw position, zsort line and hotspot if an object is selected
+      auto selectedObject = m_roomEditor.getSelectedObject();
+      if (selectedObject) {
+        drawPosition(target, *selectedObject);
+        drawZSort(target, *selectedObject);
+        drawHotspot(target, *selectedObject);
+      }
     }
 
     Application::onRender(target);
@@ -358,8 +372,8 @@ private:
   public:
     Object *pObj{nullptr};
     ObjectHit hit{ObjectHit::None};
-    glm::vec2 startPos;
-    ngf::irect startHotspot;
+    glm::vec2 startPos{};
+    ngf::irect startHotspot{};
     int vertexIndex{0};
     int startZsort{0};
   };
@@ -512,7 +526,6 @@ private:
   std::shared_ptr<ngf::Texture> m_greenHandle;
   std::shared_ptr<ngf::Texture> m_redHandle;
   std::shared_ptr<ngf::Texture> m_blueHandle;
-  std::filesystem::path m_path;
   Room m_room;
   glm::ivec2 m_mousePos{};
   glm::vec2 m_worldPos{};
@@ -523,10 +536,7 @@ private:
 };
 
 int main(int argc, char **argv) {
-  if (argc >= 2) {
-    WimpyViewerApplication app{argv[1]};
-    app.run();
-    return EXIT_SUCCESS;
-  }
-  return EXIT_FAILURE;
+  WimpyViewerApplication app{};
+  app.run();
+  return EXIT_SUCCESS;
 }

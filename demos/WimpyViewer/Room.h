@@ -96,7 +96,13 @@ public:
     return getScreenSize(m_height);
   }
 
+  constexpr bool isLoaded() const { return m_isLoaded; }
+
   void loadRoom(const std::filesystem::path &path) {
+    m_layers.clear();
+    m_objects.clear();
+    m_walkboxes.clear();
+
     // load wimpy
     const auto wimpy = ngf::Json::load(path);
     m_sheet = wimpy["sheet"].getString();
@@ -159,6 +165,7 @@ public:
 
     m_camera.position = glm::vec2(0, 0);
     m_camera.size = getScreenSize(m_height);
+    m_isLoaded = true;
   }
 
   void update(const ngf::TimeSpan &elapsed) {
@@ -418,4 +425,5 @@ private:
   std::map<std::string, SpriteSheetItem> m_frames;
   mutable bool m_objectsZOrderDirty{true};
   std::string m_sheet;
+  bool m_isLoaded{false};
 };

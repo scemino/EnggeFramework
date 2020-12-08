@@ -223,6 +223,11 @@ bool Window::pollEvent(Event &event) {
     event.gamepadAxis.axis = getGamepadAxis(sdlEvent.caxis.axis);
     event.gamepadAxis.value = sdlEvent.caxis.value;
     break;
+  case SDL_DROPFILE:
+    event.type = EventType::DropFile;
+    event.drop.file = sdlEvent.drop.file;
+    SDL_free(sdlEvent.drop.file);
+    break;
   default: return false;
   }
   return true;

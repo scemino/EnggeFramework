@@ -10,6 +10,7 @@ namespace ngf {
 enum class EventType {
   // Application events
   Quit, ///< User has requested to quit
+  DropFile, ///< A file has been dropped
 
   // Window events
   WindowResized,  //< Window was resized
@@ -127,8 +128,16 @@ struct GamepadDisconnectionEvent {
   std::int32_t id; ///< Id of the gamepad
 };
 
+/// @brief Represents an event for file drop.
+struct DropEvent {
+  ~DropEvent(){}
+  std::string file; ///< Path of the file dropped
+};
+
 /// @brief Represents all sort of events.
 struct Event {
+  Event() {}
+  ~Event() {}
   EventType type;          ///< Event type
   TimeSpan timestamp;      ///< Timestamp of the event.
   union {
@@ -138,10 +147,11 @@ struct Event {
     MouseButtonEvent mouseButton;      ///< Mouse button event data
     MouseMovedEvent mouseMoved;        ///< Mouse moved event data
     MouseWheelEvent mouseWheelEvent;   ///< Mouse wheel event data
-    GamepadButtonEvent gamepadButton;  ///< Gamepad button event data
-    GamepadAxisEvent gamepadAxis;      ///< Gamepad axis event data
-    GamepadConnectionEvent gamepadConnection; ///< Gamepad connection event data
+    GamepadButtonEvent gamepadButton;               ///< Gamepad button event data
+    GamepadAxisEvent gamepadAxis;                   ///< Gamepad axis event data
+    GamepadConnectionEvent gamepadConnection;       ///< Gamepad connection event data
     GamepadDisconnectionEvent gamepadDisconnection; ///< Gamepad disconnection event data
+    DropEvent drop;                                 ///< Drop file event data
   };
 };
 }
