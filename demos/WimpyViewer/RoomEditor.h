@@ -39,6 +39,10 @@ private:
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Save", "Command|Ctrl+S")) {
+          m_room.save();
+        }
+        ImGui::Separator();
         if (ImGui::MenuItem("Quit", "Command|Ctrl+Q")) {
           m_application.quit();
         }

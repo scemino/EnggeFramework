@@ -16,7 +16,7 @@ struct external_constructor<GGPackValueType::String>
     static void construct(GGPackValue& j, const typename GGPackValue::string_t& s)
     {
         j.m_type = GGPackValueType::String;
-        j.m_value = j.template create<typename GGPackValue::string_t>(s);
+        j.m_value = s;
     }
 
     template<typename GGPackValue>

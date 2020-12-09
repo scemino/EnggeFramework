@@ -22,12 +22,16 @@ const char *handle_blue =
 
 class WimpyViewerApplication final : public ngf::Application {
 public:
-  explicit WimpyViewerApplication()
+  WimpyViewerApplication()
       : m_roomEditor(*this, m_room), m_cameraControl(m_room) {
     m_roomEditor.onSelectedObjectChanged([](auto pObj) {
       if (pObj)
         pObj->pause();
     });
+  }
+
+  void loadRoom(std::string path) {
+    m_path = std::move(path);
   }
 
 private:
@@ -39,6 +43,10 @@ private:
     m_greenHandle = decodeTexture(handle_green);
     m_redHandle = decodeTexture(handle_red);
     m_blueHandle = decodeTexture(handle_blue);
+
+    if (!m_path.empty()) {
+      openWimpy(m_path);
+    }
   }
 
   static std::shared_ptr<ngf::Texture> decodeTexture(const char *src) {
@@ -66,14 +74,17 @@ private:
     }
       break;
     case ngf::EventType::MouseMoved: {
+      if (!m_room.isLoaded())
+        break;
       m_mousePos = event.mouseMoved.position;
       const auto scale = ngf::Window::getDpiScale();
       m_worldPos = getRenderTarget()->mapPixelToCoords(m_mousePos) * scale;
-      m_worldPos.y = m_room.getSize().y - m_worldPos.y;
-      m_worldPos += m_room.getCamera().position;
+      m_worldPos.x += m_room.getCamera().position.x;
+      m_worldPos.y = m_room.getCamera().position.y + m_room.getScreenSize().y - m_worldPos.y;
       if (m_walkboxVertex.walkbox) {
         auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
-        (*it) = m_worldPos;
+        glm::vec2 pos = {m_worldPos.x, m_worldPos.y};
+        (*it) = pos;
       } else if (m_objectHitTest.pObj) {
         switch (m_objectHitTest.hit) {
         case ObjectHit::Position:m_objectHitTest.pObj->pos = {m_worldPos.x, m_room.getSize().y - m_worldPos.y};
@@ -87,7 +98,7 @@ private:
           auto delta = m_worldPos - m_objectHitTest.startPos;
           auto hotspot = m_objectHitTest.startHotspot;
           m_objectHitTest.pObj->hotspot =
-              ngf::irect::fromPositionSize({hotspot.getPosition().x + delta.x, hotspot.getPosition().y - delta.y},
+              ngf::irect::fromPositionSize({hotspot.getPosition().x + delta.x, hotspot.getPosition().y + delta.y},
                                            hotspot.getSize());
         }
           break;
@@ -96,16 +107,16 @@ private:
           auto hotspot = m_objectHitTest.startHotspot;
           switch (m_objectHitTest.vertexIndex) {
           case 0:hotspot.min.x += delta.x;
-            hotspot.min.y -= delta.y;
+            hotspot.max.y += delta.y;
             break;
           case 1:hotspot.max.x += delta.x;
-            hotspot.min.y -= delta.y;
+            hotspot.max.y += delta.y;
             break;
           case 2:hotspot.max.x += delta.x;
-            hotspot.max.y -= delta.y;
+            hotspot.min.y += delta.y;
             break;
           case 3:hotspot.min.x += delta.x;
-            hotspot.max.y -= delta.y;
+            hotspot.min.y += delta.y;
             break;
           }
           m_objectHitTest.pObj->hotspot = hotspot;
@@ -209,9 +220,8 @@ private:
 
     // test if mouse is over hotspot vertex
     glm::ivec2 pos = {pObj->pos.x, m_room.getSize().y - pObj->pos.y};
-    auto hs = ngf::irect::fromMinMax({pObj->hotspot.min.x, -pObj->hotspot.max.y},
-                                     {pObj->hotspot.max.x, -pObj->hotspot.min.y});
-    auto hotspot = ngf::frect::fromPositionSize(hs.getPosition() + pos, hs.getSize());
+    auto hotspot = ngf::frect::fromMinMax(pObj->hotspot.min, pObj->hotspot.max);
+    hotspot = ngf::frect::fromPositionSize(hotspot.getPosition() + (glm::vec2) pos, hotspot.getSize());
     std::array<glm::vec2, 4>
         positions = {hotspot.getBottomLeft(), hotspot.getBottomRight(),
                      hotspot.getTopRight(), hotspot.getTopLeft()};
@@ -405,9 +415,8 @@ private:
       return;
 
     const auto &camera = m_room.getCamera();
-    const auto screenSize = m_room.getScreenSize();
-    const auto offsetY = screenSize.y - m_room.getSize().y;
-    glm::vec2 cameraPos = {-camera.position.x, camera.position.y + offsetY};
+    const auto &roomSize = m_room.getSize();
+    glm::vec2 cameraPos = {-camera.position.x, camera.position.y};
 
     // draw position
     auto color = getColor(object.type);
@@ -423,10 +432,11 @@ private:
 
     ngf::RenderStates states;
     ngf::Transform tObj;
+    glm::vec2 pos = {object.pos.x, roomSize.y - object.pos.y};
     if (object.type == ObjectType::Prop) {
-      tObj.setPosition((glm::vec2) object.pos + cameraPos);
+      tObj.setPosition(pos + cameraPos);
     } else {
-      tObj.setPosition(glm::vec2(object.pos.x + object.usePos.x, object.pos.y - object.usePos.y) + cameraPos);
+      tObj.setPosition(glm::vec2(pos.x + object.usePos.x, pos.y - object.usePos.y) + cameraPos);
     }
     states.transform = tObj.getTransform();
     target.draw(ngf::PrimitiveType::Lines, posVertices, states);
@@ -464,20 +474,23 @@ private:
     if (object.type != ObjectType::None && object.type != ObjectType::Trigger)
       return;
 
+    const auto &roomSize = m_room.getSize();
     const auto &camera = m_room.getCamera();
-    const auto screenSize = m_room.getScreenSize();
-    const auto offsetY = screenSize.y - m_room.getSize().y;
-    glm::ivec2 cameraPos = {-camera.position.x, camera.position.y + offsetY};
+    glm::vec2 cameraPos = {-camera.position.x, camera.position.y};
+    glm::vec2 pos = {object.pos.x, roomSize.y - object.pos.y};
 
     ngf::Transform tObj;
-    tObj.setPosition(object.pos + cameraPos);
+    tObj.setPosition(pos + cameraPos);
 
     auto color = getColor(object.type);
+    auto hotspot = object.hotspot;
+    hotspot.min.y = -hotspot.min.y;
+    hotspot.max.y = -hotspot.max.y;
     std::array<ngf::Vertex, 4> hotspotVertices = {
-        ngf::Vertex{object.hotspot.getTopLeft(), color},
-        ngf::Vertex{object.hotspot.getBottomLeft(), color},
-        ngf::Vertex{object.hotspot.getBottomRight(), color},
-        ngf::Vertex{object.hotspot.getTopRight(), color}};
+        ngf::Vertex{hotspot.getTopLeft(), color},
+        ngf::Vertex{hotspot.getBottomLeft(), color},
+        ngf::Vertex{hotspot.getBottomRight(), color},
+        ngf::Vertex{hotspot.getTopRight(), color}};
 
     // draw hotspot and position
     ngf::RenderStates states;
@@ -523,6 +536,7 @@ private:
   }
 
 private:
+  std::string m_path;
   std::shared_ptr<ngf::Texture> m_greenHandle;
   std::shared_ptr<ngf::Texture> m_redHandle;
   std::shared_ptr<ngf::Texture> m_blueHandle;
@@ -537,6 +551,9 @@ private:
 
 int main(int argc, char **argv) {
   WimpyViewerApplication app{};
+  if (argc > 1) {
+    app.loadRoom(argv[1]);
+  }
   app.run();
   return EXIT_SUCCESS;
 }

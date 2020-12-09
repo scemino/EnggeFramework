@@ -21,6 +21,8 @@ public:
   void setVisible(bool visible) { m_visible = visible; }
   bool isVisible() const { return m_visible; }
 
+  const std::vector<SpriteSheetItem>& getItems() const { return m_items; }
+
   void setParallax(const glm::vec2 &parallax) { m_parallax = parallax; }
   glm::vec2 getParallax() const { return m_parallax; }
 
@@ -45,6 +47,7 @@ public:
   }
 
 private:
+  std::string m_name;
   bool m_visible{true};
   const int m_offsetY{0};
   std::shared_ptr<ngf::Texture> m_texture;

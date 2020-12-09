@@ -121,6 +121,8 @@ std::ostream &operator<<(std::ostream &o, const ngf::Event &event) {
     break;
   case ngf::EventType::GamepadMappingUpdated:o << "type: GamepadMappingUpdated";
     break;
+  case ngf::EventType::DropFile:o << "type: DropFile";
+    break;
   }
   return o;
 }

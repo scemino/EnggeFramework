@@ -4,10 +4,21 @@
 #include <ngf/Math/PathFinding/Walkbox.h>
 #include <algorithm>
 #include <filesystem>
+#include <sstream>
 #include "SpriteSheetItem.h"
 #include "Camera.h"
 #include "Layer.h"
 #include "Object.h"
+
+struct ScalingValue {
+  float scale;
+  int y;
+};
+
+struct Scaling {
+  std::vector<ScalingValue> values;
+  std::string trigger;
+};
 
 class Layers final {
 public:
@@ -99,17 +110,20 @@ public:
   constexpr bool isLoaded() const { return m_isLoaded; }
 
   void loadRoom(const std::filesystem::path &path) {
+    m_path = path;
     m_layers.clear();
     m_objects.clear();
     m_walkboxes.clear();
 
     // load wimpy
     const auto wimpy = ngf::Json::load(path);
+    m_name = wimpy["name"].getString();
     m_sheet = wimpy["sheet"].getString();
 
     // load sheet
-    auto sheetPath = path;
-    sheetPath.replace_filename(m_sheet).replace_extension(".json");
+    auto sheetPath = path.parent_path().parent_path();
+    sheetPath.append("SpriteSheets");
+    sheetPath.append(m_sheet).replace_extension(".json");
     loadSheet(sheetPath);
 
     // load texture
@@ -140,19 +154,21 @@ public:
     }
 
     // layers
-    for (const auto &gLayer : wimpy["layers"]) {
-      std::vector<SpriteSheetItem> items;
-      auto parallax = parseParallax(gLayer["parallax"]);
-      auto zsort = gLayer["zsort"].getDouble();
-      if (gLayer["name"].isArray()) {
-        for (const auto &name : gLayer["name"]) {
-          items.push_back(m_frames[name.getString()]);
+    if(!wimpy["layers"].isNull()) {
+      for (const auto &gLayer : wimpy["layers"]) {
+        std::vector<SpriteSheetItem> items;
+        auto parallax = parseParallax(gLayer["parallax"]);
+        auto zsort = gLayer["zsort"].getDouble();
+        if (gLayer["name"].isArray()) {
+          for (const auto &name : gLayer["name"]) {
+            items.push_back(m_frames[name.getString()]);
+          }
+        } else if (gLayer["name"].isString()) {
+          items.push_back(m_frames[gLayer["name"].getString()]);
         }
-      } else if (gLayer["name"].isString()) {
-        items.push_back(m_frames[gLayer["name"].getString()]);
+        auto layer = std::make_unique<Layer>(offsetY, m_roomSize.y, m_texture, items, parallax, zsort);
+        m_layers.push_back(std::move(layer));
       }
-      auto layer = std::make_unique<Layer>(offsetY, m_roomSize.y, m_texture, items, parallax, zsort);
-      m_layers.push_back(std::move(layer));
     }
 
     // sort layers by zsort
@@ -162,10 +178,160 @@ public:
 
     loadWalkboxes(wimpy);
     loadObjects(wimpy);
+    loadScalings(wimpy);
 
     m_camera.position = glm::vec2(0, 0);
     m_camera.size = getScreenSize(m_height);
     m_isLoaded = true;
+  }
+
+  void save() {
+    ngf::GGPackValue gRoom;
+
+    // background
+    auto it = std::find_if(m_layers.cbegin(), m_layers.cend(), [](const auto &layer) {
+      return layer->getZSort() == 0;
+    });
+    const auto &items = it->get()->getItems();
+    if (items.size() == 1) {
+      gRoom["background"] = items[0].name;
+    } else {
+      for (const auto &item : items) {
+        gRoom["background"].push_back(item.name);
+      }
+    }
+    // fullscreen
+    gRoom["fullscreen"] = m_fullscreen;
+    // height
+    gRoom["height"] = m_height;
+    // layers
+    for (const auto &layer : m_layers) {
+      if (layer->getZSort() == 0)
+        continue;
+      ngf::GGPackValue gLayer;
+      const auto &names = layer->getItems();
+      if (names.size() == 1) {
+        gLayer["name"] = names[0].name;
+      } else {
+        for (const auto &name : names) {
+          gLayer["name"].push_back(name.name);
+        }
+      }
+      auto parallax = layer->getParallax();
+      if (parallax.y == 1) {
+        gLayer["parallax"] = parallax.x;
+      } else {
+        gLayer["parallax"] = toString(parallax);
+      }
+      gLayer["zsort"] = layer->getZSort();
+      gRoom["layers"].push_back(gLayer);
+    }
+    // name
+    gRoom["name"] = m_name;
+    // objects
+    for (const auto &object : m_objects) {
+      ngf::GGPackValue gObj;
+      for (const auto &anim : object.animations) {
+        ngf::GGPackValue gAnim;
+        gAnim["name"] = anim.name;
+        for (const auto &frame : anim.frames) {
+          gAnim["frames"].push_back(frame.name);
+        }
+        if (anim.fps)
+          gAnim["fps"] = anim.fps;
+        if (anim.loop)
+          gAnim["loop"] = 1;
+        gObj["animations"].push_back(gAnim);
+      }
+      gObj["hotspot"] = toString(object.hotspot);
+      gObj["name"] = object.name;
+      gObj["pos"] = toString(object.pos);
+      switch (object.type) {
+      case ObjectType::Prop:gObj["prop"] = 1;
+        break;
+      case ObjectType::Spot:gObj["spot"] = 1;
+        break;
+      case ObjectType::Trigger:gObj["trigger"] = 1;
+        break;
+      default:break;
+      }
+      switch (object.useDir) {
+      case Direction::Back:gObj["usedir"] = "DIR_BACK";
+        break;
+      case Direction::Front:gObj["usedir"] = "DIR_FRONT";
+        break;
+      case Direction::Left:gObj["usedir"] = "DIR_LEFT";
+        break;
+      case Direction::Right:gObj["usedir"] = "DIR_RIGHT";
+        break;
+      default:break;
+      }
+      gObj["usepos"] = toString(object.usePos);
+      gObj["zsort"] = object.zsort;
+      gRoom["objects"].push_back(gObj);
+    }
+    // roomSize
+    gRoom["roomsize"] = toString(m_roomSize);
+    // scalings
+    if (m_scalings.size() == 1) {
+      for (auto &value : m_scalings[0].values) {
+        gRoom["scaling"].push_back(toString(value));
+      }
+    } else {
+      for (const auto &scaling : m_scalings) {
+        ngf::GGPackValue gScaling;
+        for (auto &value : scaling.values) {
+          gScaling["scaling"].push_back(toString(value));
+        }
+        if (!scaling.trigger.empty())
+          gScaling["trigger"] = scaling.trigger;
+        gRoom["scaling"].push_back(gScaling);
+      }
+    }
+    // sheet
+    gRoom["sheet"] = m_sheet;
+    // walkboxes
+    for (auto &walkbox : m_walkboxes) {
+      ngf::GGPackValue gWalkbox;
+      if (!walkbox.getName().empty()) {
+        gWalkbox["name"] = walkbox.getName();
+      }
+      std::ostringstream s;
+      for (const auto &pos : walkbox) {
+        s << toString(pos) << ';';
+      }
+      gWalkbox["polygon"] = s.str().substr(0, s.str().size() - 1);
+      gRoom["walkboxes"].push_back(gWalkbox);
+    }
+
+    auto content = gRoom.toString();
+    std::ofstream os(m_path);
+    os << content;
+    os.close();
+  }
+
+  static std::string toString(const ScalingValue &value) {
+    std::ostringstream s;
+    s << value.scale << '@' << value.y;
+    return s.str();
+  }
+
+  static std::string toString(glm::ivec2 pos) {
+    std::ostringstream s;
+    s << '{' << pos.x << ',' << pos.y << '}';
+    return s.str();
+  }
+
+  static std::string toString(glm::vec2 pos) {
+    std::ostringstream s;
+    s << '{' << pos.x << ',' << pos.y << '}';
+    return s.str();
+  }
+
+  static std::string toString(ngf::irect rect) {
+    std::ostringstream s;
+    s << "{{" << rect.min.x << ',' << rect.min.y << "},{" << rect.max.x << ',' << rect.max.y << "}}";
+    return s.str();
   }
 
   void update(const ngf::TimeSpan &elapsed) {
@@ -176,13 +342,9 @@ public:
 
   void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
 
-    ngf::View view{ngf::frect::fromCenterSize(m_camera.size / 2.f,
-                                              m_camera.size)};
+    ngf::View view{ngf::frect::fromPositionSize(glm::ivec2(), m_camera.size)};
     view.zoom(m_camera.zoom);
     target.setView(view);
-
-    const auto screenSize = getScreenSize(m_height);
-    const auto offsetY = screenSize.y - m_roomSize.y;
 
     // draw background layers
     for (const auto &layer : m_layers) {
@@ -198,7 +360,7 @@ public:
     // draw objects
     ngf::RenderStates localStates = states;
     ngf::Transform t;
-    t.setPosition({-m_camera.position.x, m_camera.position.y + offsetY});
+    t.setPosition({-m_camera.position.x, m_camera.position.y});
     localStates.transform *= t.getTransform();
 
     if (m_objectsZOrderDirty) {
@@ -264,6 +426,37 @@ private:
     }
   }
 
+  void loadScalings(const ngf::GGPackValue &wimpy) {
+    const auto wScalings = wimpy["scaling"];
+    if (wScalings.size() == 0)
+      return;
+
+    if (wScalings[0].isString()) {
+      m_scalings.push_back(loadScaling(wScalings));
+      return;
+    }
+
+    for (const auto &wScaling : wScalings) {
+      auto scaling = loadScaling(wScaling["scaling"]);
+      if (!wScaling["trigger"].isNull()) {
+        scaling.trigger = wScaling["trigger"].getString();
+      }
+      m_scalings.push_back(scaling);
+    }
+  }
+
+  static Scaling loadScaling(const ngf::GGPackValue &scaling) {
+    Scaling s;
+    for (const auto &value : scaling) {
+      auto v = value.getString();
+      char *end;
+      auto scale = std::strtof(v.c_str(), &end);
+      auto y = std::strtol(end + 1, &end, 10);
+      s.values.push_back({scale, static_cast<int>(y)});
+    }
+    return s;
+  }
+
   static glm::ivec2 getScreenSize(int roomHeight) {
     switch (roomHeight) {
     case 128:return glm::ivec2(320, 180);
@@ -278,10 +471,10 @@ private:
 
   Object parseObject(const ngf::GGPackValue &gObject) {
     Object obj;
+    obj.room = this;
     obj.texture = m_texture;
     obj.name = gObject["name"].getString();
     obj.pos = parseIVec2(gObject["pos"].getString());
-    obj.pos.y = m_roomSize.y - obj.pos.y;
     obj.usePos = parseIVec2(gObject["usepos"].getString());
     obj.useDir = parseUseDir(gObject["usedir"].getString());
     obj.hotspot = parseIRect(gObject["hotspot"].getString());
@@ -309,6 +502,9 @@ private:
     anim.name = gAnimation["name"].getString();
     anim.loop = toBool(gAnimation["loop"]);
     anim.fps = gAnimation["fps"].isNull() ? 0.f : gAnimation["fps"].getDouble();
+    if (gAnimation["frames"].isNull())
+      return anim;
+
     for (const auto &gFrame : gAnimation["frames"]) {
       auto name = gFrame.getString();
       anim.frames.push_back(m_frames[name]);
@@ -417,6 +613,7 @@ private:
   std::vector<std::unique_ptr<Layer>> m_layers;
   std::shared_ptr<ngf::Texture> m_texture;
   std::vector<ngf::Walkbox> m_walkboxes;
+  std::vector<Scaling> m_scalings;
   mutable std::vector<Object> m_objects;
   glm::ivec2 m_roomSize{0, 0};
   int m_fullscreen{0};
@@ -426,4 +623,6 @@ private:
   mutable bool m_objectsZOrderDirty{true};
   std::string m_sheet;
   bool m_isLoaded{false};
+  std::string m_name;
+  std::filesystem::path m_path;
 };

@@ -38,6 +38,7 @@ struct ObjectAnimation {
   double fps{0.f};
 };
 
+class Room;
 class Object : public ngf::Drawable {
 public:
   std::shared_ptr<ngf::Texture> texture;
@@ -53,75 +54,16 @@ public:
   int frameIndex{-1};
   int zsort{0};
   ngf::TimeSpan elapsed;
+  Room *room{nullptr};
 
 public:
   ~Object() override = default;
 
-  void play() {
-    m_state = AnimState::Play;
-    frameIndex = 0;
-  }
-  void pause() { m_state = AnimState::Pause; }
+  void play();
+  void pause();
 
-  void update(const ngf::TimeSpan &e) {
-    if (!visible)
-      return;
-    if (animations.empty())
-      return;
-    if (animationIndex < 0 || animationIndex >= animations.size())
-      return;
-    const auto &animation = animations[animationIndex];
-    if (animation.frames.empty())
-      return;
-
-    if (frameIndex == -1) {
-      frameIndex = animation.frames.size() - 1;
-    }
-    if (m_state == AnimState::Pause)
-      return;
-
-    if (frameIndex > animation.frames.size()) {
-      frameIndex = 0;
-      return;
-    }
-    elapsed += e;
-    auto fps = animation.fps;
-    if (fps == 0)
-      fps = 10;
-    const auto frameTime = 1.f / static_cast<float>(fps);
-    if (elapsed.getTotalSeconds() > frameTime) {
-      elapsed = ngf::TimeSpan::seconds(elapsed.getTotalSeconds() - frameTime);
-      if (animation.loop || frameIndex != animation.frames.size() - 1) {
-        frameIndex = (frameIndex + 1) % animation.frames.size();
-      } else {
-        pause();
-      }
-    }
-  }
-
-  void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override {
-    if (!visible)
-      return;
-    if (animations.empty())
-      return;
-    if (animationIndex >= animations.size())
-      return;
-    if (frameIndex < 0 || animations[animationIndex].frames.empty())
-      return;
-
-    ngf::RenderStates localStates = states;
-    ngf::Transform t;
-    t.setPosition({pos.x, pos.y});
-    localStates.transform *= t.getTransform();
-
-    const auto frame = animations[animationIndex].frames[frameIndex];
-    glm::vec2 off = {
-        frame.spriteSourceSize.min.x - frame.sourceSize.x / 2.f,
-        frame.spriteSourceSize.min.y - frame.sourceSize.y / 2.f};
-    ngf::Sprite sprite(*texture, frame.frame);
-    sprite.getTransform().setPosition(off);
-    sprite.draw(target, localStates);
-  }
+  void update(const ngf::TimeSpan &e);
+  void draw(ngf::RenderTarget &target, ngf::RenderStates states) const override;
 
 private:
   AnimState m_state{AnimState::Pause};

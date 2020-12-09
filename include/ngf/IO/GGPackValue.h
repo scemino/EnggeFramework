@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <type_traits>
@@ -303,7 +304,7 @@ public:
     throw std::logic_error("This is not an array");
   }
 
-  basic_ggpackvalue operator[](const std::string &key) {
+  basic_ggpackvalue operator[](const std::string &key) const {
     if (m_type == GGPackValueType::Hash) {
       if (m_value.hash_value->find(key) == m_value.hash_value->end())
         return nullptr;
@@ -312,13 +313,19 @@ public:
     throw std::logic_error("This is not an hashtable");
   }
 
-  basic_ggpackvalue operator[](const std::string &key) const {
-    if (m_type == GGPackValueType::Hash) {
-      if (m_value.hash_value->find(key) == m_value.hash_value->end())
-        return nullptr;
-      return m_value.hash_value->at(key);
+  reference operator[](const std::string &key) {
+    // implicitly convert null value to an empty object
+    if (isNull()) {
+      m_type = GGPackValueType::Hash;
+      m_value.hash_value = create<hash_t>();
     }
-    throw std::logic_error("This is not an hashtable");
+
+    // operator[] only works for hashtables
+    if (isHash()) {
+      return (*m_value.hash_value)[key];
+    }
+
+    throw std::logic_error("cannot use operator[] with a string argument");
   }
 
   basic_ggpackvalue &operator=(basic_ggpackvalue other) noexcept(
@@ -435,6 +442,32 @@ public:
     return "";
   }
 
+  [[nodiscard]] std::string toString() const {
+    std::ostringstream s;
+    s << *this;
+    return s.str();
+  }
+
+  void push_back(const basic_ggpackvalue &val) {
+    // push_back only works for null objects or arrays
+    if (!isNull() && !isArray()) {
+      throw std::logic_error("use push_back() with null or array");
+    }
+
+    // transform null object into an array
+    if (isNull()) {
+      m_type = GGPackValueType::Array;
+      m_value = value_type::array_t{};
+    }
+
+    // add element to array
+    m_value.array_value->push_back(val);
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const basic_ggpackvalue &value) {
+    return _dumpValue(os, value, 0);
+  }
+
 private:
   /// helper for exception-safe object creation
   template<typename T, typename... Args>
@@ -449,6 +482,68 @@ private:
     AllocatorTraits::construct(alloc, object.get(), std::forward<Args>(args)...);
     assert(object != nullptr);
     return object.release();
+  }
+
+  static std::ostream &_dumpValue(std::ostream &os, const basic_ggpackvalue &value, int indent) {
+    if (value.isHash()) {
+      _dumpHash(os, value, indent);
+      return os;
+    }
+    if (value.isArray()) {
+      _dumpArray(os, value, indent);
+      return os;
+    }
+    if (value.isDouble()) {
+      os << value.getDouble();
+      return os;
+    }
+    if (value.isInteger()) {
+      os << value.getInt();
+      return os;
+    }
+    if (value.isNull()) {
+      os << "null";
+      return os;
+    }
+    if (value.isString()) {
+      os << "\"" << value.getString() << "\"";
+      return os;
+    }
+    return os;
+  }
+
+  static std::ostream &_dumpHash(std::ostream &os, const basic_ggpackvalue &value, int indent) {
+    indent++;
+    std::string padding(indent * 2, ' ');
+    os << "{";
+    for (auto it = value.items().begin(); it != value.items().end();) {
+      os << std::endl << padding << "\"" << it.key() << "\": ";
+      _dumpValue(os, it.value(), indent);
+      if (++it != value.items().end()) {
+        os << ",";
+      }
+    }
+    indent--;
+    padding = std::string(indent * 2, ' ');
+    os << std::endl << padding << "}";
+    return os;
+  }
+
+  static std::ostream &_dumpArray(std::ostream &os, const basic_ggpackvalue &value, int indent) {
+    indent++;
+    std::string padding(indent * 2, ' ');
+    os << "[";
+    for (auto iterator = value.begin(); iterator != value.end();) {
+      os << std::endl << padding;
+      _dumpValue(os, iterator.value(), indent);
+      if (++iterator != value.end()) {
+        os << ",";
+      }
+    }
+    indent--;
+    padding = std::string(indent * 2, ' ');
+    os << std::endl << padding << "]";
+    return os;
   }
 };
 
