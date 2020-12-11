@@ -391,6 +391,8 @@ private:
   void newObject() {
     glm::vec2 center = {m_room.getScreenSize().x / 2.f, m_room.getScreenSize().y / 2.f};
     Object obj;
+    obj.room = &m_room;
+    obj.texture = m_room.getTexture();
     obj.name = "nameObject";
     obj.zsort = static_cast<int>(m_room.getScreenSize().y / 2.f);
     obj.pos = center;

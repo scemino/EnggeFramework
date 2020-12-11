@@ -14,6 +14,7 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 ## TODO
 
 * [ ] fix shortcuts don't work
+* [x] save empty animation frames
 * [x] open wimpy file with drag'n'drop
 * [x] save wimpy file
 * [x] edit object only if walkbox not in edition

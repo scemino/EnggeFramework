@@ -83,16 +83,15 @@ private:
       m_worldPos.y = m_room.getCamera().position.y + m_room.getScreenSize().y - m_worldPos.y;
       if (m_walkboxVertex.walkbox) {
         auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
-        glm::vec2 pos = {m_worldPos.x, m_worldPos.y};
-        (*it) = pos;
+        (*it) = m_worldPos;
       } else if (m_objectHitTest.pObj) {
         switch (m_objectHitTest.hit) {
-        case ObjectHit::Position:m_objectHitTest.pObj->pos = {m_worldPos.x, m_room.getSize().y - m_worldPos.y};
+        case ObjectHit::Position:m_objectHitTest.pObj->pos = m_worldPos;
           break;
         case ObjectHit::UsePosition:
           m_objectHitTest.pObj->usePos =
               {m_worldPos.x - m_objectHitTest.pObj->pos.x,
-               m_worldPos.y - m_room.getSize().y + m_objectHitTest.pObj->pos.y};
+               m_worldPos.y - m_objectHitTest.pObj->pos.y};
           break;
         case ObjectHit::Hotspot: {
           auto delta = m_worldPos - m_objectHitTest.startPos;
@@ -201,14 +200,13 @@ private:
     if (pObj->type == ObjectType::Prop) {
       hit = ObjectHit::Position;
       rect = ngf::frect::fromCenterSize(
-          {pObj->pos.x, m_room.getSize().y - pObj->pos.y},
+          {pObj->pos.x, pObj->pos.y},
           {5, 5});
     } else if (pObj->type != ObjectType::Trigger) {
       // else we want to modify the use position of the object (except for trigger)
       hit = ObjectHit::UsePosition;
       rect = ngf::frect::fromCenterSize(
-          {pObj->pos.x + pObj->usePos.x,
-           m_room.getSize().y - (pObj->pos.y - pObj->usePos.y)},
+          {pObj->pos.x + pObj->usePos.x, pObj->pos.y - pObj->usePos.y},
           {5, 5});
     }
 
@@ -219,9 +217,7 @@ private:
     }
 
     // test if mouse is over hotspot vertex
-    glm::ivec2 pos = {pObj->pos.x, m_room.getSize().y - pObj->pos.y};
-    auto hotspot = ngf::frect::fromMinMax(pObj->hotspot.min, pObj->hotspot.max);
-    hotspot = ngf::frect::fromPositionSize(hotspot.getPosition() + (glm::vec2) pos, hotspot.getSize());
+    auto hotspot = ngf::frect::fromMinMax(pObj->pos + pObj->hotspot.min, pObj->pos + pObj->hotspot.max);
     std::array<glm::vec2, 4>
         positions = {hotspot.getBottomLeft(), hotspot.getBottomRight(),
                      hotspot.getTopRight(), hotspot.getTopLeft()};

@@ -108,11 +108,13 @@ public:
   }
 
   constexpr bool isLoaded() const { return m_isLoaded; }
+  std::shared_ptr<ngf::Texture> getTexture() { return m_texture; }
 
   void loadRoom(const std::filesystem::path &path) {
     m_path = path;
     m_layers.clear();
     m_objects.clear();
+    m_scalings.clear();
     m_walkboxes.clear();
 
     // load wimpy
@@ -154,7 +156,7 @@ public:
     }
 
     // layers
-    if(!wimpy["layers"].isNull()) {
+    if (!wimpy["layers"].isNull()) {
       for (const auto &gLayer : wimpy["layers"]) {
         std::vector<SpriteSheetItem> items;
         auto parallax = parseParallax(gLayer["parallax"]);
@@ -233,6 +235,9 @@ public:
       ngf::GGPackValue gObj;
       for (const auto &anim : object.animations) {
         ngf::GGPackValue gAnim;
+        // HACK: to save empty frames
+        gAnim["frames"].push_back("");
+        gAnim["frames"].clear();
         gAnim["name"] = anim.name;
         for (const auto &frame : anim.frames) {
           gAnim["frames"].push_back(frame.name);
@@ -534,8 +539,7 @@ private:
       return Direction::Left;
     if (text == "DIR_RIGHT")
       return Direction::Right;
-    assert(false);
-    return Direction::Front;
+    return Direction::Back;
   }
 
   static glm::vec2 parseParallax(const ngf::GGPackValue &gValue) {

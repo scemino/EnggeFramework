@@ -464,6 +464,22 @@ public:
     m_value.array_value->push_back(val);
   }
 
+  void clear() {
+    // push_back only works for null objects or arrays
+    if (!isNull() && !isArray()) {
+      throw std::logic_error("use push_back() with null or array");
+    }
+
+    // transform null object into an array
+    if (isNull()) {
+      m_type = GGPackValueType::Array;
+      m_value = value_type::array_t{};
+    }
+
+    // add element to array
+    m_value.array_value->clear();
+  }
+
   friend std::ostream &operator<<(std::ostream &os, const basic_ggpackvalue &value) {
     return _dumpValue(os, value, 0);
   }
