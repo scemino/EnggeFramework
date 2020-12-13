@@ -38,7 +38,9 @@ public:
 class RoomEditor final {
 public:
   explicit RoomEditor(ngf::Application &application, Room &room)
-      : m_application(application), m_room(room), m_cameraControl(m_room) {}
+      : m_application(application), m_room(room), m_cameraControl(m_room) {
+    loadPrefs();
+  }
 
   [[nodiscard]] ngf::Color getClearColor() const { return m_clearColor; }
 
@@ -48,6 +50,12 @@ public:
     try {
       m_path = path;
       m_room.loadRoom(path);
+      auto it = std::find(m_recentRooms.begin(), m_recentRooms.end(), path);
+      if (it != m_recentRooms.end()) {
+        m_recentRooms.erase(it);
+      }
+      m_recentRooms.insert(m_recentRooms.begin(), path);
+      savePrefs();
     } catch (const std::exception &exception) {
       std::ostringstream s;
       s << "Invalid wimpy file (" << path << ") : " << exception.what();
@@ -259,9 +267,41 @@ public:
 
   void onQuit() {
     m_quit = true;
+    savePrefs();
   }
 
 private:
+  void loadPrefs() {
+    if (!std::filesystem::exists("prefs.json"))
+      return;
+    const auto gPrefs = ngf::Json::load("prefs.json");
+    auto recentRooms = gPrefs["recentRooms"];
+    if (!recentRooms.isNull() && recentRooms.isArray()) {
+      for (const auto &gRoom : recentRooms) {
+        m_recentRooms.push_back(gRoom.getString());
+      }
+    }
+    m_autocenterObjects = gPrefs["autocenterObjects"].isInteger() && gPrefs["autocenterObjects"].getInt() == 1;
+    m_showObjects = gPrefs["showObjects"].isInteger() && gPrefs["showObjects"].getInt() == 1;
+  }
+
+  void savePrefs() {
+    ngf::GGPackValue gPrefs;
+    for (const auto &room : m_recentRooms) {
+      gPrefs["recentRooms"].push_back(room);
+    }
+    if (m_autocenterObjects) {
+      gPrefs["autocenterObjects"] = 1;
+    }
+    if (m_showObjects) {
+      gPrefs["showObjects"] = 1;
+    }
+    auto content = gPrefs.toString();
+    std::ofstream os("prefs.json");
+    os << content;
+    os.close();
+  }
+
   void setModified(bool isModified = true) {
     ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] =
         isModified ? ImVec4(ImColor(0x882a12ff)) : ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
@@ -276,6 +316,14 @@ private:
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
+        if (ImGui::BeginMenu("Open Recent")) {
+          for (auto recent : m_recentRooms) {
+            if (ImGui::MenuItem(recent.c_str())) {
+              openWimpy(recent);
+            }
+          }
+          ImGui::EndMenu();
+        }
         if (ImGui::MenuItem("Save", "Command|Ctrl+S")) {
           save();
         }
@@ -861,4 +909,5 @@ private:
   CameraControl m_cameraControl;
   bool m_quit{false};
   std::string m_path;
+  std::vector<std::string> m_recentRooms;
 };
