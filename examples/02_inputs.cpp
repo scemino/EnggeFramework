@@ -47,6 +47,21 @@ const char *getAxisName(ngf::GamepadAxis axis) {
   return SDL_GameControllerGetStringForAxis(getSdlAxis(axis));
 }
 
+std::ostream &operator<<(std::ostream &o, ngf::KeyModifiers mod) {
+  if((int)mod & (int)ngf::KeyModifiers::LeftGui) o << "LeftGui ";
+  if((int)mod & (int)ngf::KeyModifiers::RightGui) o << "RightGui ";
+  if((int)mod & (int)ngf::KeyModifiers::LeftControl) o << "LeftControl ";
+  if((int)mod & (int)ngf::KeyModifiers::RightControl) o << "RightControl ";
+  if((int)mod & (int)ngf::KeyModifiers::LeftShift) o << "LeftShift ";
+  if((int)mod & (int)ngf::KeyModifiers::RightShift) o << "RightShift ";
+  if((int)mod & (int)ngf::KeyModifiers::LeftAlt) o << "LeftAlt";
+  if((int)mod & (int)ngf::KeyModifiers::RightAlt) o << "RightAlt";
+  if((int)mod & (int)ngf::KeyModifiers::Caps) o << "Caps";
+  if((int)mod & (int)ngf::KeyModifiers::Mode) o << "Mode";
+  if((int)mod & (int)ngf::KeyModifiers::Num) o << "Num";
+  return o;
+}
+
 std::ostream &operator<<(std::ostream &o, const ngf::KeyEvent &event) {
   o << "keycode: " << event.keycode << '\n';
   o << "scancode: " << static_cast<int32_t>(event.scancode) << '\n';
