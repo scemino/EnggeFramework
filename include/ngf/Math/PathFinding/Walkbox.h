@@ -107,6 +107,10 @@ public:
   /// \param point Point to insert in the walkbox.
   void insert(const_iterator pos, const_reference point) { m_polygon.insert(pos, point); }
 
+  /// @brief Removes a point to the walkbox from a specified position.
+  /// \param pos Position of the point to remove.
+  void erase(const_iterator it) { m_polygon.erase(it); }
+
 private:
   bool m_visible{true};
   std::vector<glm::ivec2> m_polygon;

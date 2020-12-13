@@ -25,6 +25,7 @@ public:
   [[nodiscard]] ngf::Walkbox *getSelectedWalkbox() { return m_selectedWalkbox; }
 
   [[nodiscard]] bool isWalkboxInEdition() const noexcept { return m_walkboxInEdition; }
+  [[nodiscard]] bool isModified() const noexcept { return m_isModified; }
 
   void draw() {
     showMainMenuBar();
@@ -35,12 +36,18 @@ public:
     showWalkboxInfo();
   }
 
+  void setModified(bool isModified = true) {
+    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = isModified ? ImVec4(ImColor(0x882a12ff)) : ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    m_isModified = isModified;
+  }
+
 private:
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Save", "Command|Ctrl+S")) {
           m_room.save();
+          setModified(false);
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Quit", "Command|Ctrl+Q")) {
@@ -110,10 +117,18 @@ private:
       ImGui::Separator();
       Direction(&m_selectedObject->useDir);
       ImGui::Separator();
-      ImGui::DragInt2("Position", glm::value_ptr(m_selectedObject->pos));
-      ImGui::DragInt2("Use Position", glm::value_ptr(m_selectedObject->usePos));
-      ImGui::DragInt4("Hotspot", &m_selectedObject->hotspot.min.x);
-      ImGui::DragInt("ZSort", &m_selectedObject->zsort);
+      if (ImGui::DragInt2("Position", glm::value_ptr(m_selectedObject->pos))) {
+        setModified();
+      }
+      if (ImGui::DragInt2("Use Position", glm::value_ptr(m_selectedObject->usePos))) {
+        setModified();
+      }
+      if (ImGui::DragInt4("Hotspot", &m_selectedObject->hotspot.min.x)) {
+        setModified();
+      }
+      if (ImGui::DragInt("ZSort", &m_selectedObject->zsort)) {
+        setModified();
+      }
     }
     ImGui::End();
   }
@@ -137,6 +152,7 @@ private:
               IM_ASSERT(payload->DataSize == sizeof(SpriteSheetItem));
               const auto &payload_n = *(const SpriteSheetItem *) payload->Data;
               anim.frames.insert(anim.frames.begin(), payload_n);
+              setModified();
             }
             ImGui::EndDragDropTarget();
           }
@@ -150,6 +166,7 @@ private:
               ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(0.0f, 0.8f, 0.8f));
               if (ImGui::Button("Delete Frame!")) {
                 anim.frames.erase(anim.frames.begin() + i);
+                setModified();
               }
               ImGui::PopStyleColor(3);
               ImGui::PopID();
@@ -169,6 +186,7 @@ private:
                 auto it = std::find_if(anim.frames.cbegin(), anim.frames.cend(), [&payload_n](const auto &item) {
                   return item.name == payload_n.name;
                 });
+                setModified();
                 if (it != anim.frames.cend()) {
                   auto tmp = anim.frames[i];
                   auto n = it - anim.frames.begin();
@@ -197,6 +215,7 @@ private:
           if (!m_newAnimName.empty()) {
             m_selectedObject->animations.push_back(ObjectAnimation{m_newAnimName});
             m_newAnimName.clear();
+            setModified();
           }
           ImGui::CloseCurrentPopup();
         }
@@ -297,6 +316,7 @@ private:
             });
             m_selectedObject = nullptr;
             m_room.objects().erase(it);
+            setModified();
             ImGui::CloseCurrentPopup();
           }
           ImGui::PopStyleColor(3);
@@ -386,6 +406,7 @@ private:
         glm::ivec2{center.x - 40, center.y + 20}};
     m_room.walkboxes().push_back(ngf::Walkbox(points));
     m_selectedWalkbox = nullptr;
+    setModified();
   }
 
   void newObject() {
@@ -400,6 +421,7 @@ private:
     m_room.objects().push_back(obj);
     setSelectObject(&m_room.objects().back());
     m_showObjectProperties = true;
+    setModified();
   }
 
   void centerObject() {
@@ -485,4 +507,5 @@ private:
   std::function<void(Object *)> m_selectedObjectChanged{nullptr};
   bool m_walkboxInEdition{false};
   bool m_autocenterObjects{false};
+  bool m_isModified{false};
 };

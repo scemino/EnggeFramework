@@ -54,26 +54,25 @@ void Application::run() {
     onRender(*m_renderTarget);
     frames++;
   }
-
-  onExit();
 }
 
 void Application::processEvents() {
   Event event;
   while (m_window.pollEvent(event)) {
     if (event.type == EventType::Quit) {
-      m_done = true;
+      onQuit();
     } else {
       onEvent(event);
     }
   }
 }
 
-void Application::onInit() {
-  m_window.init({});
+void Application::onQuit() {
+  m_done = true;
 }
 
-void Application::onExit() {
+void Application::onInit() {
+  m_window.init({});
 }
 
 void Application::onUpdate(const TimeSpan &) {
@@ -125,7 +124,7 @@ int Application::showMessageBox(const std::string &title,
   int i = 0;
   std::vector<SDL_MessageBoxButtonData> buttonsData;
   for (const auto &button : buttons) {
-      Uint32 buttonFlags;
+    Uint32 buttonFlags;
     if (acceptButton == i)
       buttonFlags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
     else if (cancelButton == i)

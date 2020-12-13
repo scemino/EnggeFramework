@@ -84,7 +84,9 @@ private:
       if (m_walkboxVertex.walkbox) {
         auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
         (*it) = m_worldPos;
+        m_roomEditor.setModified();
       } else if (m_objectHitTest.pObj) {
+        m_roomEditor.setModified();
         switch (m_objectHitTest.hit) {
         case ObjectHit::Position:m_objectHitTest.pObj->pos = m_worldPos;
           break;
@@ -143,6 +145,11 @@ private:
       }
       // test if we are near a walkbox vertex
       m_walkboxVertex = getWalkboxVertexAt(m_worldPos);
+      if (event.mouseButton.button == 3 && m_walkboxVertex.walkbox) {
+        auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
+        m_walkboxVertex.walkbox->erase(it);
+        break;
+      }
 
       // test if mouse right button is pressed near a walkbox
       if (event.mouseButton.button == 3 && !m_walkboxVertex.walkbox) {
@@ -184,6 +191,15 @@ private:
     default:break;
     }
     m_cameraControl.onEvent(*this, event);
+  }
+
+  bool m_quit{false};
+
+  void onQuit() override {
+    m_quit = true;
+    if (!m_roomEditor.isModified()) {
+      Application::onQuit();
+    }
   }
 
   void objectHitTest(Object *pObj) {
@@ -348,6 +364,41 @@ private:
     ImGui::End();
 
     m_roomEditor.draw();
+
+    if (m_quit && m_roomEditor.isModified()) {
+      bool quitAccepted = false;
+      if (!ImGui::IsPopupOpen("Quit!"))
+        ImGui::OpenPopup("Quit!");
+      if (ImGui::BeginPopupModal("Quit!")) {
+        ImGui::Text("Discard changes to '%s'?", m_path.c_str());
+        ImGui::NewLine();
+        ImGui::PushID(0);
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor::HSV(0.28f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4) ImColor::HSV(0.28f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(.28f, 0.8f, 0.8f));
+        if (ImGui::Button("Cancel")) {
+          m_quit = false;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+        ImGui::PushID(1);
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor::HSV(0, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4) ImColor::HSV(0.0f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(0.0f, 0.8f, 0.8f));
+        if (ImGui::Button("Discard!")) {
+          quitAccepted = true;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+        ImGui::EndPopup();
+      }
+      if (quitAccepted) {
+        quit();
+      }
+    }
   }
 
   ngf::Walkbox *getWalkboxAt(glm::vec2 pos) {
