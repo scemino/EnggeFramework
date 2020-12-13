@@ -67,6 +67,9 @@ GGPackValue parse(TokenReader::iterator &it) {
   }
   case TokenId::Number: {
     auto text = reader.readText(token);
+    if (text.find('.') == std::string::npos) {
+      return std::strtol(text.data(), nullptr, 10);
+    }
     return std::strtod(text.data(), nullptr);
   }
   case TokenId::String: {
@@ -93,9 +96,9 @@ GGPackValue load(const std::filesystem::path &path) {
 
 GGPackValue parse(std::istream &input) {
   ngf::Json::TokenReader reader;
-  input.seekg(0,std::ios::end);
+  input.seekg(0, std::ios::end);
   auto size = input.tellg();
-  input.seekg(0,std::ios::beg);
+  input.seekg(0, std::ios::beg);
   std::vector<char> buf(size);
   input.read(buf.data(), size);
 
