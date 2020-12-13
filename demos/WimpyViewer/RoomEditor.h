@@ -375,8 +375,32 @@ private:
       HelpMarker("Drag to rearrange frames.\nRight-click to delete.");
       ImGui::Separator();
 
+      int animNum = 0;
       for (auto &anim : m_selectedObject->animations) {
         if (ImGui::TreeNode(anim.name.c_str())) {
+          if (ImGui::BeginPopupContextItem()) {
+            m_newAnimName = anim.name;
+            if (ImGui::InputText("",
+                                 &m_newAnimName,
+                                 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+              if (!m_newAnimName.empty()) {
+                setModified();
+                anim.name = m_newAnimName;
+              }
+              ImGui::CloseCurrentPopup();
+            }
+            ImGui::PushID(animNum);
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor::HSV(0, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4) ImColor::HSV(0.0f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(0.0f, 0.8f, 0.8f));
+            if (ImGui::Button("Delete Animation!")) {
+              m_selectedObject->animations.erase(m_selectedObject->animations.begin() + animNum);
+              setModified();
+            }
+            ImGui::PopStyleColor(3);
+            ImGui::PopID();
+            ImGui::EndPopup();
+          }
           if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("DND_ANIM_FRAME")) {
               IM_ASSERT(payload->DataSize == sizeof(SpriteSheetItem));
@@ -433,6 +457,7 @@ private:
           ImGui::InputDouble("fps", &anim.fps, 1.0f, 1.0f, "%.6f");
           ImGui::TreePop();
         }
+        animNum++;
       }
 
       if (ImGui::Button("New...")) {

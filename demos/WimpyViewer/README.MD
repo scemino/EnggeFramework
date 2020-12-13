@@ -14,7 +14,7 @@ where `path` is a path to a wimpy file (only wimpy files from Thimbleweed Park i
 ## TODO
 
 * [ ] add recent files
-* [ ] remove object animation
+* [x] rename & remove object animation
 * [x] fix shortcuts don't work
 * [x] ask to save if modifications
 * [x] walkbox remove vertex
