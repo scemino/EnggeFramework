@@ -7,15 +7,53 @@
 #include <utility>
 #include <imgui.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
+#include "CameraControl.h"
 #include "Room.h"
+
+struct WalkboxVertexHitTest {
+public:
+  ngf::Walkbox *walkbox{nullptr};
+  int vertexIndex{-1};
+};
+
+enum class ObjectHit {
+  None,
+  Position,
+  UsePosition,
+  Hotspot,
+  HotspotVertex,
+  Zsort
+};
+
+struct ObjectHitTest {
+public:
+  Object *pObj{nullptr};
+  ObjectHit hit{ObjectHit::None};
+  glm::vec2 startPos{};
+  ngf::irect startHotspot{};
+  int vertexIndex{0};
+  int startZsort{0};
+};
 
 class RoomEditor final {
 public:
-  explicit RoomEditor(ngf::Application &application, Room &room) : m_application(application), m_room(room) {}
+  explicit RoomEditor(ngf::Application &application, Room &room)
+      : m_application(application), m_room(room), m_cameraControl(m_room) {}
 
   [[nodiscard]] ngf::Color getClearColor() const { return m_clearColor; }
 
   [[nodiscard]] Object *getSelectedObject() { return m_selectedObject; }
+
+  void openWimpy(const std::string &path) {
+    try {
+      m_path = path;
+      m_room.loadRoom(path);
+    } catch (const std::exception &exception) {
+      std::ostringstream s;
+      s << "Invalid wimpy file (" << path << ") : " << exception.what();
+      ngf::Application::showMessageBox("Error", s.str(), ngf::MessageBoxType::Warning, &m_application.getWindow());
+    }
+  }
 
   void onSelectedObjectChanged(std::function<void(Object *)> callback) {
     m_selectedObjectChanged = std::move(callback);
@@ -34,20 +72,212 @@ public:
     showObjectAnimations();
     showAnimationFrames();
     showWalkboxInfo();
+
+    if (m_quit && isModified()) {
+      bool quitAccepted = false;
+      if (!ImGui::IsPopupOpen("Quit!"))
+        ImGui::OpenPopup("Quit!");
+      if (ImGui::BeginPopupModal("Quit!")) {
+        ImGui::Text("Discard changes to '%s'?", m_path.c_str());
+        ImGui::NewLine();
+        ImGui::PushID(0);
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor::HSV(0.28f, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4) ImColor::HSV(0.28f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(.28f, 0.8f, 0.8f));
+        if (ImGui::Button("Cancel")) {
+          m_quit = false;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+        ImGui::PushID(1);
+        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) ImColor::HSV(0, 0.6f, 0.6f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4) ImColor::HSV(0.0f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4) ImColor::HSV(0.0f, 0.8f, 0.8f));
+        if (ImGui::Button("Discard!")) {
+          quitAccepted = true;
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor(3);
+        ImGui::PopID();
+        ImGui::EndPopup();
+      }
+      if (quitAccepted) {
+        m_application.quit();
+      }
+    }
   }
 
-  void setModified(bool isModified = true) {
-    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] = isModified ? ImVec4(ImColor(0x882a12ff)) : ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-    m_isModified = isModified;
+  void onEvent(ngf::Event &event) {
+    switch (event.type) {
+    case ngf::EventType::DropFile: {
+      openWimpy(event.drop.file);
+    }
+      break;
+    case ngf::EventType::MouseMoved: {
+      if (!m_room.isLoaded())
+        break;
+      m_mousePos = event.mouseMoved.position;
+      const auto scale = ngf::Window::getDpiScale();
+      m_worldPos = m_application.getRenderTarget()->mapPixelToCoords(m_mousePos) * scale;
+      m_worldPos.x += m_room.getCamera().position.x;
+      m_worldPos.y = m_room.getCamera().position.y + m_room.getScreenSize().y - m_worldPos.y;
+      if (m_walkboxVertex.walkbox) {
+        auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
+        (*it) = m_worldPos;
+        setModified();
+      } else if (m_objectHitTest.pObj) {
+        setModified();
+        switch (m_objectHitTest.hit) {
+        case ObjectHit::Position:m_objectHitTest.pObj->pos = m_worldPos;
+          break;
+        case ObjectHit::UsePosition:
+          m_objectHitTest.pObj->usePos =
+              {m_worldPos.x - m_objectHitTest.pObj->pos.x,
+               m_worldPos.y - m_objectHitTest.pObj->pos.y};
+          break;
+        case ObjectHit::Hotspot: {
+          auto delta = m_worldPos - m_objectHitTest.startPos;
+          auto hotspot = m_objectHitTest.startHotspot;
+          m_objectHitTest.pObj->hotspot =
+              ngf::irect::fromPositionSize({hotspot.getPosition().x + delta.x, hotspot.getPosition().y + delta.y},
+                                           hotspot.getSize());
+        }
+          break;
+        case ObjectHit::HotspotVertex: {
+          auto delta = m_worldPos - m_objectHitTest.startPos;
+          auto hotspot = m_objectHitTest.startHotspot;
+          switch (m_objectHitTest.vertexIndex) {
+          case 0:hotspot.min.x += delta.x;
+            hotspot.max.y += delta.y;
+            break;
+          case 1:hotspot.max.x += delta.x;
+            hotspot.max.y += delta.y;
+            break;
+          case 2:hotspot.max.x += delta.x;
+            hotspot.min.y += delta.y;
+            break;
+          case 3:hotspot.min.x += delta.x;
+            hotspot.min.y += delta.y;
+            break;
+          }
+          m_objectHitTest.pObj->hotspot = hotspot;
+        }
+          break;
+        case ObjectHit::Zsort: {
+          auto delta = m_worldPos - m_objectHitTest.startPos;
+          auto zsort = m_objectHitTest.startZsort;
+          m_objectHitTest.pObj->zsort = zsort + delta.y;
+        }
+          break;
+        default:break;
+        }
+      }
+    }
+      break;
+    case ngf::EventType::MouseButtonPressed: {
+      if (m_cameraControl.isPanOrZoomEnabled())
+        break;
+
+      // test if we selected a walkbox
+      auto pWalkbox = getWalkboxAt(m_worldPos);
+      if (pWalkbox) {
+        setSelectedWalkbox(pWalkbox);
+      }
+      // test if we are near a walkbox vertex
+      m_walkboxVertex = getWalkboxVertexAt(m_worldPos);
+      if (event.mouseButton.button == 3 && m_walkboxVertex.walkbox) {
+        auto it = m_walkboxVertex.walkbox->begin() + m_walkboxVertex.vertexIndex;
+        m_walkboxVertex.walkbox->erase(it);
+        break;
+      }
+
+      // test if mouse right button is pressed near a walkbox
+      if (event.mouseButton.button == 3 && !m_walkboxVertex.walkbox) {
+        for (auto &wb : m_room.walkboxes()) {
+          auto edgePoint = wb.getClosestPointOnEdge(m_worldPos);
+          if (glm::distance(edgePoint, m_worldPos) < 5.f) {
+            // yes, so add a vertex in this walkbox
+            auto index = getIndexWhereToInsertPoint(wb, edgePoint);
+            auto it = wb.cbegin() + index;
+            wb.insert(it, edgePoint);
+            break;
+          }
+        }
+      }
+
+      // test if we are near an object: position, hotspot or zsort
+      auto pObj = getSelectedObject();
+      if (pObj && !isWalkboxInEdition())
+        objectHitTest(pObj);
+    }
+      break;
+    case ngf::EventType::MouseButtonReleased: {
+      m_walkboxVertex.walkbox = nullptr;
+      m_objectHitTest.pObj = nullptr;
+    }
+      break;
+    case ngf::EventType::KeyPressed: {
+      auto pObj = getSelectedObject();
+      if (event.key.modifiers == ngf::KeyModifiers::None) {
+        if (pObj && !pObj->animations.empty() && event.key.scancode >= ngf::Scancode::D1
+            && event.key.scancode <= ngf::Scancode::D0) {
+          auto digit = static_cast<int>(event.key.scancode) - static_cast<int>(ngf::Scancode::D1);
+          if (digit < pObj->animations.size()) {
+            pObj->animationIndex = digit;
+            pObj->play();
+          }
+        } else if (event.key.keycode == ngf::Keycode::N) {
+          newObject();
+        } else if (event.key.keycode == ngf::Keycode::A) {
+          m_showObjectAnimations = true;
+        } else if (event.key.keycode == ngf::Keycode::C) {
+          centerObject();
+        } else if (event.key.keycode == ngf::Keycode::E) {
+          m_showObjectProperties = true;
+        } else if (event.key.keycode == ngf::Keycode::W) {
+          m_walkboxInEdition = !m_walkboxInEdition;
+        }
+      } else {
+        if (event.key.modifiers == ngf::KeyModifiers::LeftGui && event.key.keycode == ngf::Keycode::S) {
+          save();
+        }
+        if (event.key.modifiers == ngf::KeyModifiers::LeftGui && event.key.keycode == ngf::Keycode::Q) {
+          onQuit();
+        }
+        if (event.key.modifiers == ngf::KeyModifiers::LeftShift && event.key.keycode == ngf::Keycode::W) {
+          newWalkbox();
+        }
+      }
+    }
+      break;
+    default:break;
+    }
+    m_cameraControl.onEvent(m_application, event);
+  }
+
+  void onQuit() {
+    m_quit = true;
   }
 
 private:
+  void setModified(bool isModified = true) {
+    ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg] =
+        isModified ? ImVec4(ImColor(0x882a12ff)) : ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    m_isModified = isModified;
+  }
+
+  void save() {
+    m_room.save();
+    setModified(false);
+  }
+
   void showMainMenuBar() {
     if (ImGui::BeginMainMenuBar()) {
       if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Save", "Command|Ctrl+S")) {
-          m_room.save();
-          setModified(false);
+          save();
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Quit", "Command|Ctrl+Q")) {
@@ -445,6 +675,97 @@ private:
     }
   }
 
+  ngf::Walkbox *getWalkboxAt(glm::vec2 pos) {
+    for (auto &wb : m_room.walkboxes()) {
+      if (wb.inside(pos)) {
+        return &wb;
+      }
+    }
+    return nullptr;
+  }
+
+  WalkboxVertexHitTest getWalkboxVertexAt(glm::vec2 pos) {
+    for (auto &wb : m_room.walkboxes()) {
+      for (auto it = wb.cbegin(); it != wb.cend(); it++) {
+        auto rect = ngf::frect::fromCenterSize(*it, glm::vec2{5, 5});
+        if (rect.contains(pos)) {
+          const auto index = static_cast<int>(std::distance(wb.cbegin(), it));
+          return {&wb, index};
+        }
+      }
+    }
+    return {};
+  }
+
+  void objectHitTest(Object *pObj) {
+    assert(pObj);
+
+    m_objectHitTest.hit = ObjectHit::None;
+    m_objectHitTest.startPos = m_worldPos;
+    m_objectHitTest.startHotspot = pObj->hotspot;
+    m_objectHitTest.startZsort = pObj->zsort;
+    ObjectHit hit;
+    ngf::frect rect;
+
+    // if this a prop, we want to modify the position of the object
+    if (pObj->type == ObjectType::Prop) {
+      hit = ObjectHit::Position;
+      rect = ngf::frect::fromCenterSize(
+          {pObj->pos.x, pObj->pos.y},
+          {5, 5});
+    } else if (pObj->type != ObjectType::Trigger) {
+      // else we want to modify the use position of the object (except for trigger)
+      hit = ObjectHit::UsePosition;
+      rect = ngf::frect::fromCenterSize(
+          {pObj->pos.x + pObj->usePos.x, pObj->pos.y - pObj->usePos.y},
+          {5, 5});
+    }
+
+    if (rect.contains(m_worldPos)) {
+      m_objectHitTest.pObj = pObj;
+      m_objectHitTest.hit = hit;
+      return;
+    }
+
+    // test if mouse is over hotspot vertex
+    auto hotspot = ngf::frect::fromMinMax(pObj->pos + pObj->hotspot.min, pObj->pos + pObj->hotspot.max);
+    std::array<glm::vec2, 4>
+        positions = {hotspot.getBottomLeft(), hotspot.getBottomRight(),
+                     hotspot.getTopRight(), hotspot.getTopLeft()};
+    for (auto i = 0; i < 4; i++) {
+      auto vertexPos = positions[i];
+      if (glm::distance(vertexPos, m_worldPos) < 5.f) {
+        m_objectHitTest.pObj = pObj;
+        m_objectHitTest.hit = ObjectHit::HotspotVertex;
+        m_objectHitTest.vertexIndex = i;
+        return;
+      }
+    }
+
+    // test if mouse is over object's hotspot
+    if (hotspot.contains(m_worldPos)) {
+      m_objectHitTest.pObj = pObj;
+      m_objectHitTest.hit = ObjectHit::Hotspot;
+      return;
+    }
+
+    // test if mouse is over object's zsort
+    if (fabs(m_worldPos.y - static_cast<float>(pObj->zsort)) < 5.f) {
+      m_objectHitTest.pObj = pObj;
+      m_objectHitTest.hit = ObjectHit::Zsort;
+      return;
+    }
+  }
+
+  static int getIndexWhereToInsertPoint(const ngf::Walkbox &wb, glm::ivec2 edgePoint) {
+    std::vector<float> dists(wb.size());
+    for (int i = 0; i < wb.size(); i++) {
+      dists[i] = ngf::Walkbox::distanceToSegment(edgePoint, wb.at(i), wb.at((i + 1) % wb.size()));
+    }
+    auto dIt = std::min_element(dists.cbegin(), dists.cend());
+    return static_cast<int>((std::distance(dists.cbegin(), dIt) + 1) % wb.size());
+  }
+
   static void HelpMarker(const char *desc) {
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered()) {
@@ -508,4 +829,11 @@ private:
   bool m_walkboxInEdition{false};
   bool m_autocenterObjects{false};
   bool m_isModified{false};
+  glm::ivec2 m_mousePos{};
+  glm::vec2 m_worldPos{};
+  WalkboxVertexHitTest m_walkboxVertex;
+  ObjectHitTest m_objectHitTest;
+  CameraControl m_cameraControl;
+  bool m_quit{false};
+  std::string m_path;
 };

@@ -172,7 +172,7 @@ bool Window::pollEvent(Event &event) {
     event.key.windowId = sdlEvent.key.windowID;
     event.key.keycode = static_cast<Keycode>(sdlEvent.key.keysym.sym);
     event.key.scancode = static_cast<Scancode>(sdlEvent.key.keysym.scancode);
-    event.key.modifiers = sdlEvent.key.keysym.mod;
+    event.key.modifiers = static_cast<KeyModifiers>(sdlEvent.key.keysym.mod);
     event.key.repeat = sdlEvent.key.repeat != 0;
     break;
   case SDL_MOUSEBUTTONDOWN:
