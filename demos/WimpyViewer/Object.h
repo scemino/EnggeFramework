@@ -34,8 +34,10 @@ enum class AnimState {
 struct ObjectAnimation {
   std::string name;
   std::vector<SpriteSheetItem> frames;
+  std::vector<ObjectAnimation> layers;
   bool loop{false};
   double fps{0.f};
+  int flags{0};
 };
 
 class Room;

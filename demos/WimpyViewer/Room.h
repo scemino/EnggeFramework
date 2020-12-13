@@ -116,6 +116,7 @@ public:
     m_objects.clear();
     m_scalings.clear();
     m_walkboxes.clear();
+    m_frames.clear();
 
     // load wimpy
     const auto wimpy = ngf::Json::load(path);
@@ -234,18 +235,7 @@ public:
     for (const auto &object : m_objects) {
       ngf::GGPackValue gObj;
       for (const auto &anim : object.animations) {
-        ngf::GGPackValue gAnim;
-        // HACK: to save empty frames
-        gAnim["frames"].push_back("");
-        gAnim["frames"].clear();
-        gAnim["name"] = anim.name;
-        for (const auto &frame : anim.frames) {
-          gAnim["frames"].push_back(frame.name);
-        }
-        if (anim.fps)
-          gAnim["fps"] = anim.fps;
-        if (anim.loop)
-          gAnim["loop"] = 1;
+        auto gAnim = toGGPackValue(anim);
         gObj["animations"].push_back(gAnim);
       }
       gObj["hotspot"] = toString(object.hotspot);
@@ -313,6 +303,28 @@ public:
     std::ofstream os(m_path);
     os << content;
     os.close();
+  }
+
+  static ngf::GGPackValue toGGPackValue(const ObjectAnimation& anim){
+    ngf::GGPackValue gAnim;
+    // HACK: to save empty frames
+    if(anim.frames.empty() && anim.layers.empty()) {
+      gAnim["frames"].push_back("");
+      gAnim["frames"].clear();
+    }
+    gAnim["name"] = anim.name;
+    for (const auto &frame : anim.frames) {
+      gAnim["frames"].push_back(frame.name);
+    }
+    for (const auto &layer : anim.layers) {
+      auto gLayer = toGGPackValue(layer);
+      gAnim["layers"].push_back(gLayer);
+    }
+    if (anim.fps)
+      gAnim["fps"] = anim.fps;
+    if (anim.loop)
+      gAnim["loop"] = 1;
+    return gAnim;
   }
 
   static std::string toString(const ScalingValue &value) {
@@ -507,12 +519,20 @@ private:
     anim.name = gAnimation["name"].getString();
     anim.loop = toBool(gAnimation["loop"]);
     anim.fps = gAnimation["fps"].isNull() ? 0.f : gAnimation["fps"].getDouble();
-    if (gAnimation["frames"].isNull())
+    anim.flags = gAnimation["flags"].isNull() ? 0 : gAnimation["flags"].getInt();
+    if (!gAnimation["frames"].isNull()) {
+      for (const auto &gFrame : gAnimation["frames"]) {
+        auto name = gFrame.getString();
+        anim.frames.push_back(m_frames[name]);
+      }
       return anim;
+    }
 
-    for (const auto &gFrame : gAnimation["frames"]) {
-      auto name = gFrame.getString();
-      anim.frames.push_back(m_frames[name]);
+    if (!gAnimation["layers"].isNull()) {
+      for (const auto &gLayer : gAnimation["layers"]) {
+        auto layer = parseObjectAnimation(gLayer);
+        anim.layers.push_back(layer);
+      }
     }
     return anim;
   }
@@ -555,7 +575,7 @@ private:
       return glm::vec2{x, y};
     }
     assert(false);
-    return glm::ivec2{};
+     return glm::ivec2{};
   }
 
   static bool toBool(const ngf::GGPackValue &gValue) {
