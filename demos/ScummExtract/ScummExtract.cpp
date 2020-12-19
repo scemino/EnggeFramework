@@ -2,6 +2,8 @@
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Shader.h>
 #include <imgui.h>
+#include <algorithm>
+#include <functional>
 #include <fstream>
 #include <sstream>
 #include <iostream>
