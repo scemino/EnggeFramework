@@ -1,0 +1,7 @@
+add_executable(AnimViewer AnimViewer.cpp)
+if (WIN32)
+    target_link_libraries(AnimViewer SDL2::SDL2main ngf)
+else()
+    target_link_libraries(AnimViewer ngf)
+endif()
+install(TARGETS AnimViewer DESTINATION "bin/demos")
