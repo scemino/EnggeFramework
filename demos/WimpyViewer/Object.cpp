@@ -59,6 +59,17 @@ void Object::draw(ngf::RenderTarget &target, ngf::RenderStates states) const {
   localStates.transform *= t.getTransform();
 
   const auto frame = animations[animationIndex].frames[frameIndex];
+  auto texSize = texture->getSize();
+
+  auto pShader = (LightingShader *) states.shader;
+  pShader->setTexture(*texture);
+  pShader->setContentSize(frame.sourceSize);
+  pShader->setSpriteOffset({-frame.frame.getWidth() / 2.f + pos.x, -frame.frame.getHeight() / 2.f - pos.y});
+  pShader->setSpritePosInSheet({static_cast<float>(frame.frame.min.x) / texSize.x,
+                                static_cast<float>(frame.frame.min.y) / texSize.y});
+  pShader->setSpriteSizeRelToSheet({static_cast<float>(frame.sourceSize.x) / texSize.x,
+                                    static_cast<float>(frame.sourceSize.y) / texSize.y});
+
   glm::vec2 off = {
       frame.spriteSourceSize.min.x - frame.sourceSize.x / 2.f,
       frame.spriteSourceSize.min.y - frame.sourceSize.y / 2.f};

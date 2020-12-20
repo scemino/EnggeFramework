@@ -2,7 +2,7 @@
 #include <ngf/Graphics/Shader.h>
 #include "GlDebug.h"
 
-namespace ngf{
+namespace ngf {
 
 namespace {
 GLuint compileShader(Shader::Type type, const char *source) {
@@ -124,16 +124,34 @@ void Shader::setUniform(std::string_view name, float value) const {
   GL_CHECK(glUniform1f(loc, value));
 }
 
+void Shader::setUniformArray(std::string_view name, const float *vectorArray, std::size_t length) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform1fv(loc, static_cast<GLsizei>(length), vectorArray));
+}
+
 void Shader::setUniform(std::string_view name, glm::vec2 value) const {
   Guard guard(*this);
   auto loc = getUniformLocation(name);
   GL_CHECK(glUniform2f(loc, value.x, value.y));
 }
 
+void Shader::setUniformArray(std::string_view name, const glm::vec2 *vectorArray, std::size_t length) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform2fv(loc, static_cast<GLsizei>(length), glm::value_ptr(vectorArray[0])));
+}
+
 void Shader::setUniform(std::string_view name, glm::vec3 value) const {
   Guard guard(*this);
   auto loc = getUniformLocation(name);
   GL_CHECK(glUniform3f(loc, value.x, value.y, value.z));
+}
+
+void Shader::setUniformArray(std::string_view name, const glm::vec3 *vectorArray, std::size_t length) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform3fv(loc, static_cast<GLsizei>(length), glm::value_ptr(vectorArray[0])));
 }
 
 void Shader::setUniform(std::string_view name, glm::vec4 value) const {
@@ -166,6 +184,30 @@ void Shader::setUniform(std::string_view name, const Texture &tex) {
   if (loc == -1)
     return;
   m_textures[loc] = &tex;
+}
+
+void Shader::setUniform3(std::string_view name, const ngf::Color &value) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform3f(loc, value.r, value.g, value.b));
+}
+
+void Shader::setUniformArray3(std::string_view name, const ngf::Color *vectorArray, std::size_t length) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  std::vector<float> array(length * 3);
+  for (size_t i = 0; i < length; i++) {
+    array[3 * i] = vectorArray[i].r;
+    array[3 * i + 1] = vectorArray[i].g;
+    array[3 * i + 2] = vectorArray[i].b;
+  }
+  GL_CHECK(glUniform3fv(loc, static_cast<GLsizei>(length), array.data()));
+}
+
+void Shader::setUniform4(std::string_view name, const ngf::Color &value) const {
+  Guard guard(*this);
+  auto loc = getUniformLocation(name);
+  GL_CHECK(glUniform4f(loc, value.r, value.g, value.b, value.a));
 }
 
 void Shader::bind(const Shader *shader) {

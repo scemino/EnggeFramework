@@ -43,6 +43,8 @@ private:
     m_redHandle = decodeTexture(handle_red);
     m_blueHandle = decodeTexture(handle_blue);
 
+    //m_shader = std::make_unique<LightingShader>();
+
     if (!m_path.empty()) {
       m_roomEditor.openWimpy(m_path);
     }
@@ -76,7 +78,8 @@ private:
 
     // draw room
     if (m_room.isLoaded()) {
-      m_room.draw(target, {});
+      ngf::RenderStates states;
+      m_room.draw(target, states);
 
       drawWalkboxes(target);
 
@@ -155,6 +158,34 @@ private:
     ImGui::Text("World pos (%.f,%.f)", m_worldPos.x, m_worldPos.y);
     ImGui::DragFloat2("Position", glm::value_ptr(m_room.getCamera().position));
     ImGui::DragFloat("Zoom", &m_room.getCamera().zoom, 0.1f, 0.1f, 10.f);
+
+    ngf::ImGui::ColorEdit4("Ambient Light", &m_room.ambientLight);
+    ImGui::DragInt("# Lights", &m_room.numLights, 1.f, 0, 5);
+
+    for (size_t i = 0; i < m_room.lights.size(); ++i) {
+      if (i >= m_room.numLights)
+        break;
+
+      std::ostringstream ss;
+      ss << "Light " << (i + 1);
+
+      if (ImGui::TreeNode(ss.str().c_str())) {
+        auto &light = m_room.lights[i];
+        ImGui::DragInt2("Position", &light.pos.x);
+        ngf::ImGui::ColorEdit4("Color", &light.color);
+        ImGui::DragFloat("Direction angle", &light.coneDirection,
+                         1.0f, 0.0f, 360.f);
+        ImGui::DragFloat("Angle", &light.coneAngle, 1.0f, 0.0f, 360.f);
+        ImGui::DragFloat("Cutoff", &light.cutOffRadius, 1.0f);
+        ImGui::DragFloat("Falloff", &light.coneFalloff, 0.1f, 0.f, 1.0f);
+        ImGui::DragFloat(
+            "Brightness", &light.brightness, 1.0f, 1.0f, 100.f);
+        ImGui::DragFloat(
+            "Half Radius", &light.halfRadius, 1.0f, 0.01f, 0.99f);
+        ImGui::TreePop();
+      }
+    }
+
     ImGui::End();
 
     m_roomEditor.draw();

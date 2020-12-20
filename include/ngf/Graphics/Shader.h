@@ -7,7 +7,8 @@
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Texture.h"
+#include <ngf/Graphics/Color.h>
+#include <ngf/Graphics/Texture.h>
 
 namespace ngf {
 /// @brief An OpenGL vertex and/or fragment shader.
@@ -46,14 +47,18 @@ public:
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The floating point value to set to the variable.
   void setUniform(std::string_view name, float value) const;
+  void setUniformArray(std::string_view name, const float *vectorArray, std::size_t length) const;
   /// @brief Sets a uniform shader parameter with the specified vector of 2 floating point value.
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The vector of 2 floating point value to set to the variable.
   void setUniform(std::string_view name, glm::vec2 value) const;
+  void setUniformArray(std::string_view name, const glm::vec2 *vectorArray, std::size_t length) const;
   /// @brief Sets a uniform shader parameter with the specified vector of 3 floating point value.
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The vector of 3 floating point value to set to the variable.
   void setUniform(std::string_view name, glm::vec3 value) const;
+  void setUniformArray(std::string_view name, const glm::vec3* vectorArray, std::size_t length) const;
+  void setUniformArray3(std::string_view name, const ngf::Color* vectorArray, std::size_t length) const;
   /// @brief Sets a uniform shader parameter with the specified vector of 4 floating point value.
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The vector of 4 floating point value to set to the variable.
@@ -66,12 +71,19 @@ public:
   /// \param name The name of the uniform variable in GLSL.
   /// \param value The 4x4 matrix value to set to the variable.
   void setUniform(std::string_view name, const glm::mat4 &value) const;
+  /// @brief Sets a uniform shader parameter with the specified color of 3 floating point value.
+  /// \param name The name of the uniform variable in GLSL.
+  /// \param value The color of 3 floating point value to set to the variable.
+  void setUniform3(std::string_view name, const Color& value) const;
+  /// @brief Sets a uniform shader parameter with the specified color of 4 floating point value.
+  /// \param name The name of the uniform variable in GLSL.
+  /// \param value The color of 4 floating point value to set to the variable.
+  void setUniform4(std::string_view name, const Color& value) const;
   /// @brief Sets a uniform shader parameter with the specified texture.
   /// \param name The name of the uniform variable in GLSL.
   /// \param texture The texture to set to the variable.
   void setUniform(std::string_view name, const Texture &texture);
   /// @brief Binds a shader for rendering.
-  ///
   /// This function is for internal use only.
   /// \param shader The shader to bind, or null to not use a shader.
   static void bind(const Shader *shader);

@@ -8,6 +8,8 @@
 #include "SpriteSheetItem.h"
 #include "Camera.h"
 #include "Layer.h"
+#include "Light.h"
+#include "LightingShader.h"
 #include "Object.h"
 
 struct ScalingValue {
@@ -111,6 +113,10 @@ public:
   std::shared_ptr<ngf::Texture> getTexture() { return m_texture; }
 
   void loadRoom(const std::filesystem::path &path) {
+    if(!m_shader) {
+      m_shader = std::make_shared<LightingShader>();
+    }
+
     m_path = path;
     m_layers.clear();
     m_objects.clear();
@@ -182,6 +188,35 @@ public:
     loadWalkboxes(wimpy);
     loadObjects(wimpy);
     loadScalings(wimpy);
+
+    // lights
+    lights[0].color = ngf::Color(0xff, 0x00, 0xa2);
+    lights[0].pos = {256, -238};
+    lights[0].brightness = 2.0f;
+    lights[0].coneDirection = 180.f;
+    lights[0].coneAngle = 30.f;
+    lights[0].coneFalloff = 0.15f;
+    lights[0].cutOffRadius = 250.f;
+    lights[0].halfRadius = 0.25f;
+
+//    lights[0].color = ngf::Color(0xb6, 0xe3, 0xdb);
+//    lights[0].pos = {130, 178};
+//    lights[0].brightness = 0.5f;
+//    lights[0].coneDirection = 180.f;
+//    lights[0].coneAngle = 150.f;
+//    lights[0].coneFalloff = 0.15f;
+//    lights[0].cutOffRadius = 200.f;
+//    lights[0].halfRadius = 0.75f;
+
+//    lights[1].color = ngf::Color(0xb6, 0xe3, 0xdb);
+//    lights[1].pos = {300, 178};
+//    lights[1].brightness = 0.5f;
+//    lights[1].coneDirection = 180.f;
+//    lights[1].coneAngle = 130.f;
+//    lights[1].coneFalloff = 0.15f;
+//    lights[1].cutOffRadius = 200.f;
+//    lights[1].halfRadius = 0.75f;
+    numLights = 1;
 
     m_camera.position = glm::vec2(0, 0);
     m_camera.size = getScreenSize(m_height);
@@ -305,10 +340,10 @@ public:
     os.close();
   }
 
-  static ngf::GGPackValue toGGPackValue(const ObjectAnimation& anim){
+  static ngf::GGPackValue toGGPackValue(const ObjectAnimation &anim) {
     ngf::GGPackValue gAnim;
     // HACK: to save empty frames
-    if(anim.frames.empty() && anim.layers.empty()) {
+    if (anim.frames.empty() && anim.layers.empty()) {
       gAnim["frames"].push_back("");
       gAnim["frames"].clear();
     }
@@ -363,11 +398,19 @@ public:
     view.zoom(m_camera.zoom);
     target.setView(view);
 
+    // update lighting
+    auto nLights = numLights;
+    m_shader->setAmbientColor(ambientLight);
+    m_shader->setNumberLights(numLights);
+    m_shader->setLights(lights);
+
     // draw background layers
     for (const auto &layer : m_layers) {
       if (layer->getZSort() < 0)
         continue;
+
       ngf::RenderStates layerStates = states;
+      layerStates.shader = m_shader.get();
       ngf::Transform t;
       t.setPosition({-m_camera.position.x * layer->getParallax().x, m_camera.position.y * layer->getParallax().y});
       layerStates.transform *= t.getTransform();
@@ -376,6 +419,7 @@ public:
 
     // draw objects
     ngf::RenderStates localStates = states;
+    localStates.shader = m_shader.get();
     ngf::Transform t;
     t.setPosition({-m_camera.position.x, m_camera.position.y});
     localStates.transform *= t.getTransform();
@@ -395,9 +439,10 @@ public:
     for (const auto &layer : m_layers) {
       if (layer->getZSort() >= 0)
         continue;
-      ngf::RenderStates layerStates = states;
       ngf::Transform t;
       t.setPosition({-m_camera.position.x * layer->getParallax().x, m_camera.position.y * layer->getParallax().y});
+      ngf::RenderStates layerStates = states;
+      layerStates.shader = m_shader.get();
       layerStates.transform *= t.getTransform();
       layer->draw(target, layerStates);
     }
@@ -575,7 +620,7 @@ private:
       return glm::vec2{x, y};
     }
     assert(false);
-     return glm::ivec2{};
+    return glm::ivec2{};
   }
 
   static bool toBool(const ngf::GGPackValue &gValue) {
@@ -633,6 +678,11 @@ private:
     return ngf::irect::fromMinMax({x, y}, {x2, y2});
   }
 
+public:
+  ngf::Color ambientLight{ngf::Colors::White};
+  int numLights{0};
+  std::array<Light, 50> lights;
+
 private:
   std::vector<std::unique_ptr<Layer>> m_layers;
   std::shared_ptr<ngf::Texture> m_texture;
@@ -649,4 +699,5 @@ private:
   bool m_isLoaded{false};
   std::string m_name;
   std::filesystem::path m_path;
+  std::shared_ptr<LightingShader> m_shader;
 };
