@@ -9,108 +9,14 @@ option(NGF_BUILD_DEMOS "Build demos" ON)
 option(NGF_BUILD_TESTS "Build tests" ON)
 option(NGF_BUILD_DOCUMENTATION "Build documentation (needs Doxygen)" OFF)
 
-# dependencies
-find_package(GLEW REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-find_package(Freetype REQUIRED)
-if (NOT WIN32)
-    find_package(OpenGL REQUIRED)
-endif ()
+add_subdirectory(extlibs)
+add_subdirectory(src)
 
-# include
-set(NGLIB_HEADERS_DIR ${OPENGL_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
-        ${PROJECT_SOURCE_DIR}/extlibs/stb
-        ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/extlibs/imgui
-        ${PROJECT_SOURCE_DIR}/extlibs)
-
-include_directories(${NGLIB_HEADERS_DIR})
-
-# imgui library
-add_library(imgui
-        # Main Imgui files
-        extlibs/imgui/imgui.cpp extlibs/imgui/imgui_draw.cpp extlibs/imgui/imgui_widgets.cpp
-        extlibs/imgui/misc/cpp/imgui_stdlib.cpp)
-target_include_directories(imgui PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_link_libraries(imgui PRIVATE ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} GLEW::GLEW)
-
-# ngf sources
-set(SYS_SOURCE_FILES
-        src/System/Cursor.cpp
-        src/System/DisplayMode.cpp
-        src/System/SdlSystem.cpp
-        src/System/StopWatch.cpp
-        src/System/StringHelper.cpp
-        src/System/Times.cpp
-        src/System/TimeSpan.cpp
-        src/System/Util.cpp
-        src/System/VideoDisplay.cpp)
-set(WIN_SOURCE_FILES src/System/Window.cpp)
-set(GFX_SOURCE_FILES
-        src/Graphics/AnimatedSprite.cpp
-        src/Graphics/Animation.cpp
-        src/Graphics/CircleShape.cpp
-        src/Graphics/Color.cpp
-        src/Graphics/DefaultFont.cpp
-        src/Graphics/FntFont.cpp
-        src/Graphics/GlDebug.cpp
-        src/Graphics/Image.cpp
-        src/Graphics/RectangleShape.cpp
-        src/Graphics/RenderTarget.cpp
-        src/Graphics/RenderTexture.cpp
-        src/Graphics/Shader.cpp
-        src/Graphics/Shape.cpp
-        src/Graphics/Sprite.cpp
-        src/Graphics/Text.cpp
-        src/Graphics/Texture.cpp
-        src/Graphics/VertexArray.cpp
-        src/Graphics/VertexBuffer.cpp
-        src/Graphics/View.cpp)
-set(IO_SOURCE_FILES
-        src/IO/GGPackHashReader.cpp
-        src/IO/GGPack.cpp
-        src/IO/GGPackBufferStream.cpp
-        src/IO/MemoryStream.cpp
-        src/IO/Json/JsonTokenReader.cpp
-        src/IO/Json/JsonParser.cpp)
-set(MATH_SOURCE_FILES
-        src/Math/Segment.cpp
-        src/Math/Transform.cpp
-        src/Math/PathFinding/AStarAlgorithm.cpp
-        src/Math/PathFinding/IndexedPriorityQueue.cpp
-        src/Math/PathFinding/Graph.cpp
-        src/Math/PathFinding/GraphEdge.cpp
-        src/Math/PathFinding/PathFinder.cpp
-        src/Math/PathFinding/Walkbox.cpp)
-set(APP_SOURCE_FILES src/Application.cpp)
-set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES} ${MATH_SOURCE_FILES}
-        # SDL2+OpenGL-specific files
-        extlibs/imgui/examples/imgui_impl_sdl.cpp
-        extlibs/imgui/examples/imgui_impl_opengl3.cpp)
-
-# ngf library
-add_library(${PROJECT_NAME} ${SOURCE_FILES})
-target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
-# if debug -> add DEBUG preprocessor
-target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 ## add exta compilation flags
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -pedantic -Wall -Wextra)
-endif ()
-target_include_directories(${PROJECT_NAME} PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-## For Linux only, to use std::filesystem
-if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui stdc++fs)
-else()
-    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} SDL2::SDL2 ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui)
 endif ()
 
 # Build examples

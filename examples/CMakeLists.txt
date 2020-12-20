@@ -1,3 +1,5 @@
+find_package(Freetype REQUIRED)
+
 macro(add_ngf_example NAME)
     add_executable("${NAME}" "${NAME}.cpp")
     if (WIN32)

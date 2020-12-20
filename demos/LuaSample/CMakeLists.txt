@@ -1,3 +1,5 @@
+find_package(Freetype REQUIRED)
+
 set(LUA_SOURCE_FILES
         lua-5.4.1/src/lapi.c
         lua-5.4.1/src/lauxlib.c
