@@ -1,4 +1,5 @@
 find_package(Freetype REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 
 macro(add_ngf_example NAME)
     add_executable("${NAME}" "${NAME}.cpp")

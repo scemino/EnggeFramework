@@ -1,3 +1,5 @@
+find_package(SDL2 CONFIG REQUIRED)
+
 add_executable(WimpyViewer WimpyViewer.cpp Object.cpp)
 if (WIN32)
     target_link_libraries(WimpyViewer SDL2::SDL2main ngf)

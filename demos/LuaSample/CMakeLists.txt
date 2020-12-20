@@ -1,4 +1,5 @@
 find_package(Freetype REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 
 set(LUA_SOURCE_FILES
         lua-5.4.1/src/lapi.c
