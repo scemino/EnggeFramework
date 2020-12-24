@@ -119,6 +119,7 @@ public:
   [[nodiscard]] float getKerning(unsigned int first, unsigned int second,
                                  unsigned int characterSize) override;
   [[nodiscard]] const Texture *getTexture(unsigned int characterSize) override;
+  void setTexture(const Image& image);
 
   [[nodiscard]] float getLineSpacing(unsigned int) override { return m_chars.lineHeight; }
 

@@ -36,6 +36,13 @@ public:
     m_dirty = true;
   }
 
+  /// @brief Moves the current position with the specified offset.
+  /// \param pos Offset to apply to the position.
+  void move(glm::vec2 offset) noexcept {
+    m_position += offset;
+    m_dirty = true;
+  }
+
   /// @brief Gets the position of the object.
   /// \return The position of the object.
   [[nodiscard]] glm::vec2 getPosition() const noexcept {

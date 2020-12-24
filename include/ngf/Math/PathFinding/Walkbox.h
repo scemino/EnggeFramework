@@ -111,6 +111,8 @@ public:
   /// \param pos Position of the point to remove.
   void erase(const_iterator it) { m_polygon.erase(it); }
 
+  const std::vector<glm::ivec2> &getVertices() const { return m_polygon; }
+
 private:
   bool m_visible{true};
   std::vector<glm::ivec2> m_polygon;

@@ -144,6 +144,7 @@ struct Colors {
   inline static Color Teal{0x00, 0x80, 0x80, 0xff}; // rgb(0, 128, 128)
   inline static Color Thistle{0xd8, 0xbf, 0xd8, 0xff}; // rgb(216, 191, 216)
   inline static Color Tomato{0xff, 0x63, 0x47, 0xff}; // rgb(255, 99, 71)
+  inline static Color Transparent{0x00, 0x00, 0x00, 0x00}; // rgba(0, 0, 0, 0)
   inline static Color Turquoise{0x40, 0xe0, 0xd0, 0xff}; // rgb(64, 224, 208)
   inline static Color Violet{0xee, 0x82, 0xee, 0xff}; // rgb(238, 130, 238)
   inline static Color Wheat{0xf5, 0xde, 0xb3, 0xff}; // rgb(245, 222, 179)

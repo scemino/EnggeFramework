@@ -22,6 +22,7 @@ set(NGLIB_HEADERS_DIR
 set(SYS_SOURCE_FILES
         System/Cursor.cpp
         System/DisplayMode.cpp
+        System/Mouse.cpp
         System/SdlSystem.cpp
         System/StopWatch.cpp
         System/StringHelper.cpp
@@ -39,6 +40,7 @@ set(GFX_SOURCE_FILES
         Graphics/FntFont.cpp
         Graphics/GlDebug.cpp
         Graphics/Image.cpp
+        Graphics/ImGuiExtensions.cpp
         Graphics/RectangleShape.cpp
         Graphics/RenderTarget.cpp
         Graphics/RenderTexture.cpp

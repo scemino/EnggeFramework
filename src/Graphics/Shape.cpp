@@ -8,6 +8,14 @@ glm::vec2 computeNormal(const glm::vec2 &p1, const glm::vec2 &p2) {
   glm::vec2 normal(p1.y - p2.y, p2.x - p1.x);
   return glm::normalize(normal);
 }
+
+frect normalize(const Texture &texture, const irect &size) {
+  auto textureSize = glm::vec(texture.getSize());
+  return frect::fromMinMax(glm::vec2(static_cast<float>(size.min.x) / textureSize.x,
+                                     static_cast<float>(size.min.y) / textureSize.y),
+                           glm::vec2(static_cast<float>(size.max.x) / textureSize.x,
+                                     static_cast<float>(size.max.y) / textureSize.y));
+}
 }
 
 Shape::Shape()
@@ -31,6 +39,13 @@ void Shape::setTexture(const Texture &texture, bool resetRect) {
 
 void Shape::setTextureRect(const frect &rect) {
   m_textureRect = rect;
+  updateTexCoords();
+}
+
+void Shape::setTextureRect(const irect& rect) {
+  if (!m_texture)
+    return;
+  m_textureRect = normalize(*m_texture, rect);
   updateTexCoords();
 }
 

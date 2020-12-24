@@ -51,6 +51,10 @@ public:
   /// \return The render target.
   RenderTarget *getRenderTarget() { return m_renderTarget.get(); }
 
+  /// Gets the render target.
+  /// \return The render target.
+  [[nodiscard]] const RenderTarget *getRenderTarget() const { return m_renderTarget.get(); }
+
   /// Gets the window.
   /// \return The window.
   Window &getWindow() { return m_window; }

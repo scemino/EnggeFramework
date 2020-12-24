@@ -191,7 +191,7 @@ public:
 
     // lights
     lights[0].color = ngf::Color(0xff, 0x00, 0xa2);
-    lights[0].pos = {256, -238};
+    lights[0].pos = {256, 238};
     lights[0].brightness = 2.0f;
     lights[0].coneDirection = 180.f;
     lights[0].coneAngle = 30.f;

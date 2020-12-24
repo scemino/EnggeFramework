@@ -64,6 +64,10 @@ const Texture *FntFont::getTexture(unsigned int) {
   return &m_textures[0];
 }
 
+void FntFont::setTexture(const Image &image) {
+  m_textures.emplace_back(image);
+}
+
 bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
   // Note : the '>>' operator is formatting, so we use short typed values
   // to be sure that they will be read as integers
@@ -134,7 +138,7 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
           // of UIFontSmallBold.png) I replaced it to:
           auto pagePath = path;
           m_chars.pages[id] = pagePath.replace_extension(".png").u8string();
-          m_textures.emplace_back(m_chars.pages[id]);
+          //m_textures.emplace_back(m_chars.pages[id]);
         }
       }
     } else if (tag == "char") {

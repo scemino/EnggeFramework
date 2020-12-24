@@ -29,6 +29,7 @@ public:
   /// Sets the rectangle to use in the texture, in pixels.
   /// \param rect Rectangle to use in the texture, in pixels.
   void setTextureRect(const frect &rect);
+  void setTextureRect(const irect& rect);
 
   /// @brief Sets the color of the shape.
   /// \param color Color to use.

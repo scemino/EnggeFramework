@@ -145,8 +145,6 @@ public:
     std::array<float, 50> u_halfRadius;
 
     for (size_t i = 0; i < lights.size(); ++i) {
-      if (i >= m_numberLights)
-        break;
       auto &light = lights[i];
       auto direction = light.coneDirection - 90.f;
       u_coneDirection[i] = glm::vec2(std::cos(glm::radians(direction)), std::sin(glm::radians(direction)));
