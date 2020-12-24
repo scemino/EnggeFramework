@@ -40,7 +40,8 @@ std::vector<std::wstring> splitInWords(std::wstring_view str) {
 }
 
 float getWordWidth(std::wstring_view word, unsigned characterSize, Font &font) {
-  assert(!word.empty());
+  if (word.empty())
+    return 0;
 
   float width = 0.0f;
   wchar_t prevCodepoint = '\0';
@@ -82,6 +83,7 @@ std::vector<Paragraph> makeParagraphs(const std::wstring &str,
 
       for (const auto &word : words) {
         auto wordWith = getWordWidth(word, characterSize, font);
+        if(wordWith == 0) continue;
 
         if (!currentLine.words.empty() && currentWidth + spaceWidth + wordWith > paragraphWidth) {
           auto wordCount = currentLine.words.size();
