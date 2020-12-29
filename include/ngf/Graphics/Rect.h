@@ -129,8 +129,8 @@ private:
   }
 
 public:
-  glm::vec<2, T, glm::defaultp> min;
-  glm::vec<2, T, glm::defaultp> max;
+  glm::vec<2, T, glm::defaultp> min{0,0};
+  glm::vec<2, T, glm::defaultp> max{0,0};
 };
 
 using frect = Rect<float>;
