@@ -44,12 +44,11 @@ void Sprite::setTextureRect(irect rect) {
 }
 
 void Sprite::draw(RenderTarget &target, RenderStates states) const {
-  RenderStates localStates = states;
-  localStates.transform *= getTransform().getTransform();
-  localStates.texture = m_texture;
+  states.transform *= getTransform().getTransform();
+  states.texture = m_texture;
   target.draw(PrimitiveType::TriangleFan,
               m_vertices,
-              localStates);
+              states);
 }
 
 void Sprite::updateGeometry() {

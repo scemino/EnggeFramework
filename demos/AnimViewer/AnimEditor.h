@@ -5,10 +5,12 @@
 #include <ngf/IO/Json/JsonParser.h>
 #include "SpriteSheetItem.h"
 #include "Object.h"
+#include "Camera.h"
+#include <ngf/Graphics/ImGuiExtensions.h>
 
 class AnimEditor final {
 public:
-  void loadAnim(const std::filesystem::path& path) {
+  void loadAnim(const std::filesystem::path &path) {
     m_selectedAnim = nullptr;
     auto gAnims = ngf::Json::load(path);
     auto sheet = gAnims["sheet"].getString() + ".png";
@@ -24,10 +26,16 @@ public:
 
   void onRender(ngf::RenderTarget &target) {
     ngf::View view{ngf::frect::fromCenterSize(glm::ivec2(160, 90), {320, 180})};
+    view.zoom(m_camera.zoom);
     target.setView(view);
 
+    ngf::RenderStates s;
+    ngf::Transform t;
+    t.setPosition({-m_camera.position.x, m_camera.position.y});
+    s.transform *= t.getTransform();
+
     target.clear(ngf::Colors::AliceBlue);
-    drawAnim(target);
+    drawAnim(target, s);
   }
 
   void update(const ngf::TimeSpan &e) {
@@ -79,20 +87,21 @@ private:
     }
   }
 
-  void drawAnim(ngf::RenderTarget &target) {
+  void drawAnim(ngf::RenderTarget &target, ngf::RenderStates states) {
     if (!m_selectedAnim)
       return;
     if (m_selectedAnim->frames.empty() && m_selectedAnim->layers.empty())
       return;
 
-    ngf::RenderStates localStates;
     ngf::Transform t;
     t.setPosition({160, 90});
-    localStates.transform *= t.getTransform();
-    draw(*m_selectedAnim, target, localStates);
+    t.setScale({m_scale, m_scale});
+    states.transform *= t.getTransform();
+
+    draw(*m_selectedAnim, target, states);
 
     for (const auto &layer : m_selectedAnim->layers) {
-      draw(layer, target, localStates);
+      draw(layer, target, states);
     }
   }
 
@@ -101,16 +110,27 @@ private:
       return;
     if (anim.frames.empty())
       return;
+
     glm::ivec2 offset{0, 0};
     if (!anim.offsets.empty()) {
       offset = anim.offsets[anim.frameIndex];
     }
     const auto frame = anim.frames[anim.frameIndex];
-    glm::vec2 off = {
-        frame.spriteSourceSize.min.x - frame.sourceSize.x / 2.f + offset.x,
-        frame.spriteSourceSize.min.y - frame.sourceSize.y / 2.f - offset.y};
+    glm::vec2 origin = {frame.sourceSize.x / 2.f, frame.sourceSize.y / 2.f};
+    glm::vec2 pos = {
+        m_left ?
+        frame.sourceSize.x - frame.spriteSourceSize.min.x - offset.x :
+        frame.spriteSourceSize.min.x + offset.x,
+        frame.spriteSourceSize.min.y - offset.y};
+
+    ngf::Transform tFlipX;
+    tFlipX.setScale({m_left ? -1 : 1, 1});
+    ngf::Transform t;
+    t.setOrigin(origin);
+    t.setPosition(pos);
+    states.transform = tFlipX.getTransform() * t.getTransform() * states.transform;
+
     ngf::Sprite sprite(*m_texture, frame.frame);
-    sprite.getTransform().setPosition(off);
     sprite.draw(target, states);
   }
 
@@ -172,6 +192,11 @@ private:
 
   void showAnimation() {
     ImGui::Begin("Animation States");
+    ImGui::DragFloat2("Camera Position", &m_camera.position.x);
+    ImGui::DragFloat("Camera Zoom", &m_camera.zoom);
+    ImGui::Checkbox("Left", &m_left);
+    ImGui::DragFloat("Scale", &m_scale);
+    ImGui::Separator();
     if (m_selectedAnim) {
       ImGui::Text("Animation name : %s", m_selectedAnim->name.c_str());
       ImGui::Separator();
@@ -367,4 +392,7 @@ private:
   ngf::TimeSpan m_elapsed;
   std::shared_ptr<ngf::Texture> m_texture;
   State m_state{State::Pause};
+  bool m_left{false};
+  Camera m_camera;
+  float m_scale{1.f};
 };
