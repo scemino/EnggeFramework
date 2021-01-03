@@ -124,47 +124,6 @@ void main(void) {
   FragColor = vec4(v_color.rgb, v_color.a * texColor.r);
 }
 )";
-
-void setBuffer(const Vertex *vertices, size_t sizeVertices, const std::uint16_t *indices, size_t sizeIndices) {
-  ngf::VertexBuffer buf;
-  constexpr size_t VertexSize = sizeof(Vertex);
-  buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
-  buf.buffer(ngf::VertexBuffer::Type::Element, sizeIndices * sizeof(std::uint16_t), indices);
-
-  auto loc = 0;
-  for (auto info : attributes) {
-    glEnableVertexAttribArray(loc);
-    const void *pointer = reinterpret_cast<const void *>(info.offset);
-    glVertexAttribPointer(loc,
-                          info.size,
-                          static_cast<GLenum>(info.type),
-                          info.normalized ? GL_TRUE : GL_FALSE,
-                          sizeof(Vertex),
-                          pointer);
-    loc++;
-  }
-  VertexArray::bind(nullptr);
-}
-
-void setBuffer(const Vertex *vertices, size_t sizeVertices) {
-  ngf::VertexBuffer buf;
-  constexpr size_t VertexSize = sizeof(Vertex);
-  buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
-
-  auto loc = 0;
-  for (auto info : attributes) {
-    glEnableVertexAttribArray(loc);
-    const void *pointer = reinterpret_cast<const void *>(info.offset);
-    glVertexAttribPointer(loc,
-                          info.size,
-                          static_cast<GLenum>(info.type),
-                          info.normalized ? GL_TRUE : GL_FALSE,
-                          sizeof(Vertex),
-                          pointer);
-    loc++;
-  }
-  VertexArray::bind(nullptr);
-}
 }
 
 RenderTarget::RenderTarget(glm::ivec2 size)
@@ -179,14 +138,12 @@ void RenderTarget::clear(const Color &color) {
   GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
 }
 
-void RenderTarget::draw(PrimitiveType primitiveType,
+void RenderTarget::drawCore(PrimitiveType primitiveType,
                         const Vertex *vertices,
                         size_t sizeVertices,
                         const std::uint16_t *indices,
                         size_t sizeIndices,
                         RenderStates states) {
-  ngf::VertexArray::bind(&m_vao);
-
   // set texture
   auto pTexture = states.texture;
   if (!pTexture) {
@@ -212,15 +169,21 @@ void RenderTarget::draw(PrimitiveType primitiveType,
       getEnum(states.mode.alphaSrcFactor), getEnum(states.mode.alphaDstFactor)
   ));
 
-  // set vertices and indices
-  if (indices) {
-    setBuffer(vertices, sizeVertices, indices, sizeIndices);
-  } else {
-    setBuffer(vertices, sizeVertices);
-  }
-
   ngf::Shader::bind(shader);
-  ngf::VertexArray::bind(&m_vao);
+
+  for (auto info : attributes) {
+    auto loc = shader->getAttributeLocation(info.name);
+    if (loc == -1) continue;
+
+    GL_CHECK(glEnableVertexAttribArray(loc));
+    const void *pointer = reinterpret_cast<const void *>(info.offset);
+    GL_CHECK(glVertexAttribPointer(loc,
+                          info.size,
+                          static_cast<GLenum>(info.type),
+                          info.normalized ? GL_TRUE : GL_FALSE,
+                          sizeof(Vertex),
+                          pointer));
+  }
 
   // draw
   if (indices) {
@@ -229,8 +192,12 @@ void RenderTarget::draw(PrimitiveType primitiveType,
     GL_CHECK(glDrawArrays(getEnum(primitiveType), 0, sizeVertices));
   }
 
+  for (auto info : attributes) {
+    auto loc = shader->getAttributeLocation(info.name);
+    GL_CHECK(glDisableVertexAttribArray(loc));
+  }
+
   GL_CHECK(glDisable(GL_BLEND));
-  ngf::VertexArray::bind(nullptr);
   ngf::Shader::bind(nullptr);
 }
 
@@ -238,7 +205,31 @@ void RenderTarget::draw(PrimitiveType primitiveType,
                         const Vertex *vertices,
                         size_t sizeVertices,
                         RenderStates states) {
-  draw(primitiveType, vertices, sizeVertices, nullptr, 0, states);
+  ngf::VertexBuffer buf;
+  constexpr size_t VertexSize = sizeof(Vertex);
+  buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
+  VertexBuffer::bind(&buf);
+
+  drawCore(primitiveType, vertices, sizeVertices, nullptr, 0, states);
+}
+
+void RenderTarget::draw(PrimitiveType primitiveType,
+                        const Vertex *vertices,
+                        size_t sizeVertices,
+                        const std::uint16_t *indices,
+                        size_t sizeIndices,
+                        RenderStates states) {
+  ngf::VertexBuffer bufArray;
+  constexpr size_t VertexSize = sizeof(Vertex);
+  bufArray.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
+
+  ngf::VertexBuffer bufElements;
+  bufElements.buffer(ngf::VertexBuffer::Type::Element, sizeIndices * sizeof(uint16_t), indices);
+
+  VertexBuffer::bind(&bufArray);
+  VertexBuffer::bind(&bufElements);
+
+  drawCore(primitiveType, vertices, sizeVertices, indices, sizeIndices, states);
 }
 
 void RenderTarget::setView(const View &view) {

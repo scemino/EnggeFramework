@@ -49,7 +49,6 @@ set(GFX_SOURCE_FILES
         Graphics/Sprite.cpp
         Graphics/Text.cpp
         Graphics/Texture.cpp
-        Graphics/VertexArray.cpp
         Graphics/VertexBuffer.cpp
         Graphics/View.cpp)
 set(IO_SOURCE_FILES

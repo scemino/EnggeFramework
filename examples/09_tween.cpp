@@ -18,7 +18,7 @@ private:
 
     m_texture = std::make_unique<ngf::Texture>("./assets/background.jpg");
     m_textureCharacter = std::make_unique<ngf::Texture>("./assets/characters.png");
-    m_renderTexture = std::make_unique<ngf::RenderTexture>(glm::ivec2{320,180});
+    m_renderTexture = std::make_unique<ngf::RenderTexture>(glm::ivec2{320, 180});
 
     auto rect = ngf::irect::fromMinMax({6, 73}, {23, 95});
     m_sprite = std::make_unique<ngf::Sprite>(*m_textureCharacter, rect);
@@ -50,7 +50,12 @@ private:
     switch (event.type) {
     case ngf::EventType::KeyReleased:
       if (event.key.keycode == ngf::Keycode::S) {
-        auto screenshot = ((ngf::RenderWindow*)getRenderTarget())->capture();
+        m_renderTexture->activate();
+        m_renderTexture->setView(ngf::View{ngf::frect::fromPositionSize({0,0}, {640, 480})});
+        renderScene(*m_renderTexture);
+        m_renderTexture->display();
+
+        auto screenshot = m_renderTexture->capture();
         screenshot.saveToFile("screenshot.png");
       }
       break;

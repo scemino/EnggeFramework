@@ -2,7 +2,6 @@
 #include <ngf/Graphics/VertexBuffer.h>
 #include <ngf/Graphics/Shader.h>
 #include <ngf/Graphics/Vertex.h>
-#include <ngf/Graphics/VertexArray.h>
 #include <ngf/Graphics/RenderStates.h>
 #include <ngf/Graphics/View.h>
 #include <ngf/System/Window.h>
@@ -25,10 +24,17 @@ enum class PrimitiveType {
 class RenderTarget {
 public:
   /// @brief Creates a render target for a specified window.
+  /// \param size Size of the render target to create.
   explicit RenderTarget(glm::ivec2 size);
+
+  /// @brief Deleted copy constructor
+  RenderTarget(const RenderTarget&) = delete;
 
   /// @brief Destructor.
   virtual ~RenderTarget() = default;
+
+  /// @brief Deleted copy assignment.
+  RenderTarget& operator=(const RenderTarget&) = delete;
 
   /// @brief Clears the entire target with a specified color.
   /// \param color Fill color to use to clear the render target.
@@ -128,8 +134,15 @@ protected:
   [[nodiscard]] Image captureFramebuffer(unsigned int name) const;
 
 private:
+  void drawCore(PrimitiveType primitiveType,
+            const Vertex *vertices,
+            size_t sizeVertices,
+            const std::uint16_t *indices,
+            size_t sizeIndices,
+            RenderStates states);
+
+private:
   View m_view;
-  ngf::VertexArray m_vao;
   ngf::Shader m_defaultShader{};
   ngf::Shader m_defaultAlphaShader{};
   ngf::Texture m_emptyTexture{};

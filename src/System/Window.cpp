@@ -59,8 +59,15 @@ Window::~Window() {
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
-  SDL_GL_DeleteContext(m_glContext);
-  SDL_DestroyWindow(m_window);
+  if(m_glContext) {
+    GL_CHECK(glBindVertexArray(0));
+    GL_CHECK(glDeleteVertexArrays(1, &m_vao));
+    SDL_GL_DeleteContext(m_glContext);
+  }
+
+  if(m_window) {
+    SDL_DestroyWindow(m_window);
+  }
   SDL_Quit();
 }
 
@@ -121,6 +128,9 @@ void Window::init(const WindowConfig &config) {
     ss << "Error when initializing glew " << glewGetErrorString(err);
     throw std::runtime_error(ss.str());
   }
+
+  GL_CHECK(glGenVertexArrays(1, &m_vao));
+  GL_CHECK(glBindVertexArray(m_vao));
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();

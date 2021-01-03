@@ -176,5 +176,6 @@ private:
   inline static float dpiScale{1.0f};
   SDL_Window *m_window{nullptr};
   SDL_GLContext m_glContext{nullptr};
+  unsigned int m_vao{0};
 };
 }

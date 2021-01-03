@@ -88,8 +88,9 @@ public:
   /// \param shader The shader to bind, or null to not use a shader.
   static void bind(const Shader *shader);
 
-private:
   [[nodiscard]] int getAttributeLocation(std::string_view name) const;
+
+private:
   [[nodiscard]] int getUniformLocation(std::string_view name) const;
 
 private:

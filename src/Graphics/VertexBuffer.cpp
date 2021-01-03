@@ -23,6 +23,7 @@ void VertexBuffer::buffer(Type type, size_t size, const void *data) {
   GL_CHECK(glBindBuffer(target, m_buffers[index]));
   GL_CHECK(glBufferData(target, size, nullptr, GL_STATIC_DRAW));
   GL_CHECK(glBufferSubData(target, 0, size, data));
+  GL_CHECK(glBindBuffer(target, 0));
 }
 
 void VertexBuffer::bind(const VertexBuffer *pVertexBuffer) {
