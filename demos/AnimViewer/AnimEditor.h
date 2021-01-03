@@ -39,24 +39,7 @@ public:
   }
 
   void update(const ngf::TimeSpan &e) {
-    if (m_state == State::Pause)
-      return;
-
-    if (!m_selectedAnim)
-      return;
-
-    auto &animation = *m_selectedAnim;
-    if (animation.frames.empty() && animation.layers.empty())
-      return;
-
-    if (!animation.frames.empty()) {
-      update(e, animation);
-      return;
-    }
-
-    for (auto &layer : animation.layers) {
-      update(e, layer);
-    }
+    m_animControl.update(e);
   }
 
   void draw() {
@@ -88,21 +71,16 @@ private:
   }
 
   void drawAnim(ngf::RenderTarget &target, ngf::RenderStates states) {
-    if (!m_selectedAnim)
-      return;
-    if (m_selectedAnim->frames.empty() && m_selectedAnim->layers.empty())
-      return;
-
     ngf::Transform t;
     t.setPosition({160, 90});
     t.setScale({m_scale, m_scale});
     states.transform *= t.getTransform();
 
-    draw(*m_selectedAnim, target, states);
-
-    for (const auto &layer : m_selectedAnim->layers) {
-      draw(layer, target, states);
-    }
+    AnimDrawable animDrawable;
+    animDrawable.setAnim(m_selectedAnim);
+    animDrawable.setTexture(m_texture);
+    animDrawable.setFlipX(m_left);
+    animDrawable.draw(target, states);
   }
 
   void draw(const ObjectAnimation &anim, ngf::RenderTarget &target, ngf::RenderStates states) {
@@ -204,9 +182,27 @@ private:
       HelpMarker("Drag to rearrange frames.\nRight-click to delete.");
       ImGui::Separator();
 
-      std::string control = m_state == State::Play ? "Play" : "Pause";
-      if (ImGui::ArrowButton(control.c_str(), ImGuiDir_Right)) {
-        m_state = m_state == State::Play ? State::Pause : State::Play;
+      std::string state;
+      switch (m_animControl.getState()) {
+      case AnimState::Play:state = "Play";
+        break;
+      case AnimState::Pause:state = "Pause";
+        break;
+      case AnimState::Stopped:state = "Stopped";
+        break;
+      }
+      ImGui::Text("State: %s", state.c_str());
+      ImGui::Checkbox("Loop", &m_loop);
+      if (ImGui::Button("play")) {
+        m_animControl.play(m_loop);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("pause")) {
+        m_animControl.pause();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("stop")) {
+        m_animControl.stop();
       }
       ImGui::Separator();
       if (ImGui::TreeNode("frames")) {
@@ -279,6 +275,7 @@ private:
 
   void setSelectAnim(ObjectAnimation *pAnim) {
     m_selectedAnim = pAnim;
+    m_animControl.setAnimation(pAnim);
   }
 
   static void HelpMarker(const char *desc) {
@@ -346,7 +343,7 @@ private:
     ObjectAnimation anim;
     anim.name = gAnimation["name"].getString();
     anim.loop = toBool(gAnimation["loop"]);
-    anim.fps = gAnimation["fps"].isNull() ? 0.f : gAnimation["fps"].getDouble();
+    anim.fps = gAnimation["fps"].isNull() ? 0.f : gAnimation["fps"].getInt();
     anim.flags = gAnimation["flags"].isNull() ? 0 : gAnimation["flags"].getInt();
     if (!gAnimation["frames"].isNull()) {
       for (const auto &gFrame : gAnimation["frames"]) {
@@ -391,8 +388,9 @@ private:
   ImGuiTextFilter m_filterAnim;
   ngf::TimeSpan m_elapsed;
   std::shared_ptr<ngf::Texture> m_texture;
-  State m_state{State::Pause};
+  AnimControl m_animControl;
   bool m_left{false};
   Camera m_camera;
   float m_scale{1.f};
+  bool m_loop{false};
 };

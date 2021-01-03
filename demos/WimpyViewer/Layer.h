@@ -39,8 +39,8 @@ public:
     states.transform *= m_transform.getTransform();
     float offsetX = 0.f;
     auto texSize = m_texture->getSize();
+    auto pShader = (LightingShader *) states.shader;
     for (const auto &item : m_items) {
-      auto pShader = (LightingShader *) states.shader;
       pShader->setTexture(*m_texture);
       pShader->setContentSize(item.sourceSize);
       pShader->setSpriteOffset({0, -item.frame.getHeight()});
