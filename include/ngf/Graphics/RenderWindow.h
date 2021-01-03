@@ -6,9 +6,14 @@
 namespace ngf {
 class RenderWindow final : public RenderTarget {
 public:
+  /// @brief Creates a render window from a window.
+  /// \param window Window where to render.
   explicit RenderWindow(Window &window)
       : RenderTarget(window.getFramebufferSize()), m_window(window) {
   }
+
+  /// @brief Destructor.
+  ~RenderWindow() override = default;
 
   [[nodiscard]] glm::ivec2 getSize() const override { return m_window.getFramebufferSize(); }
 
@@ -17,6 +22,10 @@ public:
 
   /// @brief Updates the content of the window.
   void display() { m_window.display(); }
+
+  /// @brief Captures the window.
+  /// \return The image captured.
+  [[nodiscard]] Image capture() const { return captureFramebuffer(0); }
 
 private:
   Window &m_window;

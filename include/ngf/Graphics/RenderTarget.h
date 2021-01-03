@@ -27,6 +27,9 @@ public:
   /// @brief Creates a render target for a specified window.
   explicit RenderTarget(glm::ivec2 size);
 
+  /// @brief Destructor.
+  virtual ~RenderTarget() = default;
+
   /// @brief Clears the entire target with a specified color.
   /// \param color Fill color to use to clear the render target.
   void clear(const Color &color);
@@ -120,6 +123,9 @@ public:
   /// \param point The point to convert.
   /// \return The converted point, in target coordinates (pixels).
   [[nodiscard]] glm::ivec2 mapCoordsToPixel(glm::vec2 point) const;
+
+protected:
+  [[nodiscard]] Image captureFramebuffer(unsigned int name) const;
 
 private:
   View m_view;

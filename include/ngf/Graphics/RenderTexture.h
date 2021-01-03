@@ -12,7 +12,7 @@ public:
   explicit RenderTexture(glm::ivec2 size);
 
   /// @brief Destructor of the render-texture.
-  ~RenderTexture();
+  ~RenderTexture() override;
 
   /// @brief Gets the size of the render-texture.
   /// \return The size of the render-texture.
@@ -26,6 +26,10 @@ public:
 
   /// @brief Updates the content of the target texture.
   void display();
+
+  /// @brief Captures the window.
+  /// \return The image captured.
+  [[nodiscard]] Image capture() const { return captureFramebuffer(m_handle); }
 
 private:
   unsigned int m_handle{0};

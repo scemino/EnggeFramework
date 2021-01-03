@@ -321,4 +321,25 @@ glm::ivec2 RenderTarget::mapCoordsToPixel(glm::vec2 point, const View &view) con
 glm::ivec2 RenderTarget::mapCoordsToPixel(glm::vec2 point) const {
   return mapCoordsToPixel(point, getView());
 }
+
+Image RenderTarget::captureFramebuffer(unsigned int name) const {
+  auto size = getSize();
+  std::vector<uint8_t> pixels(static_cast<std::size_t>(size.x) * static_cast<std::size_t>(size.y) * 4);
+
+  GLint boundFrameBuffer;
+  GL_CHECK(glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFrameBuffer));
+
+  if (static_cast<unsigned>(boundFrameBuffer) != name) {
+    GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, name));
+  }
+
+  GL_CHECK(glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data()));
+
+  if (static_cast<unsigned int>(boundFrameBuffer) != name) {
+    GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, boundFrameBuffer));
+  }
+
+  Image image(size, pixels.data());
+  return image;
+}
 }

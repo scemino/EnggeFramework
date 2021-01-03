@@ -69,9 +69,15 @@ void Image::saveToFile (const std::filesystem::path& filename) const {
     return;
   }
 
+  stbi__flip_vertically_on_write = 1;
   auto ext = filename.extension();
   if (ext == ".png") {
     stbi_write_png(filenameString.c_str(), m_size.x, m_size.y, 4, m_pixels.data(), 0);
+    return;
+  }
+
+  if (ext == ".jpg") {
+    stbi_write_jpg(filenameString.c_str(), m_size.x, m_size.y, 4, m_pixels.data(), 0);
     return;
   }
 
