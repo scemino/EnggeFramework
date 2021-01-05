@@ -48,6 +48,7 @@ private:
     target.setView(ngf::View(ngf::frect::fromCenterSize({0, 0}, {640, 480})));
     target.clear(ngf::Colors::LightBlue);
     ngf::Sprite sprite(m_renderTexture->getTexture());
+    sprite.flipVertically();
     sprite.setAnchor(ngf::Anchor::Center);
     sprite.draw(target);
     m_sprite->draw(target);

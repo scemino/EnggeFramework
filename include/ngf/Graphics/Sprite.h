@@ -72,6 +72,9 @@ public:
   /// \param states Render states to use to draw this sprite.
   void draw(RenderTarget &target, RenderStates states = {}) const override;
 
+  /// @brief Flips the sprite texture vertically
+  void flipVertically();
+
 private:
   void updateGeometry();
 

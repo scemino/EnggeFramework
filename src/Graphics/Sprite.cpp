@@ -81,4 +81,11 @@ Color Sprite::getColor() const {
 void Sprite::setAnchor(Anchor anchor) {
   m_transform.setOriginFromAnchorAndBounds(anchor, getLocalBounds());
 }
+
+void Sprite::flipVertically(){
+  m_vertices[0].texCoords = m_textureRect.min;
+  m_vertices[1].texCoords = {m_textureRect.max.x, m_textureRect.min.y};
+  m_vertices[2].texCoords = m_textureRect.max;
+  m_vertices[3].texCoords = {m_textureRect.min.x, m_textureRect.max.y};
+}
 }
