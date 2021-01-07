@@ -11,7 +11,8 @@ private:
 
 public:
   /// Creates an empty rectangle located at the origin.
-  constexpr Rect() noexcept = default;
+  /// @note Don't use default constructor, compilation fails with Ubuntu
+  constexpr Rect() noexcept {}
 
   /// @brief Create a rectangle from a minimum point and a maximum point.
   /// \param min The minimum point in the rectangle.
@@ -129,8 +130,8 @@ private:
   }
 
 public:
-  glm::vec<2, T, glm::defaultp> min{0,0};
-  glm::vec<2, T, glm::defaultp> max{0,0};
+  glm::vec<2, T, glm::defaultp> min{0, 0};
+  glm::vec<2, T, glm::defaultp> max{0, 0};
 };
 
 using frect = Rect<float>;
