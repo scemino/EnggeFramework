@@ -27,6 +27,9 @@ public:
   /// \return The image captured.
   [[nodiscard]] Image capture() const { return captureFramebuffer(0); }
 
+protected:
+  [[nodiscard]] unsigned int getHandle() const override { return 0; }
+
 private:
   Window &m_window;
 };

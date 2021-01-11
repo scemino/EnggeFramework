@@ -133,17 +133,27 @@ RenderTarget::RenderTarget(glm::ivec2 size)
   m_defaultAlphaShader.load(vertexShaderSource, alphaFragmentShaderSource);
 }
 
+void RenderTarget::ensureActive() {
+  GLint boundFrameBuffer;
+  GL_CHECK(glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFrameBuffer));
+  if (boundFrameBuffer != (GLint) getHandle()) {
+    activate();
+  }
+}
+
 void RenderTarget::clear(const Color &color) {
+  ensureActive();
   GL_CHECK(glClearColor(color.r, color.g, color.b, color.a));
   GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 void RenderTarget::drawCore(PrimitiveType primitiveType,
-                        const Vertex *vertices,
-                        size_t sizeVertices,
-                        const std::uint16_t *indices,
-                        size_t sizeIndices,
-                        RenderStates states) {
+                            size_t sizeVertices,
+                            const std::uint16_t *indices,
+                            size_t sizeIndices,
+                            RenderStates states) {
+  ensureActive();
+
   // set texture
   auto pTexture = states.texture;
   if (!pTexture) {
@@ -173,16 +183,17 @@ void RenderTarget::drawCore(PrimitiveType primitiveType,
 
   for (auto info : attributes) {
     auto loc = shader->getAttributeLocation(info.name);
-    if (loc == -1) continue;
+    if (loc == -1)
+      continue;
 
     GL_CHECK(glEnableVertexAttribArray(loc));
     const void *pointer = reinterpret_cast<const void *>(info.offset);
     GL_CHECK(glVertexAttribPointer(loc,
-                          info.size,
-                          static_cast<GLenum>(info.type),
-                          info.normalized ? GL_TRUE : GL_FALSE,
-                          sizeof(Vertex),
-                          pointer));
+                                   info.size,
+                                   static_cast<GLenum>(info.type),
+                                   info.normalized ? GL_TRUE : GL_FALSE,
+                                   sizeof(Vertex),
+                                   pointer));
   }
 
   // draw
@@ -210,7 +221,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   buf.buffer(ngf::VertexBuffer::Type::Array, sizeVertices * VertexSize, vertices);
   VertexBuffer::bind(&buf);
 
-  drawCore(primitiveType, vertices, sizeVertices, nullptr, 0, states);
+  drawCore(primitiveType, sizeVertices, nullptr, 0, states);
 }
 
 void RenderTarget::draw(PrimitiveType primitiveType,
@@ -229,7 +240,7 @@ void RenderTarget::draw(PrimitiveType primitiveType,
   VertexBuffer::bind(&bufArray);
   VertexBuffer::bind(&bufElements);
 
-  drawCore(primitiveType, vertices, sizeVertices, indices, sizeIndices, states);
+  drawCore(primitiveType, sizeVertices, indices, sizeIndices, states);
 }
 
 void RenderTarget::setView(const View &view) {
@@ -271,8 +282,8 @@ glm::vec2 RenderTarget::mapPixelToCoords(glm::ivec2 point, const View &view) con
    *   0         w       -1         1
    */
   glm::vec2 normalized;
-  normalized.x = 2.0f * (point.x - viewport.min.x) / viewport.getWidth() - 1;
-  normalized.y = 1 - 2.0f * (point.y - viewport.min.y) / viewport.getHeight();
+  normalized.x = 2.0f * static_cast<float>(point.x - viewport.min.x) / viewport.getWidth() - 1;
+  normalized.y = 1 - 2.0f * static_cast<float>(point.y - viewport.min.y) / viewport.getHeight();
 
   /* apply inverse view transform
    * i.e. compute world coordinates from normalized device coordinates

@@ -38,7 +38,7 @@ public:
 
   /// @brief Clears the entire target with a specified color.
   /// \param color Fill color to use to clear the render target.
-  void clear(const Color &color);
+  void clear(const Color &color = ngf::Colors::Black);
 
   /// @brief Activates the target for rendering.
   virtual void activate() = 0;
@@ -132,14 +132,15 @@ public:
 
 protected:
   [[nodiscard]] Image captureFramebuffer(unsigned int name) const;
+  [[nodiscard]] virtual unsigned int getHandle() const = 0;
 
 private:
   void drawCore(PrimitiveType primitiveType,
-            const Vertex *vertices,
             size_t sizeVertices,
             const std::uint16_t *indices,
             size_t sizeIndices,
             RenderStates states);
+  void ensureActive();
 
 private:
   View m_view;

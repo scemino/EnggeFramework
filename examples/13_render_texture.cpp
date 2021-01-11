@@ -38,13 +38,11 @@ private:
   }
 
   void onRender(ngf::RenderTarget &target) override {
-    m_renderTexture->activate();
     m_renderTexture->setView(ngf::View(ngf::frect::fromCenterSize({0, 0}, {640, 480})));
     m_renderTexture->clear(ngf::Colors::Gray);
     m_sprite->draw(*m_renderTexture);
     m_renderTexture->display();
 
-    target.activate();
     target.setView(ngf::View(ngf::frect::fromCenterSize({0, 0}, {640, 480})));
     target.clear(ngf::Colors::LightBlue);
     ngf::Sprite sprite(m_renderTexture->getTexture());

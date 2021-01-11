@@ -31,6 +31,9 @@ public:
   /// \return The image captured.
   [[nodiscard]] Image capture() const { return captureFramebuffer(m_handle); }
 
+protected:
+  [[nodiscard]] unsigned int getHandle() const override { return m_handle; }
+
 private:
   unsigned int m_handle{0};
   Texture m_texture;
