@@ -177,6 +177,7 @@ bool Window::pollEvent(Event &event) {
       break;
     default: return false;
     }
+    break;
   case SDL_KEYDOWN:
   case SDL_KEYUP:event.type = sdlEvent.type == SDL_KEYDOWN ? EventType::KeyPressed : EventType::KeyReleased;
     event.key.windowId = sdlEvent.key.windowID;
