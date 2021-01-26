@@ -216,7 +216,7 @@ public:
 //    lights[1].coneFalloff = 0.15f;
 //    lights[1].cutOffRadius = 200.f;
 //    lights[1].halfRadius = 0.75f;
-    numLights = 1;
+//    numLights = 1;
 
     m_camera.position = glm::vec2(0, 0);
     m_camera.size = getScreenSize(m_height);

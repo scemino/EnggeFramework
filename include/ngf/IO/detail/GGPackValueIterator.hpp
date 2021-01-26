@@ -141,9 +141,7 @@ private:
       m_hashIt = m_value->m_value.hash_value->begin();
       break;
     }
-    default: {
-      assert(false);
-    }
+    default: break;
     }
   }
 
@@ -159,9 +157,7 @@ private:
       m_hashIt = m_value->m_value.hash_value->end();
       break;
     }
-    default: {
-      assert(false);
-    }
+    default: break;
     }
   }
 

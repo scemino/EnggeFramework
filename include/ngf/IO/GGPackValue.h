@@ -310,7 +310,7 @@ public:
         return nullptr;
       return m_value.hash_value->at(key);
     }
-    throw std::logic_error("This is not an hashtable");
+    return nullptr;
   }
 
   reference operator[](const std::string &key) {
