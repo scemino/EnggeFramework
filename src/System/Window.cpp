@@ -73,11 +73,6 @@ Window::~Window() {
 
 void Window::init(const WindowConfig &config) {
   priv::SdlSystem::ensureInit();
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0) {
-    std::ostringstream ss;
-    ss << "Error when initializing SDL (error=" << SDL_GetError() << ")";
-    throw std::runtime_error(ss.str());
-  }
 
   // Decide GL+GLSL versions
 #if __APPLE__

@@ -76,52 +76,46 @@ constexpr std::array<VertexAttribute, 3> attributes
      }};
 
 const char *vertexShaderSource =
-    R"(#version 330 core
-precision mediump float;
-layout (location = 0) in vec2 a_position;
-layout (location = 1) in vec4 a_color;
-layout (location = 2) in vec2 a_texCoords;
-
+    R"(#version 100
+attribute vec2 a_position;
+attribute vec4 a_color;
+attribute vec2 a_texCoords;
+varying vec4 v_color;
+varying vec2 v_texCoords;
 uniform mat3 u_transform;
 
-out vec4 v_color;
-out vec2 v_texCoords;
-
 void main(void) {
-  v_color = a_color;
   v_texCoords = a_texCoords;
+  v_color = a_color;
   vec3 worldPosition = vec3(a_position, 1);
   vec3 normalizedPosition = worldPosition * u_transform;
   gl_Position = vec4(normalizedPosition.xy, 0, 1);
+  gl_PointSize = 1.0;
 })";
 
 const char *fragmentShaderSource =
-    R"(#version 330 core
+    R"(#version 100
 precision mediump float;
-out vec4 FragColor;
-in vec4 v_color;
-in vec2 v_texCoords;
-
+varying vec4 v_color;
+varying vec2 v_texCoords;
 uniform sampler2D u_texture;
 
 void main(void) {
-  vec4 texColor = texture(u_texture, v_texCoords);
-  FragColor = v_color * texColor;
+  vec4 color = texture2D(u_texture, v_texCoords);
+  gl_FragColor = color * v_color;
 }
 )";
 
 const char *alphaFragmentShaderSource =
-    R"(#version 330 core
+    R"(#version 100
 precision mediump float;
-out vec4 FragColor;
-in vec4 v_color;
-in vec2 v_texCoords;
-
+varying vec4 v_color;
+varying vec2 v_texCoords;
 uniform sampler2D u_texture;
 
 void main(void) {
-  vec4 texColor = texture(u_texture, v_texCoords);
-  FragColor = vec4(v_color.rgb, v_color.a * texColor.r);
+  vec4 color = texture2D(u_texture, v_texCoords);
+  gl_FragColor = vec4(v_color.xyz, v_color.a * color.a);
 }
 )";
 }
