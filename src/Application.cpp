@@ -101,7 +101,7 @@ void Application::onEvent(Event &) {
 }
 
 void Application::quit() {
-  m_done = true;
+  onQuit();
 }
 
 void Application::showMessageBox(const std::string &title,
