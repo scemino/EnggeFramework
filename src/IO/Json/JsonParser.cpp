@@ -1,4 +1,5 @@
 #include <ngf/IO/Json/JsonParser.h>
+#include <ngf/IO/Json/JsonTokenReader.h>
 
 namespace ngf::Json {
 
@@ -95,13 +96,19 @@ GGPackValue load(const std::filesystem::path &path) {
 }
 
 GGPackValue parse(std::istream &input) {
-  ngf::Json::TokenReader reader;
   input.seekg(0, std::ios::end);
   auto size = input.tellg();
   input.seekg(0, std::ios::beg);
   std::vector<char> buf(size);
   input.read(buf.data(), size);
 
+  return parse(buf.data());
+}
+
+GGPackValue parse(std::string_view input) {
+  ngf::Json::TokenReader reader;
+  std::vector<char> buf(input.size());
+  memcpy(buf.data(), input.data(), input.size());
   reader.parse(buf);
   return parse(reader);
 }
