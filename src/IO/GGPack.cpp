@@ -56,20 +56,29 @@ void GGPack::readPack() {
   }
 }
 
-bool GGPack::contains(const std::string &name) {
+bool GGPack::contains(const std::string &name) const {
   return m_entries.find(name) != m_entries.end();
 }
 
-std::vector<char> GGPack::readEntry(const std::string &name) {
-  auto entry = m_entries[name];
-  std::vector<char> data;
-  data.resize(entry.size + 1);
-  m_input.seekg(entry.offset, std::ios::beg);
+std::vector<char> GGPack::readEntry(const std::string &name) const {
+  auto it = m_entries.find(name);
+  if (it == m_entries.end())
+    return {};
 
-  m_input.read(data.data(), entry.size);
-  decodeUnbreakableXor(data.data(), entry.size);
-  data[entry.size] = 0;
+  std::vector<char> data;
+  data.resize(it->second.size + 1);
+  m_input.seekg(it->second.offset, std::ios::beg);
+
+  m_input.read(data.data(), it->second.size);
+  decodeUnbreakableXor(data.data(), it->second.size);
+  data[it->second.size] = 0;
   return data;
+}
+
+GGPackValue GGPack::readHashEntry(const std::string &name) const {
+  auto data = readEntry(name);
+  ngf::MemoryStream ms(data.data(), data.data() + data.size());
+  return ngf::GGPackHashReader::read(ms);
 }
 
 char *GGPack::decodeUnbreakableXor(char *buffer, int length) const {

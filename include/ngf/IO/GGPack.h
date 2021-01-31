@@ -39,23 +39,23 @@ public:
   explicit GGPack(const std::filesystem::path &path);
 
   void open(const std::filesystem::path &path);
-  bool contains(const std::string &name);
+  bool contains(const std::string &name) const;
 
   iterator begin() { return m_entries.begin(); }
   iterator end() { return m_entries.end(); }
 
-  const_iterator cbegin() { return m_entries.cbegin(); }
-  const_iterator cend() { return m_entries.cend(); }
+  const_iterator cbegin() const { return m_entries.cbegin(); }
+  const_iterator cend() const { return m_entries.cend(); }
 
-private:
-  std::vector<char> readEntry(const std::string &name);
+  std::vector<char> readEntry(const std::string &name) const;
+  GGPackValue readHashEntry(const std::string &name) const;
 
 private:
   void readPack();
   char *decodeUnbreakableXor(char *buffer, int length) const;
 
 private:
-  std::ifstream m_input;
+  mutable std::ifstream m_input;
   std::map<std::string, GGPackEntry, CaseInsensitiveCompare> m_entries;
   int m_method{0};
 };
