@@ -1,5 +1,6 @@
 #include <ngf/IO/Json/JsonParser.h>
 #include <ngf/IO/Json/JsonTokenReader.h>
+#include <cstring>
 
 namespace ngf::Json {
 
