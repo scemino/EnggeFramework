@@ -53,6 +53,7 @@ set(GFX_SOURCE_FILES
         Graphics/View.cpp)
 set(IO_SOURCE_FILES
         IO/GGPackHashReader.cpp
+        IO/GGPackHashWriter.cpp
         IO/GGPack.cpp
         IO/GGPackBufferStream.cpp
         IO/MemoryStream.cpp

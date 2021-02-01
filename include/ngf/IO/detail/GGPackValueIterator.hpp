@@ -170,6 +170,9 @@ public:
     case GGPackValueType::Hash: {
       return m_hashIt == rhs.m_hashIt;
     }
+    case GGPackValueType::Null: {
+      return rhs.m_value->type() == GGPackValueType::Null;
+    }
     default: {
       assert(false);
     }

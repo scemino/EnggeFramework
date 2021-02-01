@@ -23,4 +23,3 @@ private:
   std::vector<uint32_t> m_offsets;
 };
 }
-
