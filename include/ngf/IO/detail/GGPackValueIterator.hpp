@@ -39,6 +39,7 @@ public:
   using hash_iterator_t = typename std::conditional<std::is_const<GGValue>::value,
                                                     typename GGValue::hash_t::const_iterator,
                                                     typename GGValue::hash_t::iterator>::type;
+  using difference_type = std::ptrdiff_t;
   using iterator_category = std::forward_iterator_tag;
 
 private:
@@ -344,6 +345,15 @@ public:
   using type = decltype(
   get<N>(std::declval<
       ::ngf::detail::HashIteratorValue<IteratorType >>()));
+};
+
+template<typename GGValue>
+struct iterator_traits<ngf::detail::GGPackValueIterator<GGValue>> {
+  typedef typename ngf::detail::GGPackValueIterator<GGValue>::difference_type   difference_type;
+  typedef typename ngf::detail::GGPackValueIterator<GGValue>::value_type        value_type;
+  typedef typename ngf::detail::GGPackValueIterator<GGValue>::pointer           pointer;
+  typedef typename ngf::detail::GGPackValueIterator<GGValue>::reference         reference;
+  typedef typename ngf::detail::GGPackValueIterator<GGValue>::iterator_category iterator_category;
 };
 #if defined(__clang__)
 #pragma clang diagnostic pop

@@ -1,5 +1,7 @@
 #pragma once
 #include <type_traits>
+#include <limits>
+#include <tuple>
 #include <ngf/IO/GGPackValue.h>
 #include <ngf/IO/detail/CppFuture.hpp>
 #include <ngf/IO/detail/Detected.hpp>
