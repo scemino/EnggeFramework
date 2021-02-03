@@ -93,6 +93,11 @@ void Window::init(const WindowConfig &config) {
           (config.fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
   m_window = SDL_CreateWindow(config.title.data(), SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, config.size.x, config.size.y, window_flags);
+  if (!m_window) {
+    std::ostringstream ss;
+    ss << "Error when creating SDL Window (error=" << SDL_GetError() << ")";
+    throw std::runtime_error(ss.str());
+  }
 
   // setup OpenGL
   m_glContext = SDL_GL_CreateContext(m_window);
@@ -117,6 +122,7 @@ void Window::init(const WindowConfig &config) {
     throw std::runtime_error(ss.str());
   };
 
+  glewExperimental = GL_TRUE;
   err = glewInit();
   if (err != GLEW_OK) {
     std::ostringstream ss;

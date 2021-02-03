@@ -28,7 +28,7 @@ bool operator>=(const TimeSpan &left, const TimeSpan &right) {
 }
 
 TimeSpan operator+(const TimeSpan &left, const TimeSpan &right) {
-  long result = left.getTicks() + right.getTicks();
+  int64_t result = left.getTicks() + right.getTicks();
   // Overflow if signs of operands was identical and result's
   // sign was opposite.
   // >> 63 gives the sign bit (either 64 1's or 64 0's).
@@ -43,7 +43,7 @@ TimeSpan &operator+=(TimeSpan &left, const TimeSpan &right) {
 }
 
 TimeSpan operator-(const TimeSpan &left, const TimeSpan &right) {
-  long result = left.getTicks() - right.getTicks();
+  int64_t result = left.getTicks() - right.getTicks();
   // Overflow if signs of operands was different and result's
   // sign was opposite from the first argument's sign.
   // >> 63 gives the sign bit (either 64 1's or 64 0's).
