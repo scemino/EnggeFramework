@@ -46,7 +46,6 @@ struct CostumeAnim {
 };
 
 class ScummExtractApplication final : public ngf::Application {
-public:
 private:
   void onInit() override {
     m_window.init({"Scumm Extract", {1024, 768}});
@@ -303,6 +302,7 @@ private:
 
 private:
   void load(const std::string &filePath) {
+    m_filePath = filePath;
     std::filesystem::path directory = filePath;
     directory = directory.parent_path();
     m_nodes.clear();
@@ -521,10 +521,13 @@ private:
     return (*it);
   }
 
-  static void readData(const ResNode &node, void *data) {
-    std::ostringstream os;
-    os << "/Users/scemino/Downloads/Secret Of Monkey Island Vga (1990)(Lucas Arts)/DISK0" << node.disk << ".LEC";
-    std::ifstream input(os.str(), std::ios::binary);
+  void readData(const ResNode &node, void *data) {
+    std::filesystem::path filePath = m_filePath;
+    filePath = filePath.parent_path();
+    std::string name{"DISK0"};
+    name.append(std::to_string(node.disk)).append(".LEC");
+    filePath.append(name);
+    std::ifstream input(filePath, std::ios::binary);
     XorDecoder decoder;
     decoder.setInput(input);
     input.seekg(node.offset + sizeof(Block));
@@ -532,7 +535,7 @@ private:
     input.close();
   }
 
-  static std::vector<ngf::Image> getObjectImages(const ResNode &node) {
+  std::vector<ngf::Image> getObjectImages(const ResNode &node) {
     if (node.block.size <= 8)
       return {};
 
@@ -542,7 +545,7 @@ private:
     auto id = *(uint16_t *) data.data();
 
     // read OD corresponding to the object id
-    auto nodeOD = getChildNode(node.parent, [id](const std::shared_ptr<ResNode> &node) {
+    auto nodeOD = getChildNode(node.parent, [this, id](const std::shared_ptr<ResNode> &node) {
       if (node->block.type != 0x434F)
         return false;
       std::vector<uint8_t> data(node->block.size);
@@ -630,7 +633,7 @@ private:
     return images;
   }
 
-  static std::vector<ngf::Image> getImages(const ResNode &node) {
+  std::vector<ngf::Image> getImages(const ResNode &node) {
     // read header
     auto nodeHD = getChildNode(node.parent, 0x4448);
     RoomHeader header{};
@@ -805,6 +808,7 @@ private:
   std::vector<std::shared_ptr<ResNode>> m_nodes;
   std::shared_ptr<ResNode> m_selectedNode;
   std::vector<std::shared_ptr<ngf::Texture>> m_textures;
+  std::filesystem::path m_filePath;
 };
 
 int main(int argc, char **argv) {
