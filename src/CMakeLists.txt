@@ -71,8 +71,8 @@ set(MATH_SOURCE_FILES
 set(APP_SOURCE_FILES Application.cpp)
 set(SOURCE_FILES ${APP_SOURCE_FILES} ${IO_SOURCE_FILES} ${SYS_SOURCE_FILES} ${WIN_SOURCE_FILES} ${GFX_SOURCE_FILES} ${MATH_SOURCE_FILES}
         # SDL2+OpenGL-specific files
-        ../extlibs/imgui/examples/imgui_impl_sdl.cpp
-        ../extlibs/imgui/examples/imgui_impl_opengl3.cpp)
+        ../extlibs/imgui/backends/imgui_impl_sdl.cpp
+        ../extlibs/imgui/backends/imgui_impl_opengl3.cpp)
 
 add_library(${PROJECT_NAME} ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${NGLIB_HEADERS_DIR})

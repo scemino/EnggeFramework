@@ -2,8 +2,8 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <imgui.h>
-#include <examples/imgui_impl_opengl3.h>
-#include <examples/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl.h>
 #include <iostream>
 #include <sstream>
 #include <vector>

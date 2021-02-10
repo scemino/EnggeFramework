@@ -1,28 +1,28 @@
 #
-#Cross Platform Makefile
-#Compatible with MSYS2 / MINGW, Ubuntu 14.04.1 and Mac OS X
+# Cross Platform Makefile
+# Compatible with MSYS2/MINGW, Ubuntu 14.04.1 and Mac OS X
 #
-#You will need GLFW(http: // www.glfw.org):
-#Linux:
-#apt - get install libglfw - dev
-#Mac OS X:
-#brew install glfw
-#MSYS2:
-#pacman - S-- noconfirm-- needed mingw - w64 - x86_64 - toolchain mingw - \
-    w64 - x86_64 - glfw
+# You will need GLFW (http://www.glfw.org):
+# Linux:
+#   apt-get install libglfw-dev
+# Mac OS X:
+#   brew install glfw
+# MSYS2:
+#   pacman -S --noconfirm --needed mingw-w64-x86_64-toolchain mingw-w64-x86_64-glfw
 #
 
 #CXX = g++
 #CXX = clang++
 
 EXE = example_glfw_opengl2
+IMGUI_DIR = ../..
 SOURCES = main.cpp
-SOURCES += ../imgui_impl_glfw.cpp ../imgui_impl_opengl2.cpp
-SOURCES += ../../imgui.cpp ../../imgui_demo.cpp ../../imgui_draw.cpp ../../imgui_widgets.cpp
+SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
+SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl2.cpp
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 
-CXXFLAGS = -I../ -I../../
+CXXFLAGS = -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
 CXXFLAGS += -g -Wall -Wformat
 LIBS =
 
@@ -42,7 +42,7 @@ ifeq ($(UNAME_S), Darwin) #APPLE
 	ECHO_MESSAGE = "Mac OS X"
 	LIBS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
 	LIBS += -L/usr/local/lib -L/opt/local/lib
-#LIBS += -lglfw3
+	#LIBS += -lglfw3
 	LIBS += -lglfw
 
 	CXXFLAGS += -I/usr/local/include -I/opt/local/include
@@ -64,10 +64,10 @@ endif
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:../%.cpp
+%.o:$(IMGUI_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:../../%.cpp
+%.o:$(IMGUI_DIR)/backends/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
@@ -78,3 +78,4 @@ $(EXE): $(OBJS)
 
 clean:
 	rm -f $(EXE) $(OBJS)
+

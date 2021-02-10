@@ -4,8 +4,8 @@
 #include <SDL2/SDL.h>
 #include <imgui.h>
 #include <GL/glew.h>
-#include <examples/imgui_impl_opengl3.h>
-#include <examples/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl.h>
 #include "src/System/SdlSystem.h"
 
 namespace ngf {
