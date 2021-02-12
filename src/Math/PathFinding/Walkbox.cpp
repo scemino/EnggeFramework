@@ -1,5 +1,6 @@
 #include <cmath>
 #include <algorithm>
+#include <clipper.hpp>
 #include <ngf/Math/PathFinding/Walkbox.h>
 
 namespace ngf {
@@ -22,6 +23,14 @@ constexpr float distanceToSegmentSquared(const glm::vec2 &p, const glm::vec2 &v,
   if (t > 1)
     return distanceSquared(p, w);
   return distanceSquared(p, glm::vec2(v.x + t * (w.x - v.x), v.y + t * (w.y - v.y)));
+}
+
+ClipperLib::Path toPath(const ngf::Walkbox &walkbox) {
+  ClipperLib::Path path;
+  const auto &vertices = walkbox.getVertices();
+  std::transform(vertices.begin(), vertices.end(), std::back_inserter(path),
+                 [](const auto &p) { return ClipperLib::IntPoint{p.x, p.y}; });
+  return path;
 }
 }
 
@@ -124,6 +133,38 @@ std::ostream &operator<<(std::ostream &os, const Walkbox &walkbox) {
   }
   os << ']';
   return os;
+}
+
+std::vector<Walkbox> Walkbox::merge(const std::vector<Walkbox> &walkboxes) {
+  std::vector<Walkbox> result;
+  ClipperLib::Paths solutions;
+  solutions.push_back(toPath(walkboxes[0]));
+
+  for (int i = 1; i < static_cast<int>(walkboxes.size()); i++) {
+    if (!walkboxes[i].isEnabled())
+      continue;
+    ClipperLib::Clipper clipper;
+    clipper.AddPaths(solutions, ClipperLib::ptSubject, true);
+    clipper.AddPath(toPath(walkboxes[i]), ClipperLib::ptClip, true);
+    solutions.clear();
+    clipper.Execute(ClipperLib::ctUnion, solutions, ClipperLib::pftEvenOdd);
+  }
+
+  for (auto &sol:solutions) {
+    std::vector<glm::ivec2> sPoints;
+    std::transform(sol.begin(), sol.end(), std::back_inserter(sPoints), [](auto &p) -> glm::ivec2 {
+      return glm::ivec2(p.X, p.Y);
+    });
+    bool isEnabled = ClipperLib::Orientation(sol);
+    if (!isEnabled) {
+      std::reverse(sPoints.begin(), sPoints.end());
+    }
+    ngf::Walkbox walkbox(sPoints);
+    walkbox.setYAxisDirection(ngf::YAxisDirection::Down);
+    walkbox.setEnabled(isEnabled);
+    result.push_back(walkbox);
+  }
+  return result;
 }
 
 } // namespace ng

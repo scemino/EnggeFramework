@@ -111,7 +111,14 @@ public:
   /// \param pos Position of the point to remove.
   void erase(const_iterator it) { m_polygon.erase(it); }
 
-  const std::vector<glm::ivec2> &getVertices() const { return m_polygon; }
+  /// @brief Gets all points composing the walkbox.
+  /// \return The list of points composing the walkbox.
+  [[nodiscard]] const std::vector<glm::ivec2> &getVertices() const { return m_polygon; }
+
+  /// @brief Merges all specified walkboxes.
+  /// \param walkboxes Walkboxes to merge.
+  /// \return The walkboxes merged.
+  static std::vector<Walkbox> merge(const std::vector<Walkbox>& walkboxes);
 
 private:
   bool m_visible{true};

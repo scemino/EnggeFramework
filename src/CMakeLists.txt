@@ -16,6 +16,7 @@ set(NGLIB_HEADERS_DIR
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/extlibs/imgui
+        ${PROJECT_SOURCE_DIR}/extlibs/clipper
         ${PROJECT_SOURCE_DIR}/extlibs)
 
 # ngf sources
@@ -82,8 +83,8 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 ## For Linux only, to use std::filesystem
 if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui stdc++fs)
+    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui stdc++fs clipper)
 else()
-    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} SDL2::SDL2 ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui)
+    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} SDL2::SDL2 ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui clipper)
 endif ()
 

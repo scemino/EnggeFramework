@@ -5,3 +5,5 @@ add_library(imgui
         imgui/imgui_widgets.cpp
         imgui/misc/cpp/imgui_stdlib.cpp)
 target_include_directories(imgui PUBLIC imgui)
+
+add_subdirectory(clipper)
