@@ -1,6 +1,6 @@
 find_package(SDL2 CONFIG REQUIRED)
 
-add_executable(AnimViewer AnimViewer.cpp)
+add_executable(AnimViewer AnimViewer.cpp AnimEditor.cpp)
 if (WIN32)
     target_link_libraries(AnimViewer SDL2::SDL2main ngf)
 else()

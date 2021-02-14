@@ -162,9 +162,12 @@ private:
       return;
 
     glm::ivec2 offset{0, 0};
-    if (!anim.offsets.empty()) {
+    if (!anim.offsets.empty() && anim.frameIndex < anim.offsets.size()) {
       offset = anim.offsets[anim.frameIndex];
     }
+    if(anim.frameIndex >= anim.frames.size())
+      return;
+
     const auto frame = anim.frames[anim.frameIndex];
     glm::vec2 origin = {frame.sourceSize.x / 2.f, frame.sourceSize.y / 2.f};
     glm::vec2 pos = {

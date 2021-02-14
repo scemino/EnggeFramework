@@ -6,6 +6,9 @@
 
 class AnimViewerApplication final : public ngf::Application {
 public:
+  AnimViewerApplication() : m_editor(*this) {
+  }
+
   void load(std::string path) {
     m_path = std::move(path);
   }
