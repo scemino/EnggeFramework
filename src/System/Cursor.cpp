@@ -1,6 +1,7 @@
 #include <ngf/System/Cursor.h>
 #include <SDL2/SDL.h>
 #include <stdexcept>
+#include "SdlSystem.h"
 
 namespace ngf {
 namespace {
@@ -27,23 +28,23 @@ Cursor::Cursor(SDL_Cursor *cursor) : m_cursor(cursor), m_freeCursor(false) {
 }
 
 Cursor::Cursor(Type type)
-    : m_cursor(SDL_CreateSystemCursor(getSDLSystemCursor(type))) {
+    : m_cursor(SDL_CHECK_EXPR(SDL_CreateSystemCursor(getSDLSystemCursor(type)))) {
   if (m_cursor == nullptr)
     throw std::runtime_error("Could not load system cursor");
 }
 
-void Cursor::setType(Type type){
+void Cursor::setType(Type type) {
   if (m_cursor && m_freeCursor) {
-    SDL_FreeCursor(m_cursor);
+    SDL_CHECK(SDL_FreeCursor(m_cursor));
   }
-  m_cursor = SDL_CreateSystemCursor(getSDLSystemCursor(type));
+  m_cursor = SDL_CHECK_EXPR(SDL_CreateSystemCursor(getSDLSystemCursor(type)));
   if (m_cursor == nullptr)
     throw std::runtime_error("Could not load system cursor");
 }
 
 Cursor::~Cursor() {
   if (m_cursor && m_freeCursor) {
-    SDL_FreeCursor(m_cursor);
+    SDL_CHECK(SDL_FreeCursor(m_cursor));
   }
 }
 }

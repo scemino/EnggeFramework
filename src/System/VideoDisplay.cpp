@@ -1,16 +1,17 @@
 #include <ngf/System/VideoDisplay.h>
 #include <SDL2/SDL.h>
+#include "SdlSystem.h"
 
 namespace ngf {
 VideoDisplay::VideoDisplay(int id) : m_id(id) {}
 
 std::string VideoDisplay::getName() const {
-  return SDL_GetDisplayName(m_id);
+  return SDL_CHECK_EXPR(SDL_GetDisplayName(m_id));
 }
 
 ngf::irect VideoDisplay::getBounds() const {
   SDL_Rect rect;
-  SDL_GetDisplayBounds(m_id, &rect);
+  SDL_CHECK(SDL_GetDisplayBounds(m_id, &rect));
   return ngf::irect::fromPositionSize({rect.x, rect.y}, {rect.w, rect.h});
 }
 
@@ -30,7 +31,7 @@ VideoDisplayIterator VideoDisplayIterator::begin() const {
 }
 
 VideoDisplayIterator VideoDisplayIterator::end() const {
-  auto count = SDL_GetNumVideoDisplays();
+  auto count = SDL_CHECK_EXPR(SDL_GetNumVideoDisplays());
   return VideoDisplayIterator(count);
 }
 
@@ -39,7 +40,7 @@ VideoDisplayIterator VideoDisplayIterator::cbegin() const {
 }
 
 VideoDisplayIterator VideoDisplayIterator::cend() const {
-  auto count = SDL_GetNumVideoDisplays();
+  auto count = SDL_CHECK_EXPR(SDL_GetNumVideoDisplays());
   return VideoDisplayIterator(count);
 }
 

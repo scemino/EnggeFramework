@@ -1,13 +1,11 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake/SDL2")
+
 find_package(Freetype REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2 REQUIRED)
 
 macro(add_ngf_example NAME)
     add_executable("${NAME}" "${NAME}.cpp")
-    if (WIN32)
-        target_link_libraries("${NAME}" SDL2::SDL2main ngf ${FREETYPE_LIBRARIES})
-    else()
-        target_link_libraries("${NAME}" ngf ${FREETYPE_LIBRARIES})
-    endif()
+    target_link_libraries("${NAME}" ngf ${FREETYPE_LIBRARIES} ${SDL2_LIBRARY})
     install(TARGETS "${NAME}" DESTINATION "bin/examples")
 endmacro()
 
@@ -26,3 +24,4 @@ add_ngf_example(10_pathfinding)
 add_ngf_example(11_area)
 add_ngf_example(12_shapes)
 add_ngf_example(13_render_texture)
+add_ngf_example(14_audio)

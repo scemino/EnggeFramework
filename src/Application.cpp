@@ -109,7 +109,7 @@ void Application::showMessageBox(const std::string &title,
                                  MessageBoxType type,
                                  Window *window) {
   auto handle = window ? window->getNativeHandle() : nullptr;
-  SDL_ShowSimpleMessageBox(toMessageBoxFlags(type), title.c_str(), message.c_str(), handle);
+  SDL_CHECK_EXPR(SDL_ShowSimpleMessageBox(toMessageBoxFlags(type), title.c_str(), message.c_str(), handle));
 }
 
 int Application::showMessageBox(const std::string &title,
@@ -144,7 +144,7 @@ int Application::showMessageBox(const std::string &title,
   data.colorScheme = nullptr;
 
   int id;
-  SDL_ShowMessageBox(&data, &id);
+  SDL_CHECK_EXPR(SDL_ShowMessageBox(&data, &id));
   return id;
 }
 

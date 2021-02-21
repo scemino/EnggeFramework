@@ -1,9 +1,7 @@
-find_package(SDL2 CONFIG REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake/SDL2")
+
+find_package(SDL2 REQUIRED)
 
 add_executable(WimpyViewer WimpyViewer.cpp Object.cpp)
-if (WIN32)
-    target_link_libraries(WimpyViewer SDL2::SDL2main ngf)
-else()
-    target_link_libraries(WimpyViewer ngf)
-endif()
+target_link_libraries(WimpyViewer ngf)
 install(TARGETS WimpyViewer DESTINATION "bin/demos")

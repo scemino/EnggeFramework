@@ -1,6 +1,5 @@
 #include "GlDebug.h"
 #include <iostream>
-#include <iostream>
 #include <GL/glew.h>
 
 namespace ngf {

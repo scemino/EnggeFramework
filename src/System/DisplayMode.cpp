@@ -1,5 +1,6 @@
 #include <ngf/System/DisplayMode.h>
 #include <SDL2/SDL.h>
+#include "SdlSystem.h"
 
 namespace ngf {
 namespace {
@@ -51,7 +52,7 @@ DisplayModeFormat toDisplayModeFormat(Uint32 format) {
 DisplayMode::DisplayMode(int displayId, int modeId)
     : m_displayId(displayId), m_modeId(modeId) {
   SDL_DisplayMode mode;
-  SDL_GetDisplayMode(displayId, modeId, &mode);
+  SDL_CHECK(SDL_GetDisplayMode(displayId, modeId, &mode));
   size = {mode.w, mode.h};
   bitsPerPixel = SDL_BITSPERPIXEL(mode.format);
   refreshRate = mode.refresh_rate;

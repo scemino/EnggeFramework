@@ -59,16 +59,16 @@ Window::~Window() {
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 
-  if(m_glContext) {
+  if (m_glContext) {
     GL_CHECK(glBindVertexArray(0));
     GL_CHECK(glDeleteVertexArrays(1, &m_vao));
-    SDL_GL_DeleteContext(m_glContext);
+    GL_CHECK(SDL_GL_DeleteContext(m_glContext));
   }
 
-  if(m_window) {
-    SDL_DestroyWindow(m_window);
+  if (m_window) {
+    GL_CHECK(SDL_DestroyWindow(m_window));
   }
-  SDL_Quit();
+  GL_CHECK(SDL_Quit());
 }
 
 void Window::init(const WindowConfig &config) {
@@ -84,15 +84,15 @@ void Window::init(const WindowConfig &config) {
 #endif
 
   // Create window with graphics context
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+  SDL_CHECK(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
+  SDL_CHECK(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
+  SDL_CHECK(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
   auto window_flags = (SDL_WindowFlags) (
       SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI |
           (config.resizable ? SDL_WINDOW_RESIZABLE : 0) |
           (config.fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
-  m_window = SDL_CreateWindow(config.title.data(), SDL_WINDOWPOS_CENTERED,
-                              SDL_WINDOWPOS_CENTERED, config.size.x, config.size.y, window_flags);
+  m_window = SDL_CHECK_EXPR(SDL_CreateWindow(config.title.data(), SDL_WINDOWPOS_CENTERED,
+                              SDL_WINDOWPOS_CENTERED, config.size.x, config.size.y, window_flags));
   if (!m_window) {
     std::ostringstream ss;
     ss << "Error when creating SDL Window (error=" << SDL_GetError() << ")";
@@ -100,18 +100,18 @@ void Window::init(const WindowConfig &config) {
   }
 
   // setup OpenGL
-  m_glContext = SDL_GL_CreateContext(m_window);
+  m_glContext = SDL_CHECK_EXPR(SDL_GL_CreateContext(m_window));
   if (!m_glContext) {
     std::ostringstream ss;
     ss << "Error when creating GL context (error=" << SDL_GetError() << ")";
     throw std::runtime_error(ss.str());
   }
 
-  SDL_GL_MakeCurrent(m_window, m_glContext);
+  SDL_CHECK(SDL_GL_MakeCurrent(m_window, m_glContext));
   setVerticalSyncEnabled(config.vSyncEnabled);
 
   int w, h;
-  SDL_GetWindowSize(m_window, &w, &h);
+  SDL_CHECK(SDL_GetWindowSize(m_window, &w, &h));
   auto size = getSize();
   dpiScale = static_cast<float>(size.x) / static_cast<float>(w);
 
@@ -148,12 +148,12 @@ void Window::init(const WindowConfig &config) {
 }
 
 void Window::display() {
-  SDL_GL_SwapWindow(m_window);
+  SDL_CHECK(SDL_GL_SwapWindow(m_window));
 }
 
 bool Window::pollEvent(Event &event) {
   SDL_Event sdlEvent;
-  if (!SDL_PollEvent(&sdlEvent))
+  if (!SDL_CHECK_EXPR(SDL_PollEvent(&sdlEvent)))
     return false;
 
   ImGui_ImplSDL2_ProcessEvent(&sdlEvent);
@@ -215,7 +215,7 @@ bool Window::pollEvent(Event &event) {
   case SDL_CONTROLLERDEVICEADDED: {
     event.type = EventType::GamepadConnected;
     event.gamepadConnection.id = static_cast<std::int32_t>(sdlEvent.cdevice.which);
-    auto *controller = SDL_GameControllerOpen(event.gamepadConnection.id);
+    auto *controller = SDL_CHECK_EXPR(SDL_GameControllerOpen(event.gamepadConnection.id));
     if (!controller) {
       std::cerr << "Could not open gamepad " << event.gamepadConnection.id << ": " << SDL_GetError() << "\n";
     }
@@ -223,10 +223,10 @@ bool Window::pollEvent(Event &event) {
     break;
   case SDL_CONTROLLERDEVICEREMOVED: {
     event.type = EventType::GamepadDisconnected;
-    auto controllerId = SDL_GameControllerFromInstanceID(sdlEvent.cdevice.which);
+    auto controllerId = SDL_CHECK_EXPR(SDL_GameControllerFromInstanceID(sdlEvent.cdevice.which));
     event.gamepadDisconnection.id = static_cast<std::int32_t>(sdlEvent.cdevice.which);
     if (controllerId) {
-      SDL_GameControllerClose(controllerId);
+      SDL_CHECK(SDL_GameControllerClose(controllerId));
     }
   }
     break;
@@ -235,8 +235,7 @@ bool Window::pollEvent(Event &event) {
     event.gamepadAxis.axis = getGamepadAxis(sdlEvent.caxis.axis);
     event.gamepadAxis.value = sdlEvent.caxis.value;
     break;
-  case SDL_DROPFILE:
-    event.type = EventType::DropFile;
+  case SDL_DROPFILE:event.type = EventType::DropFile;
     event.drop.file = sdlEvent.drop.file;
     SDL_free(sdlEvent.drop.file);
     break;
@@ -246,53 +245,53 @@ bool Window::pollEvent(Event &event) {
 }
 
 void Window::setVerticalSyncEnabled(bool enabled) {
-  SDL_GL_SetSwapInterval(enabled ? 1 : 0);
+  SDL_CHECK(SDL_GL_SetSwapInterval(enabled ? 1 : 0));
 }
 
 bool Window::isVerticalSyncEnabled() const {
-  return SDL_GL_GetSwapInterval();
+  return SDL_CHECK_EXPR(SDL_GL_GetSwapInterval());
 }
 
 void Window::setTitle(const std::string &title) {
-  SDL_SetWindowTitle(m_window, title.data());
+  SDL_CHECK(SDL_SetWindowTitle(m_window, title.data()));
 }
 
 std::string Window::getTitle() const {
-  return SDL_GetWindowTitle(m_window);
+  return SDL_CHECK_EXPR(SDL_GetWindowTitle(m_window));
 }
 
 void Window::setFullscreen(bool fullscreen) {
-  SDL_SetWindowFullscreen(m_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+  SDL_CHECK(SDL_SetWindowFullscreen(m_window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
 }
 
 bool Window::isFullscreen() const {
-  auto flags = SDL_GetWindowFlags(m_window);
+  auto flags = SDL_CHECK_EXPR(SDL_GetWindowFlags(m_window));
   return (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
 }
 
 void Window::setWindowResizable(bool resizable) {
-  SDL_SetWindowResizable(m_window, resizable ? SDL_TRUE : SDL_FALSE);
+  SDL_CHECK(SDL_SetWindowResizable(m_window, resizable ? SDL_TRUE : SDL_FALSE));
 }
 
 bool Window::isWindowResizable() const {
-  auto flags = SDL_GetWindowFlags(m_window);
+  auto flags = SDL_CHECK_EXPR(SDL_GetWindowFlags(m_window));
   return (flags & SDL_WINDOW_RESIZABLE) != 0;
 }
 
 glm::ivec2 Window::getSize() const {
   glm::ivec2 size;
-  SDL_GL_GetDrawableSize(m_window, &size.x, &size.y);
+  SDL_CHECK(SDL_GL_GetDrawableSize(m_window, &size.x, &size.y));
   return size;
 }
 
 void Window::setSize(const glm::ivec2 &size) {
   auto dpiScale = getDpiScale();
-  SDL_SetWindowSize(m_window, size.x * dpiScale, size.y * dpiScale);
+  SDL_CHECK(SDL_SetWindowSize(m_window, size.x * dpiScale, size.y * dpiScale));
 }
 
 void Window::activate() {
-  if (SDL_GL_GetCurrentContext() != m_glContext) {
-    SDL_GL_MakeCurrent(m_window, m_glContext);
+  if (SDL_CHECK_EXPR(SDL_GL_GetCurrentContext()) != m_glContext) {
+    SDL_CHECK(SDL_GL_MakeCurrent(m_window, m_glContext));
   }
   GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
@@ -300,95 +299,95 @@ void Window::activate() {
 glm::ivec2 Window::getFramebufferSize() const {
   assert(m_window);
   glm::ivec2 size;
-  SDL_GL_GetDrawableSize(m_window, &size.x, &size.y);
+  SDL_CHECK(SDL_GL_GetDrawableSize(m_window, &size.x, &size.y));
   return size;
 }
 
 glm::ivec2 Window::getPosition() const {
   glm::ivec2 pos;
-  SDL_GetWindowPosition(m_window, &pos.x, &pos.y);
+  SDL_CHECK(SDL_GetWindowPosition(m_window, &pos.x, &pos.y));
   return pos;
 }
 
 void Window::setPosition(const glm::ivec2 &pos) {
-  SDL_SetWindowPosition(m_window, pos.x, pos.y);
+  SDL_CHECK(SDL_SetWindowPosition(m_window, pos.x, pos.y));
 }
 
 float Window::getBrightness() const {
-  return SDL_GetWindowBrightness(m_window);
+  return SDL_CHECK_EXPR(SDL_GetWindowBrightness(m_window));
 }
 
 void Window::setBrightness(float brightness) {
-  SDL_SetWindowBrightness(m_window, brightness);
+  SDL_CHECK(SDL_SetWindowBrightness(m_window, brightness));
 }
 
 bool Window::isMinimized() const {
-  auto flags = SDL_GetWindowFlags(m_window);
+  auto flags = SDL_CHECK_EXPR(SDL_GetWindowFlags(m_window));
   return (flags & SDL_WINDOW_MINIMIZED);
 }
 
 void Window::minimize() {
-  SDL_MinimizeWindow(m_window);
+  SDL_CHECK(SDL_MinimizeWindow(m_window));
 }
 
 bool Window::isMaximized() const {
-  auto flags = SDL_GetWindowFlags(m_window);
+  auto flags = SDL_CHECK_EXPR(SDL_GetWindowFlags(m_window));
   return (flags & SDL_WINDOW_MAXIMIZED);
 }
 
 void Window::maximize() {
-  SDL_MaximizeWindow(m_window);
+  SDL_CHECK(SDL_MaximizeWindow(m_window));
 }
 
 void Window::restore() {
-  SDL_RestoreWindow(m_window);
+  SDL_CHECK(SDL_RestoreWindow(m_window));
 }
 
 bool Window::isVisible() const {
-  auto flags = SDL_GetWindowFlags(m_window);
+  auto flags = SDL_CHECK_EXPR(SDL_GetWindowFlags(m_window));
   return (flags & SDL_WINDOW_SHOWN);
 }
 
 void Window::setVisible(bool visible) {
   if (visible) {
-    SDL_ShowWindow(m_window);
+    SDL_CHECK(SDL_ShowWindow(m_window));
   } else {
-    SDL_HideWindow(m_window);
+    SDL_CHECK(SDL_HideWindow(m_window));
   }
 }
 
 bool Window::isDecorated() const {
-  auto flags = SDL_GetWindowFlags(m_window);
+  auto flags = SDL_CHECK_EXPR(SDL_GetWindowFlags(m_window));
   return (flags & SDL_WINDOW_BORDERLESS);
 }
 
 void Window::setDecorated(bool decorated) {
-  SDL_SetWindowBordered(m_window, decorated ? SDL_TRUE : SDL_FALSE);
+  SDL_CHECK(SDL_SetWindowBordered(m_window, decorated ? SDL_TRUE : SDL_FALSE));
 }
 
 void Window::setMouseCursorVisible(bool visible) {
-  SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
+  SDL_CHECK(SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE));
 }
 
 bool Window::isMouseCursorVisible() const {
-  return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
+  return SDL_CHECK_EXPR(SDL_ShowCursor(SDL_QUERY)) == SDL_ENABLE;
 }
 
 void Window::setMouseCursorGrabbed(bool grabbed) {
-  SDL_SetWindowGrab(m_window, grabbed ? SDL_TRUE : SDL_FALSE);
+  SDL_CHECK(SDL_SetWindowGrab(m_window, grabbed ? SDL_TRUE : SDL_FALSE));
 }
 
 bool Window::isMouseCursorGrabbed() const {
-  return SDL_GetWindowGrab(m_window) == SDL_TRUE;
+  return SDL_CHECK_EXPR(SDL_GetWindowGrab(m_window)) == SDL_TRUE;
 }
 
 void Window::setMouseCursor(const Cursor &cursor) {
   if (!cursor.m_cursor)
     return;
-  SDL_SetCursor(cursor.m_cursor);
+  SDL_CHECK(SDL_SetCursor(cursor.m_cursor));
 }
 
 [[nodiscard]] Cursor Window::getMouseCursor() const {
-  return Cursor(SDL_GetCursor());
+  return Cursor(SDL_CHECK_EXPR(SDL_GetCursor()));
 }
 }

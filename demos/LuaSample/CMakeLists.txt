@@ -1,5 +1,7 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake/SDL2")
+
 find_package(Freetype REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2 REQUIRED)
 
 set(LUA_SOURCE_FILES
         lua-5.4.1/src/lapi.c
@@ -39,11 +41,7 @@ add_executable(LuaSample ${LUA_SOURCE_FILES} ImGuiColorTextEdit/TextEditor.cpp G
 if (MSVC)
     target_compile_options(LuaSample PRIVATE /W4 /Zc:twoPhase-)
 endif ()
-if (WIN32)
-    target_link_libraries(LuaSample SDL2::SDL2main ngf ${FREETYPE_LIBRARIES})
-else()
-    target_link_libraries(LuaSample ngf ${FREETYPE_LIBRARIES})
-endif()
+target_link_libraries(LuaSample ngf ${FREETYPE_LIBRARIES})
 install(TARGETS LuaSample DESTINATION "bin/demos")
 
 include_directories(./)

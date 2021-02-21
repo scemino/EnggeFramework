@@ -1,7 +1,10 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake/sdl2" "${CMAKE_CURRENT_LIST_DIR}/../cmake/glm")
+
 # dependencies
 find_package(GLEW REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(SDL2Mixer REQUIRED)
+find_package(GLM REQUIRED)
 find_package(Freetype REQUIRED)
 if (NOT WIN32)
     find_package(OpenGL REQUIRED)
@@ -10,7 +13,9 @@ endif ()
 set(NGLIB_HEADERS_DIR
         ${OPENGL_INCLUDE_DIR}
         ${SDL2_INCLUDE_DIRS}
+        ${SDL2Mixer_INCLUDE_DIR}
         ${GLEW_INCLUDE_DIRS}
+        ${GLM_INCLUDE_DIRS}
         ${FREETYPE_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/extlibs/stb
         ${PROJECT_SOURCE_DIR}/include
@@ -21,6 +26,10 @@ set(NGLIB_HEADERS_DIR
 
 # ngf sources
 set(SYS_SOURCE_FILES
+        Audio/AudioChannel.cpp
+        Audio/AudioSystem.cpp
+        Audio/SoundBuffer.cpp
+        Audio/SoundHandle.cpp
         System/Cursor.cpp
         System/DisplayMode.cpp
         System/Mouse.cpp
@@ -83,8 +92,8 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 ## For Linux only, to use std::filesystem
 if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui stdc++fs clipper)
-else()
-    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} SDL2::SDL2 ${OPENGL_LIBRARIES} ${GLM_LIBRARIES} GLEW::GLEW imgui clipper)
+    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}  ${SDL2Mixer_LIBRARY} ${OPENGL_LIBRARIES} glm::glm GLEW::GLEW imgui clipper stdc++fs )
+else ()
+    target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}  ${SDL2Mixer_LIBRARY} ${OPENGL_LIBRARIES} glm::glm GLEW::GLEW imgui clipper)
 endif ()
 

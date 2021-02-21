@@ -6,6 +6,7 @@
 #include <ngf/Graphics/RenderWindow.h>
 #include <ngf/Graphics/RenderStates.h>
 #include <ngf/System/VideoDisplay.h>
+#include <ngf/Audio/AudioSystem.h>
 
 namespace ngf {
 class Application {
@@ -72,6 +73,7 @@ private:
 
 protected:
   Window m_window;
+  ngf::AudioSystem m_audioSystem;
 
 private:
   std::string m_title;
