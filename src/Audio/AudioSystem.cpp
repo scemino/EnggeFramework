@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <ngf/Audio/SoundBuffer.h>
 #include <ngf/Audio/AudioSystem.h>
 #include "../System/SdlSystem.h"
@@ -11,15 +12,16 @@ AudioSystem::AudioSystem() {
   g_pSystem = this;
   SDL_CHECK(Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096));
   SDL_CHECK(Mix_AllocateChannels(32));
-  Mix_ChannelFinished([](int channel) { g_pSystem->onChannelFinished(channel); });
   m_channels.resize(32);
   for (auto i = 0; i < 32; ++i) {
     m_channels[i].init(*this, i);
   }
+  SDL_CHECK(Mix_ChannelFinished([](int channel) { g_pSystem->onChannelFinished(channel); }));
 }
 
 AudioSystem::~AudioSystem() {
-  Mix_CloseAudio();
+  SDL_CHECK(Mix_HaltChannel(-1));
+  SDL_CHECK(Mix_CloseAudio());
   g_pSystem = nullptr;
 }
 
@@ -36,13 +38,21 @@ std::shared_ptr<SoundHandle> AudioSystem::playSound(ngf::SoundBuffer &buffer,
     return handle;
   }
 
+  if (loopTimes < 0) {
+    loopTimes = -1;
+  } else if (loopTimes == 0) {
+    loopTimes = 0;
+  } else {
+    loopTimes--;
+  }
+
   if (fadeInTime == TimeSpan::Zero) {
-    channel = SDL_CHECK_EXPR(Mix_PlayChannel(-1, buffer.m_pChunk, loopTimes - 1));
+    channel = SDL_CHECK_EXPR(Mix_PlayChannel(-1, buffer.m_pChunk, loopTimes));
   } else {
     channel =
         SDL_CHECK_EXPR(Mix_FadeInChannel(-1,
                                          buffer.m_pChunk,
-                                         loopTimes - 1,
+                                         loopTimes,
                                          static_cast<int>(fadeInTime.getTotalMilliseconds())));
   }
   if (channel < 0)
@@ -55,13 +65,14 @@ std::shared_ptr<SoundHandle> AudioSystem::playSound(ngf::SoundBuffer &buffer,
 }
 
 void AudioSystem::onChannelFinished(int channel) {
-  for (auto it = m_handles.begin(); it != m_handles.end(); ++it) {
-    if (it->get()->get().getChannel() == channel) {
-      it->get()->m_channel = &m_invalidChannel;
-      m_handles.erase(it);
-      return;
-    }
-  }
+  std::for_each(m_handles.begin(), m_handles.end(),
+                [channel, this](auto handle) {
+                  if (handle->get().getChannel() == channel) {
+                    handle->m_channel = &m_invalidChannel;
+                  }
+                });
+  m_handles.erase(std::remove_if(m_handles.begin(), m_handles.end(),
+                                 [this](auto handle) { return handle->m_channel == &m_invalidChannel; }));
 }
 
 size_t AudioSystem::size() const noexcept { return m_channels.size(); }

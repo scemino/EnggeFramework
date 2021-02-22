@@ -8,16 +8,23 @@ namespace ngf {
 void AudioChannel::play(int loopTimes, const TimeSpan &fadeInTime) {
   if (m_channel < 0 || !m_buffer)
     return;
+  if (loopTimes < 0) {
+    loopTimes = -1;
+  } else if (loopTimes == 0) {
+    loopTimes = 0;
+  } else {
+    loopTimes--;
+  }
   switch (getStatus()) {
   case Status::Paused:SDL_CHECK(Mix_Resume(m_channel));
     break;
   case Status::Stopped:m_numLoops = loopTimes;
     if (fadeInTime == TimeSpan::Zero) {
-      SDL_CHECK(Mix_PlayChannel(m_channel, m_buffer->m_pChunk, loopTimes - 1));
+      SDL_CHECK(Mix_PlayChannel(m_channel, m_buffer->m_pChunk, loopTimes));
     } else {
       SDL_CHECK(Mix_FadeInChannel(m_channel,
                                   m_buffer->m_pChunk,
-                                  loopTimes - 1,
+                                  loopTimes,
                                   static_cast<int>(fadeInTime.getTotalMilliseconds())));
     }
     break;
