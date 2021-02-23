@@ -39,13 +39,13 @@ void GGPackHashWriter::writeArray(const GGPackValue &array, std::ostream &os) {
 }
 
 void GGPackHashWriter::writeString(const std::string &key, std::ostream &os) {
-  auto it = std::find(m_keys.begin(), m_keys.end(), key);
+  auto it = m_keys.find(key);
   int32_t index;
   if (it == m_keys.end()) {
-    index = static_cast<int32_t>(m_keys.size());
-    m_keys.push_back(key);
+    index = m_index;
+    m_keys.insert({key, m_index++});
   } else {
-    index = static_cast<int32_t>(std::distance(m_keys.begin(), it));
+    index = it->second;
   }
   os.write((char *) &index, 4);
 }
@@ -102,7 +102,12 @@ void GGPackHashWriter::write(const ngf::GGPackValue &hash, std::ostream &os) {
   // write strings
   auto stringsOffset = static_cast<int32_t>(os.tellp());
   char nullChar = '\0';
+  std::vector<std::string> keys;
+  keys.resize(writer.m_keys.size());
   for (const auto &key : writer.m_keys) {
+    keys[key.second] = key.first;
+  }
+  for (const auto &key : keys) {
     os.write(key.data(), key.length());
     os.write(&nullChar, 1);
   }
@@ -111,7 +116,7 @@ void GGPackHashWriter::write(const ngf::GGPackValue &hash, std::ostream &os) {
   auto ploOffset = static_cast<int32_t>(os.tellp());
   char c = 7;
   os.write((char *) &c, 1);
-  for (const auto &key : writer.m_keys) {
+  for (const auto &key : keys) {
     os.write((char *) &stringsOffset, 4);
     stringsOffset += key.length() + 1;
   }

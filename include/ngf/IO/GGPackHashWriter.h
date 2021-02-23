@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <vector>
+#include <map>
 #include <ngf/IO/GGPackValue.h>
 
 namespace ngf {
@@ -15,6 +15,7 @@ private:
   void writeString(const std::string &key, std::ostream &os);
 
 private:
-  std::vector<std::string> m_keys;
+  int m_index{0};
+  std::map<std::string, int> m_keys;
 };
 }
