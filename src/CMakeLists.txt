@@ -42,11 +42,8 @@ set(SYS_SOURCE_FILES
         System/VideoDisplay.cpp)
 set(WIN_SOURCE_FILES System/Window.cpp)
 set(GFX_SOURCE_FILES
-        Graphics/AnimatedSprite.cpp
-        Graphics/Animation.cpp
         Graphics/CircleShape.cpp
         Graphics/Color.cpp
-        Graphics/DefaultFont.cpp
         Graphics/FntFont.cpp
         Graphics/GlDebug.cpp
         Graphics/Image.cpp

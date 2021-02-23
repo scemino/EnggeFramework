@@ -1,379 +1,269 @@
-#include <ngf/Graphics/RenderTarget.h>
-#include <ngf/Graphics/Text.h>
-#include <ngf/Graphics/Vertex.h>
-#include <ngf/Math/VectorExtensions.h>
-#include <ngf/System/StringHelper.h>
 #include <utility>
-#include <sstream>
+#include <ngf/Graphics/RenderTarget.h>
+#include <ngf/Graphics/Vertex.h>
+#include <ngf/System/StringHelper.h>
+#include <ngf/Graphics/RectangleShape.h>
+#include <ngf/Graphics/Text.h>
 
 namespace ngf {
 namespace {
-
-struct ParagraphLine {
-  std::vector<std::wstring> words;
-  float indent = 0.0f;
-  float spacing = 0.0f;
-};
-
-struct Paragraph {
-  std::vector<ParagraphLine> lines;
-};
-
-std::vector<std::wstring> splitInParagraphs(std::wstring_view str) {
-  std::vector<std::wstring> result;
-  auto ss = std::wstringstream(str.data());
-
-  for (std::wstring line; std::getline(ss, line, L'\n');)
-    result.push_back(line);
-
-  return result;
+glm::vec2 normalize(const ngf::Texture &texture, const glm::ivec2 &v) {
+  auto textureSize = glm::vec(texture.getSize());
+  return glm::vec2(static_cast<float>(v.x) / textureSize.x,
+                   static_cast<float>(v.y) / textureSize.y);
 }
 
-std::vector<std::wstring> splitInWords(std::wstring_view str) {
-  std::vector<std::wstring> result;
-  auto ss = std::wstringstream(str.data());
+// Add a glyph quad to the vertex array
+void addGlyphQuad(std::vector<ngf::Vertex> &vertices, glm::vec2 position,
+                  const ngf::Color &color, const ngf::Glyph &glyph, const ngf::Texture &texture) {
+  float left = glyph.bounds.min.x;
+  float top = glyph.bounds.min.y;
+  float right = glyph.bounds.max.x;
+  float bottom = glyph.bounds.max.y;
 
-  for (std::wstring line; std::getline(ss, line, L' ');)
-    result.push_back(line);
+  int u1 = glyph.textureRect.min.x;
+  int v1 = glyph.textureRect.min.y;
+  int u2 = glyph.textureRect.max.x - 1;
+  int v2 = glyph.textureRect.max.y - 1;
 
-  return result;
+  vertices.push_back(
+      ngf::Vertex{{position.x + left, position.y + top}, color, normalize(texture, {u1, v1})});
+  vertices.push_back(
+      ngf::Vertex{{position.x + right, position.y + top}, color, normalize(texture, {u2, v1})});
+  vertices.push_back(
+      ngf::Vertex{{position.x + left, position.y + bottom}, color, normalize(texture, {u1, v2})});
+  vertices.push_back(
+      ngf::Vertex{{position.x + left, position.y + bottom}, color, normalize(texture, {u1, v2})});
+  vertices.push_back(
+      ngf::Vertex{{position.x + right, position.y + top}, color, normalize(texture, {u2, v1})});
+  vertices.push_back(
+      ngf::Vertex{{position.x + right, position.y + bottom}, color, normalize(texture, {u2, v2})});
 }
-
-float getWordWidth(std::wstring_view word, unsigned characterSize, Font &font) {
-  if (word.empty())
-    return 0;
-
-  float width = 0.0f;
-  wchar_t prevCodepoint = '\0';
-
-  for (wchar_t currCodepoint : word) {
-    width += font.getKerning(prevCodepoint, currCodepoint, characterSize);
-    prevCodepoint = currCodepoint;
-
-    const Glyph &glyph = font.getGlyph(currCodepoint, characterSize);
-    width += glyph.advance;
-  }
-
-  return width;
-}
-
-std::vector<Paragraph> makeParagraphs(const std::wstring &str,
-                                      float spaceWidth,
-                                      float paragraphWidth,
-                                      Alignment align,
-                                      unsigned characterSize,
-                                      Font &font) {
-  auto paragraphs = splitInParagraphs(str);
-  std::vector<Paragraph> out;
-
-  for (const auto &simpleParagraph : paragraphs) {
-    auto words = splitInWords(simpleParagraph);
-
-    Paragraph paragraph;
-
-    if (align == Alignment::None) {
-      ParagraphLine line;
-      line.words = std::move(words);
-      line.indent = 0.0f;
-      line.spacing = spaceWidth;
-      paragraph.lines.push_back(std::move(line));
-    } else {
-      ParagraphLine currentLine;
-      float currentWidth = 0.0f;
-
-      for (const auto &word : words) {
-        auto wordWith = getWordWidth(word, characterSize, font);
-        if(wordWith == 0) continue;
-
-        if (!currentLine.words.empty() && currentWidth + spaceWidth + wordWith > paragraphWidth) {
-          auto wordCount = currentLine.words.size();
-
-          switch (align) {
-          case Alignment::Left:currentLine.indent = 0.0f;
-            currentLine.spacing = spaceWidth;
-            break;
-
-          case Alignment::Right:currentLine.indent = paragraphWidth - currentWidth;
-            currentLine.spacing = spaceWidth;
-            break;
-
-          case Alignment::Center:currentLine.indent = (paragraphWidth - currentWidth) / 2;
-            currentLine.spacing = spaceWidth;
-            break;
-
-          case Alignment::Justify:currentLine.indent = 0.0f;
-
-            if (wordCount > 1) {
-              currentLine.spacing = spaceWidth + (paragraphWidth - currentWidth) / (wordCount - 1);
-            } else {
-              currentLine.spacing = 0.0f;
-            }
-
-            break;
-
-          case Alignment::None:assert(false);
-            break;
-          }
-
-          paragraph.lines.push_back(std::move(currentLine));
-          currentLine.words.clear();
-        }
-
-        if (currentLine.words.empty()) {
-          currentWidth = wordWith;
-        } else {
-          currentWidth += spaceWidth + wordWith;
-        }
-
-        currentLine.words.push_back(word);
-      }
-
-      // add the last line
-      if (!currentLine.words.empty()) {
-        switch (align) {
-        case Alignment::Left:
-        case Alignment::Justify:currentLine.indent = 0.0f;
-          currentLine.spacing = spaceWidth;
-          break;
-
-        case Alignment::Right:currentLine.indent = paragraphWidth - currentWidth;
-          currentLine.spacing = spaceWidth;
-          break;
-
-        case Alignment::Center:currentLine.indent = (paragraphWidth - currentWidth) / 2;
-          currentLine.spacing = spaceWidth;
-          break;
-
-        case Alignment::None:assert(false);
-          break;
-        }
-
-        paragraph.lines.push_back(std::move(currentLine));
-      }
-    }
-
-    out.push_back(std::move(paragraph));
-    paragraph.lines.clear();
-  }
-
-  return out;
-}
-
-void addGlyphVertex(std::vector<Vertex> &array, const Glyph &glyph, const glm::vec2 &position) {
-  Vertex vertices[4];
-
-  vertices[0].pos = position + glyph.bounds.getTopLeft();
-  vertices[1].pos = position + glyph.bounds.getTopRight();
-  vertices[2].pos = position + glyph.bounds.getBottomLeft();
-  vertices[3].pos = position + glyph.bounds.getBottomRight();
-
-  vertices[0].texCoords = glyph.textureRect.getTopLeft();
-  vertices[1].texCoords = glyph.textureRect.getTopRight();
-  vertices[2].texCoords = glyph.textureRect.getBottomLeft();
-  vertices[3].texCoords = glyph.textureRect.getBottomRight();
-
-  // first triangle
-  array.push_back(vertices[0]);
-  array.push_back(vertices[1]);
-  array.push_back(vertices[2]);
-
-  // second triangle
-  array.push_back(vertices[2]);
-  array.push_back(vertices[1]);
-  array.push_back(vertices[3]);
-}
-
-} // anonymous namespace
+} // namespace
 
 Text::Text() = default;
 
-Text::Text(std::wstring string, Font &font, unsigned int characterSize)
+Text::Text(std::wstring string, const ngf::Font &font, unsigned int characterSize)
     : m_string(std::move(string)), m_font(&font),
-      m_characterSize(characterSize) {
-  ensureGeometryUpdate();
+      m_characterSize(characterSize), m_geometryNeedUpdate(true) {
 }
 
 void Text::setWideString(const std::wstring &string) {
-  if (m_string == string)
-    return;
-  m_string = string;
-  ensureGeometryUpdate();
+  if (m_string != string) {
+    m_string = string;
+    m_geometryNeedUpdate = true;
+  }
 }
 
 void Text::setString(const std::string &string) {
-  setWideString(StringHelper::towstring(string));
+  setWideString(ngf::StringHelper::towstring(string));
 }
 
 std::string Text::getString() const {
-  return StringHelper::tostring(m_string);
+  return ngf::StringHelper::tostring(m_string);
 }
 
-void Text::setFont(Font &font) {
-  if (m_font == &font)
-    return;
-  m_font = &font;
-  ensureGeometryUpdate();
+void Text::setFont(const ngf::Font &font) {
+  if (m_font != &font) {
+    m_font = &font;
+    m_geometryNeedUpdate = true;
+  }
 }
 
 void Text::setMaxWidth(float maxWidth) {
-  if (m_maxWidth == maxWidth)
-    return;
-  m_maxWidth = maxWidth;
-  ensureGeometryUpdate();
-}
-
-void Text::setColor(const Color &color) {
-  if (m_color == color)
-    return;
-  m_color = color;
-  for (auto &vertex : m_vertices) {
-    vertex.color = color;
+  if (m_maxWidth != maxWidth) {
+    m_maxWidth = maxWidth;
+    m_geometryNeedUpdate = true;
   }
 }
 
-const Font *Text::getFont() const {
+void Text::setColor(const ngf::Color &color) {
+  if (m_color != color) {
+    m_color = color;
+    m_geometryNeedUpdate = true;
+  }
+}
+
+const ngf::Font *Text::getFont() const {
   return m_font;
 }
 
-frect Text::getLocalBounds() const {
+ngf::frect Text::getLocalBounds() const {
+  ensureGeometryUpdate();
+
   return m_bounds;
 }
 
-void Text::setAnchor(Anchor anchor) {
-  m_transform.setOriginFromAnchorAndBounds(anchor, getLocalBounds());
-}
-
-void Text::draw(RenderTarget &target, RenderStates states) const {
+void Text::draw(ngf::RenderTarget &target, ngf::RenderStates states) const {
   if (!m_font)
     return;
 
-  RenderStates s = states;
-  s.texture = m_font->getTexture(m_characterSize);
-  s.transform *= m_transform.getTransform();
+  ensureGeometryUpdate();
 
-  if (m_outlineThickness > 0) {
-    target.draw(PrimitiveType::Triangles, m_outlineVertices, s);
+  ngf::RenderStates s = states;
+  s.texture = m_fontTexture.get();
+  s.transform = m_transform.getTransform() * s.transform;
+  target.draw(ngf::PrimitiveType::Triangles, m_vertices, s);
+
+  if (m_showTextBounds) {
+    ngf::RectangleShape rect(getLocalBounds());
+    rect.setOutlineThickness(2);
+    rect.setOutlineColor(getColor());
+    rect.setColor(ngf::Colors::Transparent);
+    rect.draw(target, s);
   }
-
-  target.draw(PrimitiveType::Triangles, m_vertices, s);
 }
 
-void Text::ensureGeometryUpdate() {
-  if (!m_font || m_string.empty())
+void Text::ensureGeometryUpdate() const {
+  if (!m_font)
     return;
 
+  // Do nothing, if geometry has not changed and the font texture has not
+  // changed
+  if (!m_geometryNeedUpdate &&
+      m_font->getTexture(m_characterSize) == m_fontTexture)
+    return;
+
+  // Save the current fonts texture id
+  m_fontTexture = m_font->getTexture(m_characterSize);
+
+  // Mark geometry as updated
+  m_geometryNeedUpdate = false;
+
+  // Clear the previous geometry
   m_vertices.clear();
-  m_outlineVertices.clear();
+  m_bounds = ngf::frect();
 
-  m_bounds = frect();
+  // No text: nothing to draw
+  if (m_string.empty())
+    return;
 
-  auto spaceWidth = m_font->getGlyph(' ', m_characterSize).advance;
-  auto additionalSpace = (spaceWidth / 3.0f) * (m_letterSpacingFactor - 1.0f); // same as SFML even if weird
-  spaceWidth += additionalSpace;
-  auto lineHeight = m_font->getLineSpacing(m_characterSize) * m_lineSpacingFactor;
+  // Precompute the variables needed by the algorithm
+  float whitespaceWidth = m_font->getGlyph(L' ').advance;
+  float x = 0.f;
+  float y = 0.f;
 
-  auto paragraphs = makeParagraphs(m_string, spaceWidth, m_maxWidth, m_align, m_characterSize, *m_font);
+  // Create one quad for each character
+  float maxX = 0.f;
+  float maxY = 0.f;
+  float maxLineY = 0.f;
+  std::uint32_t prevChar = 0;
 
-  glm::vec2 position(0.0f, 0.0f);
-  glm::vec2 min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-  glm::vec2 max(0.0f, 0.0f);
+  struct CharInfo {
+    std::uint32_t chr;
+    glm::vec2 pos;
+    ngf::Color color;
+    const Glyph *pGlyph{nullptr};
+  };
 
-  for (const auto &paragraph : paragraphs) {
-    for (const auto &line : paragraph.lines) {
-      position.x = line.indent;
+  // reset to default color
+  auto color = m_color;
+  auto lastWordIndexSaved = -1;
 
-      for (const auto &word : line.words) {
-        wchar_t prevCodepoint = '\0';
+  int lastWordIndex = 0;
+  std::vector<CharInfo> charInfos(m_string.size());
+  auto text = m_string;
+  for (auto i = 0; i < static_cast<int>(text.size()); ++i) {
+    wchar_t curChar = text[i];
+    charInfos[i].chr = curChar;
+    charInfos[i].pos = {x, y};
+    charInfos[i].color = color;
 
-        for (wchar_t currCodepoint : word) {
-          position.x += m_font->getKerning(prevCodepoint, currCodepoint, m_characterSize);
-          prevCodepoint = currCodepoint;
+    // Skip the \r char to avoid weird graphical issues
+    if (curChar == '\r')
+      continue;
 
-          if (m_outlineThickness > 0.0f) {
-            const auto &glyph = m_font->getGlyph(currCodepoint, m_characterSize, m_outlineThickness);
-            addGlyphVertex(m_outlineVertices, glyph, position);
-            min = ngf::min(min, position + glyph.bounds.getTopLeft());
-            max = ngf::max(max, position + glyph.bounds.getBottomRight());
-          }
+    // Apply the kerning offset
+    x += m_font->getKerning(prevChar, curChar, m_characterSize);
 
-          const auto &glyph = m_font->getGlyph(currCodepoint, m_characterSize);
-          addGlyphVertex(m_vertices, glyph, position);
+    prevChar = curChar;
 
-          if (m_outlineThickness == 0.0f) {
-            min = ngf::min(min, position + glyph.bounds.getTopLeft());
-            max = ngf::max(max, position + glyph.bounds.getBottomRight());
-          }
-
-          position.x += glyph.advance + additionalSpace;
+    // Handle special characters
+    if ((curChar == L' ') || (curChar == L'\n') || (curChar == L'\t') ||
+        (curChar == L'#')) {
+      if (m_maxWidth && x >= m_maxWidth) {
+        y += maxLineY;
+        maxLineY = 0;
+        x = 0;
+        if (lastWordIndexSaved != lastWordIndex) {
+          i = lastWordIndex;
+          lastWordIndexSaved = lastWordIndex;
         }
-        position.x += line.spacing;
+        continue;
       }
-      position.y += lineHeight;
+
+      switch (curChar) {
+      case L' ':x += whitespaceWidth;
+        lastWordIndex = i;
+        break;
+      case L'\t':x += whitespaceWidth * 2;
+        lastWordIndex = i;
+        break;
+      case L'\n':y += maxLineY;
+        lastWordIndex = i;
+        x = 0;
+        maxLineY = 0;
+        break;
+      case L'#':auto strColor = m_string.substr(i + 1, 6);
+        auto str = ngf::StringHelper::tostring(strColor);
+        color = ngf::Color::parseHex6(str.c_str());
+        i += 7;
+        break;
+      }
+
+      // Next glyph, no need to create a quad for whitespace
+      continue;
     }
+
+    // Extract the current glyph's description
+    const auto *pGlyph = &m_font->getGlyph(curChar);
+    charInfos[i].pGlyph = pGlyph;
+    maxLineY = std::max(maxLineY, (float) pGlyph->bounds.getHeight());
+
+    // Advance to the next character
+    x += pGlyph->advance;
   }
 
-  m_bounds = frect::fromMinMax(min, max);
+  for (auto i = 0; i < static_cast<int>(m_string.size()); ++i) {
+    auto info = charInfos[i];
 
-  if (m_align != Alignment::None && m_maxWidth > 0.0f) {
-    m_bounds.min.x = 0;
-    m_bounds.max.x = m_maxWidth;
+    // Skip the \r char to avoid weird graphical issues
+    if (info.chr == '\r')
+      continue;
+
+    // Handle special characters
+    if ((info.chr == L' ') || (info.chr == L'\n') || (info.chr == L'\t') ||
+        (info.chr == L'#')) {
+      switch (info.chr) {
+      case L' ': break;
+      case L'\t': break;
+      case L'\n': break;
+      case L'#': i += 7;
+        break;
+      }
+
+      // Next glyph, no need to create a quad for whitespace
+      continue;
+    }
+
+    // Add the glyph to the vertices
+    addGlyphQuad(m_vertices, info.pos, info.color, *charInfos[i].pGlyph, *m_fontTexture);
+
+    // Update the current bounds with the non outlined glyph bounds
+    maxX = std::max(maxX, info.pos.x + charInfos[i].pGlyph->bounds.max.x);
+    maxY = std::max(maxY, info.pos.y + charInfos[i].pGlyph->bounds.max.y);
   }
 
-  // update colors
-  for (auto &vertex : m_vertices) {
-    vertex.color = m_color;
-  }
-  for (auto &vertex : m_outlineVertices) {
-    vertex.color = m_outlineColor;
-  }
+  // Update the bounding rectangle
+  m_bounds.min = {0, 0};
+  m_bounds.max = {maxX, maxY};
 }
 
-void Text::setOutlineThickness(float thickness) {
-  m_outlineThickness = thickness;
-  ensureGeometryUpdate();
+void Text::setAnchor(ngf::Anchor anchor) {
+  m_transform.setOriginFromAnchorAndBounds(anchor, getLocalBounds());
 }
 
-float Text::getOutlineThickness() const {
-  return m_outlineThickness;
-}
-
-void Text::setOutlineColor(const Color &color) {
-  m_outlineColor = color;
-
-  for (auto &vertex : m_outlineVertices) {
-    vertex.color = color;
-  }
-}
-Color Text::getOutlineColor() const {
-  return m_outlineColor;
-}
-
-void Text::setAlignment(Alignment align) {
-  if (m_align == align)
-    return;
-
-  m_align = align;
-  ensureGeometryUpdate();
-}
-
-void Text::setCharacterSize(unsigned int characterSize) {
-  if (m_characterSize == characterSize)
-    return;
-  m_characterSize = characterSize;
-  ensureGeometryUpdate();
-}
-
-void Text::setLineSpacing(float spacingFactor) {
-  if (m_lineSpacingFactor == spacingFactor)
-    return;
-  m_lineSpacingFactor = spacingFactor;
-  ensureGeometryUpdate();
-}
-
-void Text::setLetterSpacing(float letterSpacingFactor) {
-  if (m_letterSpacingFactor == letterSpacingFactor)
-    return;
-  m_letterSpacingFactor = letterSpacingFactor;
-  ensureGeometryUpdate();
+void Text::showTextBounds(bool textBounds) {
+  m_showTextBounds = textBounds;
 }
 }

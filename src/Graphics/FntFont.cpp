@@ -35,11 +35,24 @@ const Glyph &CharSet::getChar(int id) const {
 
 FntFont::~FntFont() = default;
 
-void FntFont::load(const std::filesystem::path &path, std::istream &input) {
+void FntFont::load(const std::filesystem::path &path, std::istream &input, TextureLoader textureLoader) {
+  // Parse .fnt file
+  // trace("FntFont: parsing \"{}\"...", path);
+
   if (!parse(path, input)) {
     std::ostringstream s;
     s << "Cannot parse file: " << path;
     throw std::runtime_error(s.str());
+  }
+
+  // Load resources
+  // trace("FntFont: loading textures...");
+  m_textures.resize(m_chars.pages.size());
+
+  for (size_t i = 0; i < m_chars.pages.size(); i++) {
+    std::filesystem::path texPath = m_chars.pages[i];
+    texPath = texPath.replace_extension("");
+    m_textures[i] = textureLoader(texPath);
   }
 }
 
@@ -52,20 +65,21 @@ void FntFont::loadFromFile(const std::filesystem::path &path) {
     s << "Failed to open font file \"" << path << "\"";
     throw std::runtime_error(s.str());
   }
-  load(path, is);
+  load(path, is, [](auto texturePath) {
+    auto texture = std::make_shared<Texture>();
+    texture->load(texturePath);
+    return texture;
+  });
   is.close();
 }
 
-float FntFont::getKerning(unsigned int first, unsigned int second, unsigned int) {
+float FntFont::getKerning(
+    unsigned int first, unsigned int second, unsigned int) const {
   return m_chars.getKerning(first, second);
 }
 
-const Texture *FntFont::getTexture(unsigned int) {
-  return &m_textures[0];
-}
-
-void FntFont::setTexture(const Image &image) {
-  m_textures.emplace_back(image);
+const std::shared_ptr<ngf::Texture> &FntFont::getTexture(unsigned int) const {
+  return m_textures[0];
 }
 
 bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
@@ -138,7 +152,6 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
           // of UIFontSmallBold.png) I replaced it to:
           auto pagePath = path;
           m_chars.pages[id] = pagePath.replace_extension(".png").u8string();
-          //m_textures.emplace_back(m_chars.pages[id]);
         }
       }
     } else if (tag == "char") {
@@ -175,9 +188,8 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
           converter >> chnl;
       }
 
-      auto rect = irect::fromPositionSize({x, y}, {width, height});
-      glyph.textureRect = m_textures.at(page).computeTextureCoords(rect);
-      glyph.bounds = frect::fromPositionSize({xoffset, yoffset}, {width, height});
+      glyph.textureRect = ngf::irect::fromPositionSize({x, y}, {width, height});
+      glyph.bounds = ngf::irect::fromPositionSize({xoffset, yoffset}, {width, height});
       m_chars.addChar(id, glyph);
     } else if (tag == "kerning") {
       Kerning k;
@@ -205,7 +217,7 @@ bool FntFont::parse(const std::filesystem::path &path, std::istream &input) {
   return true;
 }
 
-const Glyph &FntFont::getGlyph(unsigned int codePoint, unsigned int, float) {
+const Glyph &FntFont::getGlyph(unsigned int codePoint) const {
   return m_chars.getChar((int) codePoint);
 }
 }

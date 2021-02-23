@@ -98,7 +98,8 @@ public:
   }
 
 private:
-  using GlyphTable = std::map<int, Glyph>; ///< Table mapping a codepoint to its glyph
+  typedef std::map<int, Glyph>
+      GlyphTable; ///< Table mapping a codepoint to its glyph
   GlyphTable m_chars;
   std::list<Kerning> m_kernings;
 };
@@ -106,22 +107,19 @@ private:
 class FntFont : public Font {
 private:
   CharSet m_chars;
-  std::vector<Texture> m_textures;
+  std::vector<std::shared_ptr<ngf::Texture>> m_textures;
+  using TextureLoader = std::function<std::shared_ptr<ngf::Texture>(const std::filesystem::path)>;
 
 public:
   ~FntFont() override;
-  void load(const std::filesystem::path &name, std::istream &input);
+  void load(const std::filesystem::path &name, std::istream &input, TextureLoader textureLoader);
   void loadFromFile(const std::filesystem::path &path);
 
-  [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint,
-                                      unsigned int characterSize,
-                                      float outlineThickness) override;
+  [[nodiscard]] const Glyph &getGlyph(unsigned int codePoint) const override;
   [[nodiscard]] float getKerning(unsigned int first, unsigned int second,
-                                 unsigned int characterSize) override;
-  [[nodiscard]] const Texture *getTexture(unsigned int characterSize) override;
-  void setTexture(const Image& image);
-
-  [[nodiscard]] float getLineSpacing(unsigned int) override { return m_chars.lineHeight; }
+                                 unsigned int characterSize) const override;
+  [[nodiscard]] const std::shared_ptr<ngf::Texture> &getTexture(
+      unsigned int characterSize) const override;
 
 private:
   bool parse(const std::filesystem::path &path, std::istream &input);
