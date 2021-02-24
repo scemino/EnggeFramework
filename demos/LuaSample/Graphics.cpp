@@ -64,7 +64,6 @@ void Graphics::print(std::string_view str, float x, float y, float ox, float oy,
   auto &trsf = text.getTransform();
   text.setColor(DemoApplication::getApp()->getColor());
   text.setFont(*font);
-  text.setCharacterSize(13);
   text.setString(str.data());
   trsf.setPosition({x, y});
   trsf.setOrigin({ox, oy});

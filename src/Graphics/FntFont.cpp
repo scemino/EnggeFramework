@@ -51,7 +51,6 @@ void FntFont::load(const std::filesystem::path &path, std::istream &input, Textu
 
   for (size_t i = 0; i < m_chars.pages.size(); i++) {
     std::filesystem::path texPath = m_chars.pages[i];
-    texPath = texPath.replace_extension("");
     m_textures[i] = textureLoader(texPath);
   }
 }

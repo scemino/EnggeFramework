@@ -1,7 +1,7 @@
 #pragma once
 #include <sol/sol.hpp>
 #include <ngf/Application.h>
-#include <ngf/Graphics/Font.h>
+#include <ngf/Graphics/FntFont.h>
 #include <TextEditor.h>
 #include "Graphics.h"
 
@@ -25,7 +25,7 @@ private:
 private:
   ngf::Color m_color{ngf::Colors::White};
   Image* m_image{nullptr};
-  std::shared_ptr<ngf::Font> m_font;
+  std::shared_ptr<ngf::FntFont> m_font;
   sol::state lua;
   TextEditor m_editor;
   static DemoApplication *m_app;

@@ -1,9 +1,9 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <ngf/Graphics/RenderTarget.h>
 #include <ngf/Graphics/Vertex.h>
-#include <ngf/Graphics/DefaultFont.h>
 #include <imgui.h>
 #include <cstring>
+#include <ngf/Graphics/FntFont.h>
 #include "DemoApplication.h"
 #include "Graphics.h"
 
@@ -58,7 +58,8 @@ std::shared_ptr<ngf::Font> DemoApplication::getDefaultFont() { return m_font; }
 void DemoApplication::onInit() {
   m_window.init({"LuaSample", {640, 480}});
 
-  m_font = std::make_shared<ngf::DefaultFont>("assets/PressStart2P-vaV7.ttf");
+  m_font = std::make_shared<ngf::FntFont>();
+  m_font->loadFromFile("assets/press-start.fnt");
 
   auto lang = TextEditor::LanguageDefinition::Lua();
   m_editor.SetLanguageDefinition(lang);
