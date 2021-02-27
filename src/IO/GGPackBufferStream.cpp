@@ -33,6 +33,8 @@ bool GGPackBufferStream::eof() const {
 }
 
 char GGPackBufferStream::peek() const {
+  if (m_offset >= static_cast<int>(m_input.size()))
+    return EOF;
   return m_input[m_offset];
 }
 
