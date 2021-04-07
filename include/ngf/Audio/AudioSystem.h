@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <mutex>
 #include <vector>
 #include <ngf/Audio/AudioChannel.h>
 #include <ngf/Audio/SoundHandle.h>
@@ -47,5 +48,6 @@ private:
   std::vector<AudioChannel> m_channels;
   AudioChannel m_invalidChannel;
   std::vector<std::shared_ptr<SoundHandle>> m_handles;
+  std::mutex m_handlesAccess;
 };
 }

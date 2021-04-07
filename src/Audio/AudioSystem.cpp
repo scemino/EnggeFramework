@@ -34,7 +34,9 @@ std::shared_ptr<SoundHandle> AudioSystem::playSound(ngf::SoundBuffer &buffer,
     m_channels[channel].setSoundBuffer(&buffer);
     m_channels[channel].play(loopTimes, fadeInTime);
     auto handle = std::make_shared<SoundHandle>(m_channels[channel]);
+    m_handlesAccess.lock();
     m_handles.push_back(handle);
+    m_handlesAccess.unlock();
     return handle;
   }
 
@@ -60,11 +62,14 @@ std::shared_ptr<SoundHandle> AudioSystem::playSound(ngf::SoundBuffer &buffer,
 
   m_channels[channel].setSoundBuffer(&buffer);
   auto handle = std::make_shared<SoundHandle>(m_channels[channel]);
+  m_handlesAccess.lock();
   m_handles.push_back(handle);
+  m_handlesAccess.unlock();
   return handle;
 }
 
 void AudioSystem::onChannelFinished(int channel) {
+  m_handlesAccess.lock();
   std::for_each(m_handles.begin(), m_handles.end(),
                 [channel, this](auto handle) {
                   if (handle->get().getChannel() == channel) {
@@ -72,7 +77,8 @@ void AudioSystem::onChannelFinished(int channel) {
                   }
                 });
   m_handles.erase(std::remove_if(m_handles.begin(), m_handles.end(),
-                                 [this](auto handle) { return handle->m_channel == &m_invalidChannel; }));
+                                 [this](const auto &handle) { return handle->m_channel == &m_invalidChannel; }));
+  m_handlesAccess.unlock();
 }
 
 size_t AudioSystem::size() const noexcept { return m_channels.size(); }
