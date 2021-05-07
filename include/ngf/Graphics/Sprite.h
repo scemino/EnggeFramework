@@ -72,8 +72,12 @@ public:
   /// \param states Render states to use to draw this sprite.
   void draw(RenderTarget &target, RenderStates states = {}) const override;
 
+  /// @brief Flips the sprite texture horizontally.
+  void setFlipX(bool flip = true);
+  bool getFlipX() const;
   /// @brief Flips the sprite texture vertically
-  void flipVertically();
+  void setFlipY(bool flip = true);
+  bool getFlipY() const;
 
 private:
   void updateGeometry();
@@ -84,5 +88,7 @@ private:
   frect m_bounds{};
   std::array<Vertex, 4> m_vertices{};
   Transform m_transform;
+  bool m_flipX{false};
+  bool m_flipY{false};
 };
 }
