@@ -117,6 +117,14 @@ public:
     return min.x <= point.x && point.x < max.x && min.y <= point.y && point.y < max.y;
   }
 
+  /// @brief Indicates whether or not a rectangle intersects this rectangle.
+  /// \param rect The rectangle to test.
+  /// \return true if the rectangle intersects the rectangle, false otherwise.
+  constexpr bool intersects(Rect rect) const noexcept {
+    return min.x < rect.max.x && max.x > rect.min.x &&
+        min.y < rect.max.y && max.y > rect.min.y;
+  }
+
   /// @brief Shrinks the rectangle.
   /// \param value The amount to shrink.
   /// \return The rectangle shrinked.
